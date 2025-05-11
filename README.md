@@ -8,7 +8,7 @@ Projeto desenvolvido com Django e PostgreSQL.
 ### 1. Clone o repositório
 
 ```bash
-git clone [https://github.com/seu-usuario/seu-repo.git](https://github.com/viradacafe/futuras-cientistas.git)
+git clone https://github.com/viradacafe/futuras-cientistas.git
 cd futuras-cientistas
 ```
 
