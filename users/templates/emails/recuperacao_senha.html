@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      background-color: #1a1a1a;
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .email-box {
+      background: linear-gradient(135deg, #6e44ff, #b892ff);
+      border-radius: 12px;
+      max-width: 600px;
+      margin: auto;
+      padding: 30px;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    h2 {
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+    .senha {
+      background-color: #ffffff20;
+      border: 1px solid #ffffff40;
+      padding: 12px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #fff;
+      display: inline-block;
+    }
+    p {
+      line-height: 1.6;
+      margin: 10px 0;
+    }
+    .rodape {
+      font-size: 12px;
+      color: #cccccc;
+      margin-top: 30px;
+      border-top: 1px solid #ffffff30;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-box">
+    <h2>Olá {{ nome }},</h2>
+    <p>Você solicitou a recuperação de senha. Aqui está sua nova senha:</p>
+    <p class="senha">{{ nova_senha }}</p>
+    <p>Recomendamos que você acesse sua conta e altere essa senha o quanto antes.</p>
+    <p class="rodape">Este e-mail foi enviado automaticamente. Não é necessário responder.</p>
+  </div>
+</body>
+</html>

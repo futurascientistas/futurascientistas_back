@@ -10,10 +10,12 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from rest_framework.throttling import UserRateThrottle
 import random
 import string
 import re
-
 
 def validar_email(email):
     email_validator = EmailValidator()
@@ -49,10 +51,26 @@ def gerar_senha_recuperacao(tamanho=12):
 
     return senha
 
-class RecuperacaoSenhaAPIView(APIView):
-  permission_classes = [permissions.AllowAny]
+def enviar_email_recuperacao(user, nova_senha):
+    subject = 'Recuperação de Senha'
+    from_email = 'no-reply@futurascientistas.com'
+    to = [user.email]
+
+    html_content = render_to_string('emails/recuperacao_senha.html', {
+    'nome': user,
+    'nova_senha': nova_senha
+    })
+    text_content = f"Sua nova senha é: {nova_senha}"  # Para e-mails que não suportam HTML
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
   
-  def post(self, request):
+  
+class RecuperacaoSenhaAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+  
+    def post(self, request):
         email = request.data.get('email')
 
         if not email:
@@ -63,18 +81,18 @@ class RecuperacaoSenhaAPIView(APIView):
         except User.DoesNotExist:
             return Response({'mensagem': 'Email não encontrado'}, status=status.HTTP_400_BAD_REQUEST)
 
+        if user.password_needs_reset:
+            return Response({'mensagem': 'A senha já foi resetada recentemente. Verifique seu email.'}, status=status.HTTP_400_BAD_REQUEST)
+
         nova_senha = gerar_senha_recuperacao()
+        try:
+            enviar_email_recuperacao(user, nova_senha)
+        except Exception as e:
+            return Response({'mensagem': f'Erro ao enviar email: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         user.set_password(nova_senha)
+        user.password_needs_reset = True
         user.save()
-
-        send_mail(
-            'Recuperação de Senha',  
-            f'Sua nova senha é: {nova_senha}', 
-            'no-reply@seusite.com',  
-            [user.email], 
-            fail_silently=False, 
-        )
 
         return Response({'mensagem': 'Senha recuperada com sucesso. Verifique seu email.'}, status=status.HTTP_200_OK)
 
@@ -115,7 +133,11 @@ class CadastroAPIView(APIView):
             'refresh_token': str(refresh),
         }, status=status.HTTP_201_CREATED)
 
+class LoginThrottle(UserRateThrottle):
+    rate = '4/min'  # 4 tentativas por minturs
+
 class LoginAPIView(APIView):
+    throttle_classes = [LoginThrottle]
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
