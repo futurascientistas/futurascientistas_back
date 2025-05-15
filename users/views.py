@@ -25,6 +25,22 @@ def validar_email(email):
         return False
     return True
 
+def validar_cpf(cpf: str) -> bool:
+    cpf = ''.join(filter(str.isdigit, cpf))
+    if len(cpf) != 11 or cpf == cpf[0] * 11:
+        return False
+
+    def calcular_digito(cpf, peso):
+        soma = sum(int(digito) * p for digito, p in zip(cpf, peso))
+        resto = soma % 11
+        return '0' if resto < 2 else str(11 - resto)
+
+    primeiro_digito = calcular_digito(cpf[:9], range(10, 1, -1))
+    segundo_digito = calcular_digito(cpf[:10], range(11, 1, -1))
+
+    return cpf[-2:] == primeiro_digito + segundo_digito
+
+
 def validar_senha(senha):
     # Verificar se a senha tem entre 8 e 12 caracteres
     if len(senha) < 8 or len(senha) > 12:
@@ -57,7 +73,7 @@ def enviar_email_recuperacao(user, nova_senha):
     to = [user.email]
 
     html_content = render_to_string('emails/recuperacao_senha.html', {
-    'nome': user,
+    'nome': user.nome,
     'nova_senha': nova_senha
     })
     text_content = f"Sua nova senha é: {nova_senha}"  # Para e-mails que não suportam HTML
@@ -69,17 +85,23 @@ def enviar_email_recuperacao(user, nova_senha):
   
 class RecuperacaoSenhaAPIView(APIView):
     permission_classes = [permissions.AllowAny]
-  
+
     def post(self, request):
         email = request.data.get('email')
+        cpf = request.data.get('cpf')
 
-        if not email:
-            return Response({'mensagem': 'Email é obrigatório'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email and not cpf:
+            return Response({'mensagem': 'Informe o CPF ou o email.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email=email)
+            if email:
+                user = User.objects.get(email=email)
+            else:
+               
+                cpf_limpo = re.sub(r'\D', '', cpf)
+                user = User.objects.get(cpf=cpf_limpo)
         except User.DoesNotExist:
-            return Response({'mensagem': 'Email não encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'mensagem': 'Usuário não encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if user.password_needs_reset:
             return Response({'mensagem': 'A senha já foi resetada recentemente. Verifique seu email.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -96,19 +118,25 @@ class RecuperacaoSenhaAPIView(APIView):
 
         return Response({'mensagem': 'Senha recuperada com sucesso. Verifique seu email.'}, status=status.HTTP_200_OK)
 
+
 class CadastroAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         nome = request.data.get('nome')
         email = request.data.get('email')
+        cpf = request.data.get('cpf')
+        cpf = re.sub(r'\D', '', cpf) 
         senha = request.data.get('senha')
 
-        if not nome or not email or not senha:
+        if not nome or not email or not senha or not cpf:
             return Response({'mensagem': 'Campos obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
 
         if not validar_email(email):
             return Response({'mensagem': 'Email inválido'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not validar_cpf(cpf):
+            return Response({'mensagem': 'CPF inválido'}, status=status.HTTP_400_BAD_REQUEST)
 
         senha_valida = validar_senha(senha)
         if senha_valida != True:
@@ -117,7 +145,10 @@ class CadastroAPIView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({'mensagem': 'Email já cadastrado'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User(nome=nome, email=email)
+        if User.objects.filter(cpf=cpf).exists():
+            return Response({'mensagem': 'CPF já cadastrado'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User(nome=nome, email=email, cpf=cpf)
         user.set_password(senha)
         user.save()  
 
@@ -141,13 +172,14 @@ class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        email = request.data.get('email')
+        cpf = request.data.get('cpf')
         senha = request.data.get('senha')
+        cpf = re.sub(r'\D', '', cpf) 
 
-        if not email or not senha:
+        if not cpf or not senha:
             return Response({'mensagem': 'Campos obrigatórios'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = authenticate(request, username=email, password=senha)
+        user = authenticate(request, username=cpf, password=senha)
 
         if user is None:
             return Response({'mensagem': 'Credenciais inválidas'}, status=status.HTTP_400_BAD_REQUEST)
