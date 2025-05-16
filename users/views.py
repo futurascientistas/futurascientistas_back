@@ -1,21 +1,24 @@
-import hashlib
-
-from .models import User
-from .serializers import UserSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
-from django.contrib.auth import authenticate
-from django.core.exceptions import ValidationError
-from django.core.validators import EmailValidator
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
-from django.core.mail import EmailMultiAlternatives
-from django.template.loader import render_to_string
-from rest_framework.throttling import UserRateThrottle
 import random
 import string
 import re
+from .serializers import UserSerializer
+from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from rest_framework.throttling import UserRateThrottle
+from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import Group
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
+from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from .permissions import IsAdminOrAvaliadora as IsAdminOrEvaluator, IsSelfOrAdminOrAvaliadora as IsOwnerOrAdminOrEvaluator
+from .models import User
 
 def validar_email(email):
     email_validator = EmailValidator()
@@ -81,7 +84,11 @@ def enviar_email_recuperacao(user, nova_senha):
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, "text/html")
     msg.send()
-  
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
   
 class RecuperacaoSenhaAPIView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -192,4 +199,54 @@ class LoginAPIView(APIView):
             'access_token': access_token,
         }, status=status.HTTP_200_OK)
 
+class UserListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrEvaluator]
+    
+    def get_queryset(self):
+        return User.objects.all()
 
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrEvaluator]
+    
+    def get_object(self):
+        if self.kwargs.get('pk'):
+            return super().get_object()
+        return self.request.user
+
+class UserUpdateView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrEvaluator]
+
+    def get_object(self):
+        return get_object_or_404(User, pk=self.kwargs.get('pk'))
+
+    def perform_update(self, serializer):
+        serializer.validated_data.pop('cpf', None)
+
+        # Só admin pode alterar grupos
+        if not self.request.user.groups.filter(name='admin').exists():
+            serializer.validated_data.pop('groups', None)
+
+        serializer.save()
+
+class UserDeleteView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrEvaluator]
+    
+    def get_object(self):
+        return self.request.user
+
+    def destroy(self, request, *args, **kwargs):
+        senha = request.data.get('senha')
+
+        if not senha or not request.user.check_password(senha):
+            return Response({'mensagem': 'Senha incorreta'}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({'mensagem': 'Conta excluída com sucesso'}, status=status.HTTP_204_NO_CONTENT)

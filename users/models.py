@@ -1,5 +1,14 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import Group
+
+ROLES = [
+    ('estudante', 'Estudante'),
+    ('professor', 'Professor'),
+    ('admin', 'Administrador'),
+    ('avaliadora', 'Avaliadora'),
+]
 
 class UserManager(BaseUserManager):
     def create_user(self, cpf, email, nome, senha=None):
@@ -8,9 +17,10 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("O usuário precisa de um email")
 
+        email = self.normalize_email(email)
         user = self.model(
             cpf=cpf,
-            email=self.normalize_email(email),
+            email=email,
             nome=nome
         )
         user.set_password(senha)
@@ -31,12 +41,26 @@ class User(AbstractBaseUser, PermissionsMixin):
     cpf = models.CharField(max_length=11, unique=True, blank=False, null=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, choices=ROLES, default='estudante', verbose_name='Função')
+    bio = models.TextField(blank=True, null=True, verbose_name='Biografia')
+    birth_date = models.DateField(blank=True, null=True, verbose_name='Data de Nascimento')
 
     password_needs_reset = models.BooleanField(default=False)
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'cpf'  
-    REQUIRED_FIELDS = ['email', 'nome']  
+    USERNAME_FIELD = 'cpf'
+    REQUIRED_FIELDS = ['email', 'nome']
+
+    class Meta:
+        verbose_name = 'Usuário'
+        verbose_name_plural = 'Usuários'
+
     def __str__(self):
-        return self.cpf
+        return f"{self.nome} ({self.email})"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        group, _ = Group.objects.get_or_create(name=self.role)
+        self.groups.clear()
+        self.groups.add(group)
