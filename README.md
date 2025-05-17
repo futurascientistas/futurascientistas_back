@@ -29,6 +29,7 @@ PyJWT==2.9.0
 python-decouple==3.8
 sqlparse==0.5.3
 tzdata==2025.2
+django-cors-headers=4.7.0
 ```
 
 ### 3. Instale as dependências
