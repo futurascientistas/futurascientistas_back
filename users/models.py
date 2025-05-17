@@ -22,7 +22,7 @@ class UserManager(BaseUserManager):
             cpf=cpf,
             email=email,
             nome=nome
-        )
+            )
         user.set_password(senha)
         user.save(using=self._db)
         return user
@@ -31,6 +31,7 @@ class UserManager(BaseUserManager):
         user = self.create_user(cpf, email, nome, senha)
         user.is_staff = True
         user.is_superuser = True
+        user.role = 'admin'
         user.save(using=self._db)
         return user
 

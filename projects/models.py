@@ -2,7 +2,7 @@ from django.db import models
 from users.models import User
 from django.contrib.postgres.fields import ArrayField
 
-REGIONS_BRAZIL = [
+REGIOES_BRASIL = [
     ('NORTE', 'Norte'),
     ('NORDESTE', 'Nordeste'),
     ('CENTRO-OESTE', 'Centro-Oeste'),
@@ -10,45 +10,70 @@ REGIONS_BRAZIL = [
     ('SUL', 'Sul'),
 ]
 
-
-FORMAT_CHOICES = [
+FORMATOS = [
     ('presencial', 'Presencial'),
     ('remoto', 'Remoto'),
 ]
 
+STATUS_PROJETO = [
+    ('rascunho', 'Rascunho'),
+    ('inscricoes_abertas', 'Inscrições Abertas'),
+    ('avaliacao_inscricoes', 'Avaliação das Inscrições'),
+    ('inscricoes_aprovadas', 'Inscrições Aprovadas'),
+    ('em_andamento', 'Em Andamento'),
+    ('avaliacao_projeto', 'Avaliação do Projeto'),
+    ('finalizado', 'Finalizado'),
+]
+
 class Project(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField()
-    created_by = models.ForeignKey(
+    nome = models.CharField(max_length=255, verbose_name='Nome')
+    descricao = models.TextField(verbose_name='Descrição')
+    criado_por = models.ForeignKey(
         User, 
-        related_name='projects_created',
+        related_name='projetos_criados',
         on_delete=models.SET_NULL, 
         null=True, 
-        blank=True
+        blank=True,
+        verbose_name='Criado por'
     )
-    is_remote = models.BooleanField(default=False) 
-    accepted_regions = ArrayField(
-        models.CharField(max_length=20, choices=REGIONS_BRAZIL),
-        default=list
+    eh_remoto = models.BooleanField(default=False, verbose_name='É remoto')
+    regioes_aceitas = ArrayField(
+        models.CharField(max_length=20, choices=REGIOES_BRASIL),
+        default=list,
+        verbose_name='Regiões aceitas'
     )
-    format = models.CharField(
+    formato = models.CharField(
         max_length=20,
-        choices=FORMAT_CHOICES,
-        default='online'
+        choices=FORMATOS,
+        default='presencial',
+        verbose_name='Formato'
     )
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    vacancies = models.PositiveIntegerField() 
-    active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(
+    
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_PROJETO,
+        default='rascunho',
+        verbose_name='Status'
+    )
+
+    data_inicio = models.DateTimeField(verbose_name='Data de início')
+    data_fim = models.DateTimeField(verbose_name='Data de fim')
+    vagas = models.PositiveIntegerField(verbose_name='Vagas')
+    ativo = models.BooleanField(default=True, verbose_name='Ativo')
+    criado_em = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
+    atualizado_em = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
+    atualizado_por = models.ForeignKey(
         User, 
         null=True, 
         blank=True, 
         on_delete=models.SET_NULL, 
-        related_name='projects_updated'
+        related_name='projetos_atualizados',
+        verbose_name='Atualizado por'
     )
 
     def __str__(self):
-        return self.name
+        return self.nome
+
+    class Meta:
+        verbose_name = 'Projeto'
+        verbose_name_plural = 'Projetos'
