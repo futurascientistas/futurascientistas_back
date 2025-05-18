@@ -31,6 +31,9 @@ sqlparse==0.5.3
 tzdata==2025.2
 django-cors-headers=4.7.0
 django-filter==25.1
+numpy==2.2.6
+openpyxl==3.1.5
+pandas==2.2.3
 ```
 
 ### 3. Instale as dependências
