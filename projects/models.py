@@ -45,7 +45,8 @@ class Project(models.Model):
     regioes_aceitas = ArrayField(
         models.CharField(max_length=20, choices=REGIOES_BRASIL),
         default=list,
-        verbose_name='Regiões aceitas'
+        verbose_name='Regiões aceitas',
+        blank=True
     )
     formato = models.CharField(
         max_length=20,
@@ -79,3 +80,14 @@ class Project(models.Model):
     class Meta:
         verbose_name = 'Projeto'
         verbose_name_plural = 'Projetos'
+
+class ImportacaoProjeto(models.Model):
+    arquivo = models.FileField(upload_to='importacoes/')
+    data_importacao = models.DateTimeField(auto_now_add=True)
+    linhas_lidas = models.IntegerField(default=0)
+    projetos_criados = models.IntegerField(default=0)
+    projetos_ignorados = models.IntegerField(default=0)
+    linhas_ignoradas_texto = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Importação em {self.data_importacao.strftime('%d/%m/%Y %H:%M')}"

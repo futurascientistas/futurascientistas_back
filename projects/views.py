@@ -1,9 +1,12 @@
 from rest_framework import generics, permissions, mixins, status
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.parsers import MultiPartParser
+from .models import Project, ImportacaoProjeto
 from rest_framework.response import Response
-from .models import Project
-from .filters import ProjectFilter
 from .serializers import ProjectSerializer
+from rest_framework.views import APIView
+from .filters import ProjectFilter
+from .services import importar_planilha_projetos
 
 class ProjectCreateAPIView(generics.CreateAPIView):
     queryset = Project.objects.all()
@@ -55,3 +58,27 @@ class ProjectBulkDeleteAPIView(mixins.DestroyModelMixin, generics.GenericAPIView
         count = projects.count()
         projects.delete()
         return Response({"message": f"{count} projetos deletados."}, status=status.HTTP_200_OK)
+    
+class ImportarProjetosView(APIView):
+    parser_classes = [MultiPartParser]
+    permission_classes = [permissions.IsAdminUser]
+
+    def post(self, request, *args, **kwargs):
+        arquivo = request.FILES.get('arquivo')
+        if not arquivo:
+            return Response({"erro": "Arquivo não enviado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        importacao = ImportacaoProjeto.objects.create(arquivo=arquivo)
+        try:
+            importar_planilha_projetos(importacao)
+        except Exception as e:
+            return Response({"erro": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            "mensagem": "Importação realizada com sucesso.",
+            "linhas_lidas": importacao.linhas_lidas,
+            "projetos_criados": importacao.projetos_criados,
+            "projetos_ignorados": importacao.projetos_ignorados,
+            "linhas_ignoradas": importacao.linhas_ignoradas_texto,
+            "id": importacao.id
+        })
