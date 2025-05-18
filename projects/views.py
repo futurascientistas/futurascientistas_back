@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions, mixins, status
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from .models import Project
+from .filters import ProjectFilter
 from .serializers import ProjectSerializer
 
 class ProjectCreateAPIView(generics.CreateAPIView):
@@ -9,28 +11,23 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def perform_create(self, serializer):
-        serializer.save(criado_por=self.request.user)
+        serializer.save(criado_por=self.request.user.nome + " (" + self.request.user.email + ")")
 
 
 class ProjectListAPIView(generics.ListAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProjectFilter
 
     def get_queryset(self):
         user = self.request.user
-        status_filter = self.request.query_params.get('status')
-
+        queryset = Project.objects.all()
+        
         if not user.is_staff:
-            queryset = Project.objects.filter(ativo=True)
-        else:
-            queryset = Project.objects.all()
-            if status_filter:
-                if status_filter.lower() == 'active':
-                    queryset = queryset.filter(ativo=True)
-                elif status_filter.lower() == 'inactive':
-                    queryset = queryset.filter(ativo=False)
-        return queryset
+            queryset = queryset.filter(ativo=True)
 
+        return queryset
 
 class ProjectUpdateAPIView(generics.UpdateAPIView):
     queryset = Project.objects.all()
@@ -38,7 +35,7 @@ class ProjectUpdateAPIView(generics.UpdateAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def perform_update(self, serializer):
-        serializer.save(atualizado_por=self.request.user)
+        serializer.save(atualizado_por= self.request.user.nome + " (" + self.request.user.email + ")")
 
 class ProjectDeleteAPIView(generics.DestroyAPIView):
     queryset = Project.objects.all()

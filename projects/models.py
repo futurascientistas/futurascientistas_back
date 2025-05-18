@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 from django.contrib.postgres.fields import ArrayField
+import uuid
 
 REGIOES_BRASIL = [
     ('NORTE', 'Norte'),
@@ -26,15 +27,19 @@ STATUS_PROJETO = [
 ]
 
 class Project(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255, verbose_name='Nome')
     descricao = models.TextField(verbose_name='Descrição')
-    criado_por = models.ForeignKey(
-        User, 
-        related_name='projetos_criados',
-        on_delete=models.SET_NULL, 
-        null=True, 
+    criado_por = models.EmailField(null=True, blank=True, verbose_name='Criado por (e-mail)')
+    atualizado_por = models.EmailField(null=True, blank=True, verbose_name='Atualizado por (e-mail)')
+    
+    tutora = models.ForeignKey(
+        User,
+        null=True,
         blank=True,
-        verbose_name='Criado por'
+        on_delete=models.SET_NULL,
+        related_name='projetos_tutorados',
+        verbose_name='Tutora'
     )
     eh_remoto = models.BooleanField(default=False, verbose_name='É remoto')
     regioes_aceitas = ArrayField(
@@ -56,20 +61,17 @@ class Project(models.Model):
         verbose_name='Status'
     )
 
-    data_inicio = models.DateTimeField(verbose_name='Data de início')
-    data_fim = models.DateTimeField(verbose_name='Data de fim')
     vagas = models.PositiveIntegerField(verbose_name='Vagas')
     ativo = models.BooleanField(default=True, verbose_name='Ativo')
+    
+    inicio_inscricoes = models.DateTimeField(verbose_name='Início das inscrições')
+    fim_inscricoes = models.DateTimeField(verbose_name='Fim das inscrições')
+
+    data_inicio = models.DateTimeField(verbose_name='Data de início')
+    data_fim = models.DateTimeField(verbose_name='Data de fim')
+
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
     atualizado_em = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
-    atualizado_por = models.ForeignKey(
-        User, 
-        null=True, 
-        blank=True, 
-        on_delete=models.SET_NULL, 
-        related_name='projetos_atualizados',
-        verbose_name='Atualizado por'
-    )
 
     def __str__(self):
         return self.nome

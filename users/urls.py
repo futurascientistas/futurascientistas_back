@@ -11,7 +11,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('recuperacao_senha/', RecuperacaoSenhaAPIView.as_view(), name='recuperacao_senha'),
     path('usuarios/', UserListView.as_view(), name='lista-usuarios'),
-    path('usuario/<int:pk>/', UserDetailView.as_view(), name='detalhe-usuario'),
-    path('usuario/editar/<int:pk>/', UserUpdateView.as_view(), name='editar-perfil'),
+    path('usuario/<uuid:pk>/', UserDetailView.as_view(), name='detalhe-usuario'),
+    path('usuario/editar/<uuid:pk>/', UserUpdateView.as_view(), name='editar-perfil'),
     path('usuario/excluir/', UserDeleteView.as_view(), name='excluir-conta'),
 ]

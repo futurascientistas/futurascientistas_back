@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import Group
+import uuid
+
 
 ROLES = [
     ('estudante', 'Estudante'),
@@ -37,6 +39,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, blank=False, null=False)
     nome = models.CharField(max_length=100, blank=False, null=False)
     cpf = models.CharField(max_length=11, unique=True, blank=False, null=False)
