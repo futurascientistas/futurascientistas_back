@@ -1,9 +1,8 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+# models.py
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Group
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.models import Group
 import uuid
-
 
 ROLES = [
     ('estudante', 'Estudante'),
@@ -24,7 +23,7 @@ class UserManager(BaseUserManager):
             cpf=cpf,
             email=email,
             nome=nome
-            )
+        )
         user.set_password(senha)
         user.save(using=self._db)
         return user
@@ -35,6 +34,11 @@ class UserManager(BaseUserManager):
         user.is_superuser = True
         user.role = 'admin'
         user.save(using=self._db)
+
+        from django.contrib.auth.models import Group
+        admin_group, _ = Group.objects.get_or_create(name='admin')
+        user.groups.add(admin_group)
+
         return user
 
 
@@ -64,7 +68,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.nome} ({self.email})"
 
     def save(self, *args, **kwargs):
+        grupos = self.groups.all()
+        if grupos.exists():
+            novo_role = grupos.first().name
+            if self.role != novo_role:
+                self.role = novo_role
+        else:
+            if not self.role:
+                self.role = 'estudante'
+
+        if self.role == 'admin':
+            self.is_staff = True
+            self.is_superuser = True
+        else:
+            self.is_staff = False
+            self.is_superuser = False
+
         super().save(*args, **kwargs)
+
         group, _ = Group.objects.get_or_create(name=self.role)
-        self.groups.clear()
-        self.groups.add(group)
+        if group not in self.groups.all():
+            self.groups.clear()
+            self.groups.add(group)
