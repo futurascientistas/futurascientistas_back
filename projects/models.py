@@ -1,15 +1,7 @@
 from django.db import models
 from users.models import User
-from django.contrib.postgres.fields import ArrayField
+from core.models import Regiao, Estado, Cidade
 import uuid
-
-REGIOES_BRASIL = [
-    ('NORTE', 'Norte'),
-    ('NORDESTE', 'Nordeste'),
-    ('CENTRO-OESTE', 'Centro-Oeste'),
-    ('SUDESTE', 'Sudeste'),
-    ('SUL', 'Sul'),
-]
 
 FORMATOS = [
     ('presencial', 'Presencial'),
@@ -42,11 +34,26 @@ class Project(models.Model):
         verbose_name='Tutora'
     )
     eh_remoto = models.BooleanField(default=False, verbose_name='É remoto')
-    regioes_aceitas = ArrayField(
-        models.CharField(max_length=20, choices=REGIOES_BRASIL),
-        default=list,
-        verbose_name='Regiões aceitas',
-        blank=True
+
+    regioes_aceitas = models.ManyToManyField(
+        Regiao,
+        blank=True,
+        related_name='projetos',
+        verbose_name='Regiões aceitas'
+    )
+
+    estados_aceitos = models.ManyToManyField(
+        Estado,
+        blank=True,
+        related_name='projetos',
+        verbose_name='Estados aceitos'
+    )
+
+    cidades_aceitas = models.ManyToManyField(
+        Cidade,
+        blank=True,
+        related_name='projetos',
+        verbose_name='Cidades aceitas'
     )
     formato = models.CharField(
         max_length=20,

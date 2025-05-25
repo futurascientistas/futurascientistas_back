@@ -250,3 +250,21 @@ class UserDeleteView(generics.DestroyAPIView):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({'mensagem': 'Conta excluída com sucesso'}, status=status.HTTP_204_NO_CONTENT)
+    
+class UpdateMyUserView(generics.UpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def perform_update(self, serializer):
+        serializer.validated_data.pop('cpf', None)
+        serializer.save()
+
+class GetMyUserView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user

@@ -90,3 +90,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         if group not in self.groups.all():
             self.groups.clear()
             self.groups.add(group)
+
+
+class Genero(models.Model):
+    nome = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.nome

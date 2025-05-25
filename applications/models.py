@@ -10,6 +10,7 @@ class Application(models.Model):
     STATUS_ESCOLHAS = [
         ('rascunho', 'Rascunho'),
         ('pendente', 'Pendente'),
+        ('avaliacao', 'Em Avaliacao'),
         ('deferida', 'Deferida'),
         ('indeferida', 'indeferida'),
     ]

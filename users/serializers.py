@@ -1,7 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import Group
-from .models import User
+from .models import User, Genero
 
 class UserSerializer(serializers.ModelSerializer):
     groups = serializers.SlugRelatedField(
@@ -48,3 +48,8 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save() 
 
         return instance
+    
+class GeneroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genero
+        fields = ['id', 'nome']

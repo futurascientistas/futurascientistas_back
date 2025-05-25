@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, CadastroAPIView, LoginAPIView, RecuperacaoSenhaAPIView, UserListView, UserDetailView, UserUpdateView, UserDeleteView
+from .views import UserViewSet, CadastroAPIView, LoginAPIView, RecuperacaoSenhaAPIView, UserListView, UserDetailView, UserUpdateView, UserDeleteView, UpdateMyUserView,GetMyUserView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -14,4 +14,7 @@ urlpatterns = [
     path('usuario/<uuid:pk>/', UserDetailView.as_view(), name='detalhe-usuario'),
     path('usuario/editar/<uuid:pk>/', UserUpdateView.as_view(), name='editar-perfil'),
     path('usuario/excluir/', UserDeleteView.as_view(), name='excluir-conta'),
+    path('usuario/eu/editar/', UpdateMyUserView.as_view(), name='editar-meu-usuario'),
+    path('usuario/eu/', GetMyUserView.as_view(), name='meu-usuario'),
+
 ]

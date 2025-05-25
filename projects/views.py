@@ -5,8 +5,10 @@ from .models import Project, ImportacaoProjeto
 from rest_framework.response import Response
 from .serializers import ProjectSerializer
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 from .filters import ProjectFilter
 from .services import importar_planilha_projetos
+from django.utils import timezone
 
 class ProjectCreateAPIView(generics.CreateAPIView):
     queryset = Project.objects.all()
@@ -82,3 +84,12 @@ class ImportarProjetosView(APIView):
             "linhas_ignoradas": importacao.linhas_ignoradas_texto,
             "id": importacao.id
         })
+    
+class VerificarInscricaoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def get(self, request, project_id):
+        projeto = get_object_or_404(Project, id=project_id)
+        agora = timezone.now()
+
+        pode_inscrever = projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes
+        return Response({"pode_inscrever": pode_inscrever})
