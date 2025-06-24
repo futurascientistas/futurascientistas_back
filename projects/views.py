@@ -18,6 +18,21 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(criado_por=self.request.user.nome + " (" + self.request.user.email + ")")
 
+class ProjectRetrieveAPIView(generics.RetrieveAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'id'  
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = super().get_queryset()
+
+        if not user.is_staff:
+            queryset = queryset.filter(ativo=True)
+
+        return queryset
+
 
 class ProjectListAPIView(generics.ListAPIView):
     serializer_class = ProjectSerializer

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Regiao, Estado, Cidade, Instituicao
+from users.models import Genero, Raca, Deficiencia
 
 class RegiaoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -78,3 +79,18 @@ class InstituicaoSerializer(serializers.ModelSerializer):
         except Cidade.DoesNotExist:
             raise serializers.ValidationError(f"Cidade '{cidade_nome}' não encontrada.")
         return Instituicao.objects.create(cidade=cidade, **validated_data)
+
+class RacaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Raca
+        fields = ['id', 'nome']
+
+class GeneroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genero
+        fields = ['id', 'nome']
+
+class DeficienciaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deficiencia
+        fields = ['id', 'nome']

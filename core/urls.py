@@ -1,5 +1,6 @@
 
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     RegiaoListCreateView, RegiaoRetrieveUpdateDestroyView,
     EstadoListCreateView, EstadoRetrieveUpdateDestroyView,
@@ -7,10 +8,17 @@ from .views import (
     InstituicaoListCreateView, InstituicaoRetrieveUpdateDestroyView,
     CidadeBulkCreateView, EstadosByRegiaoList,
     CidadesByEstadoView, GeneroListCreateAPIView,
-    GeneroRetrieveUpdateDestroyAPIView
+    GeneroRetrieveUpdateDestroyAPIView,
+    RacaViewSet, DeficienciaViewSet
     )
 
+
+router = DefaultRouter()
+router.register(r'racas', RacaViewSet, basename='raca')
+router.register(r'deficiencias', DeficienciaViewSet, basename='deficiencia')
+
 urlpatterns = [
+    path('', include(router.urls)),
     # REGIAO
     path('regioes/', RegiaoListCreateView.as_view(), name='regiao-list-create'),
     path('regioes/<int:pk>/', RegiaoRetrieveUpdateDestroyView.as_view(), name='regiao-detail'),
@@ -34,4 +42,5 @@ urlpatterns = [
     # GENERO
     path('generos/', GeneroListCreateAPIView.as_view(), name='genero-list-create'),
     path('generos/<int:pk>/', GeneroRetrieveUpdateDestroyAPIView.as_view(), name='genero-detail'),
+
 ]

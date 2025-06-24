@@ -1,12 +1,13 @@
-from rest_framework import generics, status
+from rest_framework import generics, status, viewsets
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from .permissions import IsAdminOrReadOnly
 from django.db import models
 from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
-from users.serializers import GeneroSerializer
-from users.models import Genero
+from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer
+from users.models import Genero, Raca, Deficiencia
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
@@ -110,3 +111,15 @@ class GeneroRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Genero.objects.all()
     serializer_class = GeneroSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class RacaViewSet(viewsets.ModelViewSet):
+    queryset = Raca.objects.all()
+    serializer_class = RacaSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+
+class DeficienciaViewSet(viewsets.ModelViewSet):
+    queryset = Deficiencia.objects.all()
+    serializer_class = DeficienciaSerializer
+    permission_classes = [IsAdminOrReadOnly]

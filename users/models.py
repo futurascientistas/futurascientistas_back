@@ -1,99 +1,89 @@
-# models.py
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, Group
+from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.db import models
-from django.utils.translation import gettext_lazy as _
+from django.core.validators import RegexValidator, FileExtensionValidator
 import uuid
+from .managers import UserManager
 
-ROLES = [
-    ('estudante', 'Estudante'),
-    ('professor', 'Professor'),
-    ('admin', 'Administrador'),
-    ('avaliadora', 'Avaliadora'),
-]
+# Validadores
+cpf_validator = RegexValidator(regex=r'^\d{11}$', message='CPF deve conter 11 dígitos numéricos.')
+phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message='Telefone inválido.')
+extensoes_aceitas = FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])
 
-class UserManager(BaseUserManager):
-    def create_user(self, cpf, email, nome, senha=None):
-        if not cpf:
-            raise ValueError("O usuário precisa de um CPF")
-        if not email:
-            raise ValueError("O usuário precisa de um email")
+# Modelos auxiliares
+class Genero(models.Model):
+    nome = models.CharField(max_length=100)
+    def __str__(self): return self.nome
 
-        email = self.normalize_email(email)
-        user = self.model(
-            cpf=cpf,
-            email=email,
-            nome=nome
-        )
-        user.set_password(senha)
-        user.save(using=self._db)
-        return user
+class Raca(models.Model):
+    nome = models.CharField(max_length=100)
+    def __str__(self): return self.nome
 
-    def create_superuser(self, cpf, email, nome, senha):
-        user = self.create_user(cpf, email, nome, senha)
-        user.is_staff = True
-        user.is_superuser = True
-        user.role = 'admin'
-        user.save(using=self._db)
+class Deficiencia(models.Model):
+    nome = models.CharField(max_length=100)
+    def __str__(self): return self.nome
 
-        from django.contrib.auth.models import Group
-        admin_group, _ = Group.objects.get_or_create(name='admin')
-        user.groups.add(admin_group)
-
-        return user
-
-
-class User(AbstractBaseUser, PermissionsMixin):
+# Modelo User
+class User(AbstractUser):
+    username = None  
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True, blank=False, null=False)
-    nome = models.CharField(max_length=100, blank=False, null=False)
-    cpf = models.CharField(max_length=11, unique=True, blank=False, null=False)
+    email = models.EmailField('Email', unique=True)
+    cpf = models.CharField('CPF', max_length=11, unique=True, validators=[cpf_validator])
+    telefone = models.CharField('Telefone', max_length=15, blank=True, null=True, validators=[phone_validator])
+    nome = models.CharField('Nome completo', max_length=150, blank=True)
+    data_nascimento = models.DateField('Data de nascimento', null=True, blank=True)
+    pronomes = models.CharField('Pronomes', max_length=50, blank=True)
+
+    # Documentos
+    curriculo_lattes = models.URLField('Currículo Lattes', blank=True)
+    documento_cpf = models.BinaryField(null=True, blank=True)
+    documento_rg = models.BinaryField(null=True, blank=True)
+    foto = models.BinaryField(null=True, blank=True)
+
+    # Endereço
+    cep = models.CharField(max_length=10, blank=True)
+    rua = models.CharField(max_length=150, blank=True)
+    bairro = models.CharField(max_length=100, blank=True)
+    numero = models.CharField(max_length=10, blank=True)
+    complemento = models.CharField(max_length=100, blank=True)
+    cidade = models.CharField(max_length=100, blank=True)
+    estado = models.CharField(max_length=2, blank=True)
+    comprovante_residencia = models.BinaryField(null=True, blank=True)
+
+    # Diversidade
+    raca = models.ForeignKey(Raca, on_delete=models.SET_NULL, null=True, blank=True)
+    genero = models.ForeignKey(Genero, on_delete=models.SET_NULL, null=True, blank=True)
+    deficiencias = models.ManyToManyField(Deficiencia, blank=True)
+    autodeclaracao_racial = models.BinaryField(null=True, blank=True)
+    comprovante_deficiencia = models.BinaryField(null=True, blank=True)
+
+    # Escola
+    nome_escola = models.CharField(max_length=150, blank=True)
+    tipo_ensino = models.CharField(max_length=100, blank=True)
+    cep_escola = models.CharField(max_length=10, blank=True)
+    rua_escola = models.CharField(max_length=150, blank=True)
+    bairro_escola = models.CharField(max_length=100, blank=True)
+    numero_escola = models.CharField(max_length=10, blank=True)
+    complemento_escola = models.CharField(max_length=100, blank=True)
+    cidade_escola = models.CharField(max_length=100, blank=True)
+    estado_escola = models.CharField(max_length=2, blank=True)
+    telefone_escola = models.CharField(max_length=15, blank=True, validators=[phone_validator])
+    telefone_responsavel_escola = models.CharField(max_length=15, blank=True, validators=[phone_validator])
+
+    # Sistema
+    password_needs_reset = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    role = models.CharField(max_length=20, choices=ROLES, default='estudante', verbose_name='Função')
-    bio = models.TextField(blank=True, null=True, verbose_name='Biografia')
-    birth_date = models.DateField(blank=True, null=True, verbose_name='Data de Nascimento')
-
-    password_needs_reset = models.BooleanField(default=False)
-
-    objects = UserManager()
+    is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'cpf'
-    REQUIRED_FIELDS = ['email', 'nome']
-
-    class Meta:
-        verbose_name = 'Usuário'
-        verbose_name_plural = 'Usuários'
-
-    def __str__(self):
-        return f"{self.nome} ({self.email})"
+    REQUIRED_FIELDS = ['email']
+    objects = UserManager()
 
     def save(self, *args, **kwargs):
-        grupos = self.groups.all()
-        if grupos.exists():
-            novo_role = grupos.first().name
-            if self.role != novo_role:
-                self.role = novo_role
-        else:
-            if not self.role:
-                self.role = 'estudante'
-
-        if self.role == 'admin':
-            self.is_staff = True
-            self.is_superuser = True
-        else:
-            self.is_staff = False
-            self.is_superuser = False
-
         super().save(*args, **kwargs)
-
-        group, _ = Group.objects.get_or_create(name=self.role)
-        if group not in self.groups.all():
-            self.groups.clear()
-            self.groups.add(group)
-
-
-class Genero(models.Model):
-    nome = models.CharField(max_length=50, unique=True)
+        if not self.groups.exists():
+            estudante_group, _ = Group.objects.get_or_create(name='estudante')
+            self.groups.add(estudante_group)
 
     def __str__(self):
-        return self.nome
+        return self.email

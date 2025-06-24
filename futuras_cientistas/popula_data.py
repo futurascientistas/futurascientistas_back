@@ -2,7 +2,7 @@ import requests
 import time
 
 BASE_URL = 'http://localhost:8000'
-TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ4MTQyMzY1LCJpYXQiOjE3NDgxMzUxNjUsImp0aSI6IjVkMWM4MDNmNmYzNzRjYTdhYjUzZmE0OTM1ZWI3OGZlIiwidXNlcl9pZCI6IjNkMjc4MGMyLTkwOTAtNDFjMi1iN2NiLWYwZmRlODhjMTA2YyJ9.S3MLMg0ZYsln0R4Tkm319i-nhXBiujVBYpuXNLBS4dA'
+TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzUwNzEyODQwLCJpYXQiOjE3NTA3MDU2NDAsImp0aSI6IjkxOWI1NDNkNDFkNDQ5ZjY4Zjg4NjQ1OWJlNzdhZTY0IiwidXNlcl9pZCI6ImE3MDg1ZDI3LWExNGItNDZmYi04ZTk0LTMyYWFmMGQ4ZTRmNyJ9.27iVhEPF7mq3YdC-2Vl3XEIUfZNa87AGz_KcMOYNGNg'
 HEADERS = {
     'Authorization': f'Bearer {TOKEN}',
     'Content-Type': 'application/json',
@@ -77,9 +77,13 @@ print("\nPopulação concluída!")
 print("\nPopulando gêneros (um por um)...")
 
 generos = [
-    "Feminino",
-    "Masculino",
-    "Não binário",
+    "Mulher cisgênero",
+    "Mulher transgênero",
+    "Homem cisgênero",
+    "Homem transgênero",
+    "Pessoa não binária",
+    "Pessoa agênero",
+    "Pessoa intersexo",
     "Prefere não dizer",
     "Outro"
 ]
@@ -96,3 +100,45 @@ for genero in generos:
         print(f"ℹ Gênero '{genero}' já existe.")
     else:
         print(f"❌ Erro ao criar gênero '{genero}': {response.status_code} - {response.text}")
+
+
+
+def criar_itens(lista, endpoint, nome_classe):
+    print(f"\n📥 Populando {nome_classe}s...")
+
+    for item in lista:
+        if not item:
+            print(f"⚠ Nome inválido para {nome_classe}. Ignorado.")
+            continue
+
+        payload = {"nome": item}
+
+        try:
+            response = requests.post(f"{BASE_URL}/api/{endpoint}/", json=payload, headers=HEADERS)
+
+            if response.status_code in (200, 201):
+                print(f"✔ {nome_classe} '{item}' criado.")
+            elif response.status_code == 400 and "unique" in response.text.lower():
+                print(f"ℹ {nome_classe} '{item}' já existe.")
+            else:
+                print(f"❌ Erro ao criar {nome_classe} '{item}': {response.status_code} - {response.text}")
+
+        except Exception as e:
+            print(f"🚫 Falha ao processar '{item}': {str(e)}")
+racas = [
+    "Branca",
+    "Preta",
+    "Parda",
+    "Amarela",
+    "Indígena"
+]
+deficiencias = [
+    "Deficiência física",
+    "Deficiência auditiva",
+    "Deficiência visual",
+    "Deficiência intelectual",
+    "Deficiência múltipla",
+    "Transtorno do espectro autista (TEA)"
+]
+criar_itens(racas, "racas", "Raça")
+criar_itens(deficiencias, "deficiencias", "Deficiência")
