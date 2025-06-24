@@ -23,3 +23,20 @@ class IsAdminRole(BasePermission):
         
         roles = {group.name for group in user.groups.all()}
         return 'admin' in roles
+    
+class IsOwnerOrAdminOrAvaliadora(BasePermission):
+    """
+    Permite acesso se o usuário for:
+    - dona da inscrição (obj.usuario),
+    - admin,
+    - ou avaliadora do projeto.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_superuser or request.user.groups.filter(name='admin').exists():
+            return True
+
+        if request.user.groups.filter(name='avaliadora').exists():
+            return obj.projeto.tutora == request.user
+
+        return obj.usuario == request.user

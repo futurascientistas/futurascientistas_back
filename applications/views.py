@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .services import validar_e_retornar_inscricao, atualizar_inscricao
 from .serializers import ApplicationSerializer
+from users.permissions import *
 
 
 from .serializers import ApplicationSerializer
@@ -28,10 +29,11 @@ class InscreverProjetoView(generics.CreateAPIView):
         
 class EditarInscricaoView(generics.UpdateAPIView):
     serializer_class = ApplicationSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrAvaliadora]
 
     def get_object(self):
-        return validar_e_retornar_inscricao(self.request.user, self.kwargs["pk"])
+        return validar_e_retornar_inscricao(self.request.user, self.kwargs["application_id"])
+
 
     def perform_update(self, serializer):
         atualizar_inscricao(self.request.user, serializer.instance, serializer.validated_data)

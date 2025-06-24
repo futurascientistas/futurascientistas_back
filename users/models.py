@@ -87,3 +87,7 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+
+    @property
+    def roles(self):
+        return list(self.groups.values_list('name', flat=True))
