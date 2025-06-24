@@ -41,7 +41,7 @@ def atualizar_inscricao(user, instance, validated_data):
 
     inscricao.save()
 
-def inscrever_usuario_em_projeto(user, project_id):
+def inscrever_usuario_em_projeto(user, project_id, dados=None, arquivos=None):
     projeto = Project.objects.get(pk=project_id)
     agora = timezone.now()
 
@@ -51,13 +51,23 @@ def inscrever_usuario_em_projeto(user, project_id):
     if Application.objects.filter(usuario=user, projeto=projeto).exists():
         raise PermissionDenied("Você já está inscrita neste projeto.")
 
-    inscricao = Application.objects.create(usuario=user, projeto=projeto)
-    
+    inscricao = Application(usuario=user, projeto=projeto)
+
+    if dados:
+        for attr, value in dados.items():
+            setattr(inscricao, attr, value)
+
+    if arquivos:
+        for attr, file in arquivos.items():
+            if hasattr(file, 'read'):
+                setattr(inscricao, attr, file.read())
+
+    inscricao.save()
+
     status_antigo = None
     status_novo = inscricao.status
-    
     registrar_log_status_inscricao(inscricao, status_antigo, status_novo, user)
-    
+
     return inscricao
 
 

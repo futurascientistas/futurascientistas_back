@@ -1,10 +1,14 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.utils import timezone
 import uuid
 
 from projects.models import Project
+
+phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message='Telefone inválido.')
+
 
 class Application(models.Model):
     STATUS_ESCOLHAS = [
@@ -19,7 +23,64 @@ class Application(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     projeto = models.ForeignKey(Project, on_delete=models.CASCADE)
     criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_ESCOLHAS, default='rascunho')
+   
+    # Identificação e Contato
+    como_soube_programa = models.TextField(blank=True)
+    telefone_responsavel = models.CharField(max_length=15, blank=True, validators=[phone_validator])
+    observacoes = models.TextField(blank=True)
+    curriculo_lattes_url = models.URLField(blank=True)
+
+    # Vaga e Acessibilidade
+    cota_desejada = models.CharField(max_length=100, blank=True)
+    tipo_deficiencia = models.CharField(max_length=200, blank=True)
+    necessita_material_especial = models.BooleanField(default=False)
+    tipo_material_necessario = models.TextField(blank=True)
+    laudo_medico_deficiencia = models.BinaryField(null=True, blank=True)
+    concorrer_reserva_vagas = models.BooleanField(default=False)
+    autodeclaracao_racial = models.BinaryField(null=True, blank=True)
+    mulher_trans = models.BooleanField(default=False)
+
+    # Documentação
+    boletim_escolar = models.BinaryField(null=True, blank=True)
+    termo_autorizacao = models.BinaryField(null=True, blank=True)
+    rg_frente = models.BinaryField(null=True, blank=True)
+    rg_verso = models.BinaryField(null=True, blank=True)
+    cpf_anexo = models.BinaryField(null=True, blank=True)
+    declaracao_vinculo = models.BinaryField(null=True, blank=True)
+    documentacao_comprobatoria_lattes = models.BinaryField(null=True, blank=True)
+
+    # Trajetória Acadêmica e Científica
+    perfil_academico = models.CharField(max_length=150, blank=True)
+    docencia_superior = models.CharField(max_length=150, blank=True)
+    docencia_medio = models.CharField(max_length=150, blank=True)
+    orientacao_ic = models.CharField(max_length=150, blank=True)
+    feira_ciencias = models.BooleanField(default=False)
+    livro_publicado = models.BooleanField(default=False)
+    capitulo_publicado = models.BooleanField(default=False)
+    periodico_indexado = models.BooleanField(default=False)
+    anais_congresso = models.BooleanField(default=False)
+    curso_extensao = models.BooleanField(default=False)
+    curso_capacitacao = models.BooleanField(default=False)
+    orientacoes_estudantes = models.BooleanField(default=False)
+    participacoes_bancas = models.BooleanField(default=False)
+    apresentacao_oral = models.BooleanField(default=False)
+    premiacoes = models.BooleanField(default=False)
+    missao_cientifica = models.BooleanField(default=False)
+
+    # Declarações Finais
+    aceite_declaracao_veracidade = models.BooleanField(default=False)
+    aceite_requisitos_tecnicos = models.BooleanField(default=False)
+
+    portugues = models.DecimalField("Nota em Português", max_digits=4, decimal_places=2, null=True, blank=True)
+    matematica = models.DecimalField("Nota em Matemática", max_digits=4, decimal_places=2, null=True, blank=True)
+    biologia = models.DecimalField("Nota em Biologia", max_digits=4, decimal_places=2, null=True, blank=True)
+    quimica = models.DecimalField("Nota em Química", max_digits=4, decimal_places=2, null=True, blank=True)
+    fisica = models.DecimalField("Nota em Física", max_digits=4, decimal_places=2, null=True, blank=True)
+    historia = models.DecimalField("Nota em História", max_digits=4, decimal_places=2, null=True, blank=True)
+    geografia = models.DecimalField("Nota em Geografia", max_digits=4, decimal_places=2, null=True, blank=True)
+
 
     def clean(self):
         now = timezone.now()

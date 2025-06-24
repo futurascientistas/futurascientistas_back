@@ -166,6 +166,7 @@ class UserUpdateView(generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdminOrEvaluator]
+    parser_classes = [MultiPartParser, FormParser] 
 
     def get_object(self):
         return get_object_or_404(User, pk=self.kwargs.get('pk'))
