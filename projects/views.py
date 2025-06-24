@@ -7,7 +7,7 @@ from .serializers import ProjectSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .filters import ProjectFilter
-from .services import importar_planilha_projetos
+from .services import importar_planilha_projetos, registrar_log_status
 from django.utils import timezone
 
 class ProjectCreateAPIView(generics.CreateAPIView):
@@ -16,7 +16,14 @@ class ProjectCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAdminUser]
 
     def perform_create(self, serializer):
-        serializer.save(criado_por=self.request.user.nome + " (" + self.request.user.email + ")")
+        projeto = serializer.save(criado_por=self.request.user.nome + " (" + self.request.user.email + ")")
+       
+        registrar_log_status(
+            projeto=projeto,
+            status_anterior=None,  
+            status_novo=projeto.status,
+            usuario=self.request.user
+        )
 
 class ProjectRetrieveAPIView(generics.RetrieveAPIView):
     queryset = Project.objects.all()
@@ -32,7 +39,6 @@ class ProjectRetrieveAPIView(generics.RetrieveAPIView):
             queryset = queryset.filter(ativo=True)
 
         return queryset
-
 
 class ProjectListAPIView(generics.ListAPIView):
     serializer_class = ProjectSerializer
@@ -53,9 +59,15 @@ class ProjectUpdateAPIView(generics.UpdateAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [permissions.IsAdminUser]
-
+    
     def perform_update(self, serializer):
-        serializer.save(atualizado_por= self.request.user.nome + " (" + self.request.user.email + ")")
+        projeto_antigo = self.get_object()
+        status_antigo = projeto_antigo.status
+
+        projeto = serializer.save(atualizado_por=f"{self.request.user.nome} ({self.request.user.email})")
+        status_novo = projeto.status
+
+        registrar_log_status(projeto, status_antigo, status_novo, self.request.user)
 
 class ProjectDeleteAPIView(generics.DestroyAPIView):
     queryset = Project.objects.all()
@@ -87,7 +99,7 @@ class ImportarProjetosView(APIView):
 
         importacao = ImportacaoProjeto.objects.create(arquivo=arquivo)
         try:
-            importar_planilha_projetos(importacao)
+            importar_planilha_projetos(importacao, self.request)
         except Exception as e:
             return Response({"erro": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.db import transaction
-from .models import Project
+from .models import *
 from core.models import Regiao, Estado, Cidade
 from django.db.models import Q
 import pandas as pd
@@ -17,6 +17,19 @@ def preprocess_dataframe(caminho_arquivo):
     df = pd.read_excel(caminho_arquivo)
     df.columns = df.columns.str.strip()
     return df
+
+def registrar_log_status(projeto, status_anterior, status_novo, usuario=None):
+    from .models import ProjectStatusLog 
+
+    nome_email = f"{usuario.nome} ({usuario.email})" if usuario else None
+
+    if status_anterior != status_novo:
+        ProjectStatusLog.objects.create(
+            projeto=projeto,
+            status_anterior=status_anterior,
+            status_novo=status_novo,
+            modificado_por=nome_email
+        )
 
 def parse_linha_para_dados(row, campos_validos, campos_datetime):
     dados = {}
@@ -36,7 +49,7 @@ def parse_linha_para_dados(row, campos_validos, campos_datetime):
     dados['cidades_aceitas'] = parse_multivalor(row.get('cidades_aceitas'))
     return dados
 
-def importar_planilha_projetos(importacao_obj):
+def importar_planilha_projetos(importacao_obj, request):
     df = preprocess_dataframe(importacao_obj.arquivo.path)
     campos_validos = [f.name for f in Project._meta.get_fields()]
     campos_datetime = ['data_inicio', 'data_fim', 'inicio_inscricoes', 'fim_inscricoes']
@@ -97,6 +110,13 @@ def importar_planilha_projetos(importacao_obj):
             proj.regioes_aceitas.set(regioes_objs)
             proj.estados_aceitos.set(estados_objs)
             proj.cidades_aceitas.set(cidades_objs)
+
+            registrar_log_status(
+                projeto=proj,
+                status_anterior=None,  
+                status_novo=proj.status,
+                usuario=request.user
+            )
 
         importacao_obj.linhas_lidas = total_linhas
         importacao_obj.projetos_criados = len(projetos)

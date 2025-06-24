@@ -27,7 +27,7 @@ urlpatterns = [
     path('grupos/<str:group_name>/membros/', GroupMembersAPIView.as_view(), name='grupo-membros'),
     path('grupos/gerenciar/', GerenciarGrupoAPIView.as_view(), name='gerenciar-grupo'),
 
-    # Anexos de um usuario
+    # Anexos de user
     path('<uuid:user_id>/anexo/<str:field_name>/', AnexoDownloadView.as_view()),
 
 

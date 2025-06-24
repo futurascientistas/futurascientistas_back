@@ -18,6 +18,24 @@ STATUS_PROJETO = [
     ('finalizado', 'Finalizado'),
 ]
 
+class ProjectStatusLog(models.Model):
+    projeto = models.ForeignKey('Project', on_delete=models.CASCADE, related_name='logs_status')
+    status_anterior = models.CharField(max_length=30, null=True, blank=True)
+    status_novo = models.CharField(max_length=30)
+    status_anterior_display = models.CharField(max_length=30, null=True, blank=True)
+    status_novo_display = models.CharField(max_length=30)
+    modificado_por = models.CharField(max_length=255, null=True, blank=True, verbose_name='Modificado por (nome e e-mail)')
+    data_modificacao = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        get_display = lambda code: dict(STATUS_PROJETO).get(code, code or '')
+        self.status_anterior_display = get_display(self.status_anterior)
+        self.status_novo_display = get_display(self.status_novo)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.projeto.nome} | {self.status_anterior_display} → {self.status_novo_display} por {self.modificado_por or 'Desconhecido'} em {self.data_modificacao:%d/%m/%Y %H:%M}"
+
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nome = models.CharField(max_length=255, verbose_name='Nome')
