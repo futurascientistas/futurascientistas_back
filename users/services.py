@@ -137,3 +137,28 @@ def resetar_senha_usuario(user):
     user.password_needs_reset = True
     user.save()
     return nova_senha
+
+def get_valid_group(group_names):
+    """
+    Retorna o primeiro grupo válido da lista (que não seja 'admin' nem 'avaliadora').
+    Se não houver válido, retorna o grupo 'estudante'.
+    """
+    if not group_names:
+        return Group.objects.get_or_create(name='estudante')[0]
+
+    if isinstance(group_names, (str, Group)):
+        group_names = [group_names]
+
+    for group in group_names:
+        name = None
+        if isinstance(group, Group):
+            name = group.name.lower()
+        elif isinstance(group, str):
+            name = group.lower()
+
+        if name and name not in ['admin', 'avaliadora']:
+            grupo = Group.objects.filter(name__iexact=name).first()
+            if grupo:
+                return grupo
+
+    return Group.objects.get_or_create(name='estudante')[0]

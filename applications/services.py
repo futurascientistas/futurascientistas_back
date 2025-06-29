@@ -22,6 +22,15 @@ def validar_e_retornar_inscricao(user, pk):
 
     return inscricao
 
+def validar_unica_inscricao_no_ciclo(user, projeto):
+    existe = Application.objects.filter(
+        usuario=user,
+        projeto__inicio_inscricoes=projeto.inicio_inscricoes,
+        projeto__fim_inscricoes=projeto.fim_inscricoes
+    ).exists()
+    if existe:
+        raise PermissionDenied("Você já se inscreveu em um projeto neste ciclo de inscrições.")
+
 
 def atualizar_inscricao(user, instance, validated_data):
     inscricao = validar_e_retornar_inscricao(user, instance.pk)
@@ -47,9 +56,11 @@ def inscrever_usuario_em_projeto(user, project_id, dados=None, arquivos=None):
 
     if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
         raise PermissionDenied("Inscrição não permitida: fora do período de inscrição.")
-
+    
     if Application.objects.filter(usuario=user, projeto=projeto).exists():
         raise PermissionDenied("Você já está inscrita neste projeto.")
+    
+    validar_unica_inscricao_no_ciclo(user, projeto)
 
     inscricao = Application(usuario=user, projeto=projeto)
 

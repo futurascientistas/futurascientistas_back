@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import Group
 from .models import User, Genero, Raca, Deficiencia
 from django.contrib.auth.models import Permission
+from .services import get_valid_group
 
 class UserSerializer(serializers.ModelSerializer):
     groups = serializers.SlugRelatedField(
@@ -68,8 +69,8 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
         user.save()
 
-        if groups is not None:
-            user.groups.set(groups)
+        grupo_final = get_valid_group(groups)
+        user.groups.set([grupo_final])
 
         if user_permissions is not None:
             user.user_permissions.set(user_permissions)
