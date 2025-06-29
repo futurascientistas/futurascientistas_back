@@ -6,7 +6,7 @@ from django.dispatch import receiver
 from django.contrib.auth.models import Group
 from .models import User
 
-GRUPOS_PADROES = ['admin', 'estudante', 'avaliador', 'professor']
+GRUPOS_PADROES = ['admin', 'estudante', 'avaliadora', 'professora']
 
 @receiver(post_save, sender=User)
 def user_created(sender, instance, created, **kwargs):
