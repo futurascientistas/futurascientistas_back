@@ -1,9 +1,5 @@
 # futuras-cientistas
 
-# Projeto Next.js
-
-Este é um projeto desenvolvido com **Next.js**.
-
 ## 📂 Estrutura
 Pasta principal do Frontend:
 
