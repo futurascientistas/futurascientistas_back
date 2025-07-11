@@ -1,0 +1,217 @@
+.card {
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.cardHeader {
+  padding: 1.5rem 1.5rem 0 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .cardHeader {
+    padding: 1rem 1rem 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardHeader {
+    padding: 0.75rem 0.75rem 0 0.75rem;
+  }
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .cardTitle {
+    font-size: 1.125rem;
+  }
+}
+
+.cardContent {
+  padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .cardContent {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardContent {
+    padding: 0.75rem;
+  }
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .form {
+    gap: 1rem;
+  }
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .input {
+    padding: 0.625rem 0.75rem;
+    font-size: 1rem;
+  }
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ec4899;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+}
+
+.fileInput {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .fileInput {
+    padding: 0.625rem 0.75rem;
+  }
+}
+
+.fileHint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  margin-bottom: 0;
+}
+
+.gridTwo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.gridThree {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .gridTwo,
+  .gridThree {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  .gridThree {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gridThree > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+@media (max-width: 480px) {
+  .buttonContainer {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+.submitButton {
+  background-color: #ec4899;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+@media (max-width: 480px) {
+  .submitButton {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+.submitButton:hover {
+  background-color: #be185d;
+}
+
+.backButton {
+  background-color: #6b7280;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+@media (max-width: 480px) {
+  .backButton {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    order: -1; /* Coloca o botão voltar primeiro em mobile */
+  }
+}
+
+.backButton:hover {
+  background-color: #4b5563;
+}

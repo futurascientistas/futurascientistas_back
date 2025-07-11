@@ -1,0 +1,50 @@
+# Node modules (dependências)
+node_modules/
+
+# Arquivos de build do Next.js
+.next/
+out/
+
+# Arquivos de log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Arquivos de ambiente (NUNCA versionar senhas, chaves, etc)
+.env
+.env.*
+!.env.example
+
+# Diretórios de cache
+.cache/
+.vercel/
+dist/
+coverage/
+
+# Mac OS
+.DS_Store
+
+# VS Code settings (opcional, só se quiser ignorar configs pessoais)
+.vscode/
+
+# Pastas temporárias do sistema/IDE
+*.swp
+*.swo
+
+# Arquivos de saída do TypeScript
+*.tsbuildinfo
+
+# Arquivos de exportação temporários (ex: ao exportar estático)
+export/
+
+# Pastas do Playwright/Cypress (se usar testes e2e)
+playwright-report/
+test-results/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Arquivos do Storybook (se usar)
+.storybook-out/
+storybook-static/

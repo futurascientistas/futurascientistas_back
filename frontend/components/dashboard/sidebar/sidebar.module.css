@@ -1,0 +1,214 @@
+.sidebar {
+  position: fixed;
+  top: 60px; /* Altura do header */
+  left: 0;
+  height: calc(100vh - 60px); /* Altura total menos o header */
+  background: #e085b6;
+  color: white;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Desktop - Sidebar expandido */
+.sidebarExpanded {
+  width: 280px;
+  transform: translateX(0);
+}
+
+/* Desktop - Sidebar contraído */
+.sidebarCollapsed {
+  width: 70px;
+  transform: translateX(0);
+}
+
+/* Mobile - Sidebar oculto por padrão */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+    transform: translateX(-100%);
+    top: 60px;
+    height: calc(100vh - 60px);
+  }
+
+  .sidebarExpanded {
+    transform: translateX(0);
+  }
+
+  .sidebarCollapsed {
+    transform: translateX(-100%);
+  }
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 50px;
+}
+
+.toggleButton {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile - Botão hambúrguer fixo quando sidebar está fechado */
+.mobileToggle {
+  position: fixed;
+  top: 75px; /* Abaixo do header */
+  left: 15px;
+  width: 44px;
+  height: 44px;
+  background: #e085b6;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  z-index: 1001;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mobileToggle:hover {
+  background: #d16ba3;
+}
+
+.mobileToggleVisible {
+  display: flex;
+}
+
+.mobileToggleHidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileToggle {
+    display: flex;
+  }
+}
+
+.menuList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-top: 5px;
+  height: calc(100% - 50px); /* Altura total menos o header do sidebar */
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Esconder scrollbar */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+/* Esconder scrollbar no WebKit (Chrome, Safari, Edge) */
+.menuList::-webkit-scrollbar {
+  display: none;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menuItem.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.menuIcon {
+  width: 20px;
+  height: 20px;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.menuText {
+  font-size: 15px;
+  font-weight: 400;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Item "Sair" no final */
+.menuItemLogout {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Desktop - Texto oculto quando contraído */
+@media (min-width: 769px) {
+  .sidebarCollapsed .menuText {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .sidebarCollapsed .menuIcon {
+    margin-right: 0;
+  }
+
+  .sidebarCollapsed .sidebarHeader {
+    justify-content: center;
+    padding: 10px 8px;
+  }
+
+  .sidebarCollapsed .menuItem {
+    padding: 14px 0;
+    justify-content: center;
+  }
+}
+
+/* Overlay para mobile */
+.overlay {
+  position: fixed;
+  top: 60px; /* Abaixo do header */
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 60px);
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.overlayVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (min-width: 769px) {
+  .overlay {
+    display: none;
+  }
+}

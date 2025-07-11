@@ -1,0 +1,25 @@
+.container {
+  margin-left: var(--sidebar-width, 280px);
+  margin-top: 60px;
+  padding: 1.5rem;
+  min-height: calc(100vh - 60px);
+  transition: margin-left 0.3s ease;
+  width: calc(100vw - var(--sidebar-width, 280px));
+  box-sizing: border-box;
+}
+
+/* Mobile - Sem margem lateral e largura total */
+@media (max-width: 768px) {
+  .container {
+    margin-left: 0;
+    padding: 1rem;
+    padding-top: 1.5rem;
+    width: 100vw;
+  }
+}
+
+.contentWrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}

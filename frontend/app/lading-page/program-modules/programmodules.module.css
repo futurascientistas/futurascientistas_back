@@ -1,0 +1,129 @@
+.section {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 16px 0 16px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+  color: #181818;
+}
+
+.subtitle {
+  text-align: center;
+  color: #767676;
+  font-size: 1.1rem;
+  margin-bottom: 36px;
+}
+
+.modules {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 1px 14px 0 rgba(100, 104, 123, 0.08);
+  padding: 30px 24px;
+  width: 100%;
+  max-width: 340px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 4px 24px 0 rgba(100, 104, 123, 0.14);
+}
+
+.cardTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #181818;
+}
+
+.cardSubtitle {
+  font-size: 0.98rem;
+  color: #bdbdbd;
+  margin-bottom: 14px;
+}
+
+.cardText {
+  color: #323232;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.opportunities {
+  margin: 0 auto;
+  margin-bottom: 60px;
+  margin-top: 12px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 1px 14px 0 rgba(100, 104, 123, 0.08);
+  padding: 34px 22px;
+  max-width: 650px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.iconWrapper {
+  width: 80px;
+  height: 80px;
+  background: #E085B6;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.oppTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+  color: #181818;
+  text-align: center;
+}
+
+.oppText {
+  color: #323232;
+  font-size: 1.08rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .modules {
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+  }
+  .card {
+    max-width: 100%;
+    width: 100%;
+  }
+  .opportunities {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: 98%;
+  }
+}
