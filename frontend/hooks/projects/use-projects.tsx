@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import type { Project } from "@/types/project"
-import type { FiltrosProjects } from "../types/project"
+import type { FiltrosProjects } from "../../types/project"
 
 export function useProjects() {
   const [projetos, setProjetos] = useState<Project[]>([])
@@ -16,6 +16,8 @@ export function useProjects() {
     setIsLoading(true);
     setError(null);
     setSuccess(null)
+
+    console.log("Project hook", projeto)
 
     try {
       const res = await fetch('/api/projetos/criar', {

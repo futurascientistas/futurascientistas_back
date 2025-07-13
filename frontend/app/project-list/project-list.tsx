@@ -15,7 +15,7 @@ import {
   ChevronUp
 } from "lucide-react";
 import styles from "./projectlist.module.css";
-import { useProjects } from "@/hooks/use-projects";
+import { useProjects } from "@/hooks/projects/use-projects";
 import { useEstados } from "@/hooks/use-estados";
 import { useUsers } from "@/hooks/use-users";
 import type { FiltrosProjects, Project } from "@/types/project";
@@ -97,12 +97,10 @@ export default function ProjectList() {
   const handleEditProject = (projeto: Project) => {
     setProjetoEmEdicao(projeto);
     setModoEdicao(true);
-    // Aqui você pode implementar a lógica de edição
-    console.log("Editando projeto:", projeto);
 
     // Fechar o modal de detalhes
     handleCloseModal();
-    router.push("/project-edit?id=" + projeto.id);
+    router.push(`/project-edit/${projeto.id}`);
   };
 
   const handleEditClick = (e: React.MouseEvent, projeto: Project) => {
@@ -134,6 +132,8 @@ export default function ProjectList() {
 
   const sortedProjetos = React.useMemo(() => {
     if (!sortField) return projetos
+
+    console.log("List projects", projetos)
 
     return [...projetos].sort((a, b) => {
       let aValue: string | number
@@ -487,7 +487,7 @@ export default function ProjectList() {
                     <td className={styles.tableCell}>
                       <div className={styles.tutorInfo} key={projeto.tutor?.id+''+projeto.tutor?.name}>
                         {/* <User size={14} className={styles.tutorIcon} /> */}
-                        {projeto.tutor.name}
+                        {/* {projeto.tutor.name} */}
                       </div>
                     </td>
                     <td className={styles.tableCell}>

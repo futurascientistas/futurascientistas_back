@@ -9,50 +9,72 @@ export class EstadoApiAdapter {
   constructor(private token: string) {}
 
   async listarEstados(): Promise<Estado[]> {
-    const response = await axiosInstance.get(API_ENDPOINTS.ESTADOS, {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.ESTADOS, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        }
+      });
 
-    var result = response.data.map(this.mapEstado);
+      var result = response.data.map(this.mapEstado);
+      return result;
 
-    return result;
+    } catch (ex) {
+      console.log(ex)
+    }
+    return null;
+    
   }
 
   async listarCidadesPorEstado(uf: string): Promise<Estado> {
-    const response = await axiosInstance.get(API_ENDPOINTS.cidadesPorEstado(uf), {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.cidadesPorEstado(uf), {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        }
+      });
 
-    if (!response.data) {
-      throw new Error("Nenhuma cidade encontrada para o estado informado.");
+      if (!response.data) {
+        throw new Error("Nenhuma cidade encontrada para o estado informado.");
+      }
+
+      const cidades = response.data;
+      return cidades.map((cidade: any) => this.mapCidade(cidade));
+    } catch(ex) {
+      console.log("Exception", ex)
     }
-
-    const cidades = response.data;
-    return cidades.map((cidade: any) => this.mapCidade(cidade));
   }
 
   async obterEstadoPorId(id: number): Promise<Estado> {
-    const response = await axiosInstance.get(API_ENDPOINTS.estadoPorID(id), {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
+    if(!id) return null;
 
-    return this.mapEstado(response.data);
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.estadoPorID(id), {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
+
+      return this.mapEstado(response.data);
+    } catch(ex) {
+      console.log("Exception", ex)
+    }
   }
 
   async obterCidadePorId(id: number): Promise<Cidade> {
-    const response = await axiosInstance.get(API_ENDPOINTS.cidadePorID(id), {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
+    if(!id) return null;
+    
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.cidadePorID(id), {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
 
-    return this.mapCidade(response.data)
+      return this.mapCidade(response.data)
+    } catch(ex) {
+      console.log("Exception", ex)
+    }
   }
 
 

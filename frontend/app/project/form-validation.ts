@@ -15,7 +15,7 @@ export class FormValidator {
     }
 
     if (!data.descricao.trim()) {
-      errors.push({ field: "descricao", message: "Descrição é obrigatória" })
+      errors.push({ field: "descricao", message: "Resumo é obrigatório" })
     }
 
     if (!data.formato.trim()) {

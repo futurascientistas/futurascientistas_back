@@ -4,6 +4,9 @@ const API_ENDPOINTS = {
   PROJETOS_CRIAR: '/projetos/criar/',
   REGIOES: '/api/regioes/',
   ESTADOS: '/api/estados/',
+
+  projetoPorID: (id: string) => `${process.env.NEXT_PUBLIC_API_URL}/projetos/projeto/${id}/`,
+  atualizarProjeto: (id: string) => `${process.env.NEXT_PUBLIC_API_URL}/projetos/atualizar/${id}/`,
   
   regiaoPorID:(id: number) => `${process.env.NEXT_PUBLIC_API_URL}/api/regioes/${id}/`,
   estadoPorID: (id: number) => `${process.env.NEXT_PUBLIC_API_URL}/api/estados/${id}/`,

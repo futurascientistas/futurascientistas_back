@@ -18,36 +18,36 @@ export async function GET() {
   const adapter = new ProjectApiAdapter(token);
   const projetos = await adapter.listarProjetos();
 
-  const estadoAdapter = new EstadoApiAdapter(token);
-  const regiaoAdapter = new RegiaoApiAdapter(token);
-  const userAdapter = new UserApiAdapter(token);
-  const projetosComEstado = await Promise.all(
-    projetos.map(async (projeto) => {
-      const regiao = projeto.regiaoID
-        ? await regiaoAdapter.obterRegiaoPorId(projeto.regiaoID)
-        : undefined;
+  // const estadoAdapter = new EstadoApiAdapter(token);
+  // const regiaoAdapter = new RegiaoApiAdapter(token);
+  // const userAdapter = new UserApiAdapter(token);
+  // const projetosComEstado = await Promise.all(
+  //   projetos.map(async (projeto) => {
+  //     const regiao = projeto.regiaoID
+  //       ? await regiaoAdapter.obterRegiaoPorId(projeto.regiaoID)
+  //       : undefined;
 
-      const estado = projeto.estadoID
-        ? await estadoAdapter.obterEstadoPorId(projeto.estadoID)
-        : undefined;
+  //     const estado = projeto.estadoID
+  //       ? await estadoAdapter.obterEstadoPorId(projeto.estadoID)
+  //       : undefined;
 
-      const cidade = projeto.cidadeID
-        ? await estadoAdapter.obterCidadePorId(projeto.cidadeID)
-        : undefined;
+  //     const cidade = projeto.cidadeID
+  //       ? await estadoAdapter.obterCidadePorId(projeto.cidadeID)
+  //       : undefined;
 
-      const tutor = projeto.tutorID
-      ? await userAdapter.obterUserPorId(projeto.tutorID)
-      : undefined;
+  //     const tutor = projeto.tutorID
+  //     ? await userAdapter.obterUserPorId(projeto.tutorID)
+  //     : undefined;
 
-      return {
-        ...projeto,
-        regiao,
-        estado,
-        cidade,
-        tutor
-      };
-    })
-  );
+  //     return {
+  //       ...projeto,
+  //       regiao,
+  //       estado,
+  //       cidade,
+  //       tutor
+  //     };
+  //   })
+  // );
 
-  return NextResponse.json(projetosComEstado);
+  return NextResponse.json(projetos);
 }
