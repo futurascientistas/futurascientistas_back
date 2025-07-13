@@ -48,7 +48,7 @@ export default function ModalDetalhesProjeto({
 
         <div className={styles.content}>
           <div className={styles.section}>
-            <h3 className={styles.projectTitle}>{projeto.titulo}</h3>
+            <h3 className={styles.projectTitle}>{projeto.nome}</h3>
             <div className={styles.institutionBadge}>
               <Building size={16} />
               {projeto.instituicao}
@@ -77,7 +77,7 @@ export default function ModalDetalhesProjeto({
                 <User size={16} />
                 Tutor
               </div>
-              <div className={styles.infoValue}>{projeto.tutora.nome}</div>
+              <div className={styles.infoValue}>{projeto.tutor.name}</div>
             </div>
 
             <div className={styles.infoItem}>
@@ -112,25 +112,23 @@ export default function ModalDetalhesProjeto({
             </div>
           </div>
 
-          {projeto.regioesAceitas.length > 0 && (
-            <div className={styles.section}>
-              <div className={styles.infoLabel}>Regiões Aceitas</div>
-              <div className={styles.regionsList}>
-                {projeto.regioesAceitas.map((regiao, index) => (
-                  <span key={index} className={styles.regionBadge}>
-                    {regiao}
-                  </span>
-                ))}
-              </div>
+          
+          <div className={styles.section}>
+            <div className={styles.infoLabel}>Região</div>
+            <div className={styles.regionsList}>
+              <span key={projeto.regiao.id} className={styles.regionBadge}>
+                {projeto.regiao.nome}
+              </span>
             </div>
-          )}
+          </div>
+          
 
           <div className={styles.section}>
             <div className={styles.infoLabel}>
               <FileText size={16} />
-              Descrição do Projeto
+              Resumo do Projeto
             </div>
-            <div className={styles.description}>{projeto.resumo}</div>
+            <div className={styles.description}>{projeto.descricao}</div>
           </div>
         </div>
 
