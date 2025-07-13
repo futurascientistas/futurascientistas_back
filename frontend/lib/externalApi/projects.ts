@@ -102,15 +102,22 @@ export class ProjectApiAdapter {
     var regiaoAPI = new RegiaoApiAdapter(token);
     var estadoAPI = new EstadoApiAdapter(token);
     var userAPI = new UserApiAdapter(token);
-    
-    const [regiaoObj, estadoObj, cidadeObj, tutorObj] = await Promise.all([
-      regiaoAPI.obterRegiaoPorId(regiao),
-      estadoAPI.obterEstadoPorId(estado),
-      estadoAPI.obterCidadePorId(cidade),
-      userAPI.obterUserPorId(tutor)
-    ])
-    
 
+    const getSafe = async (fn: () => Promise<any>) => {
+      try {
+        return await fn();
+      } catch (e) {
+        console.warn("Erro ao buscar dados relacionados:", e);
+        return null;
+      }
+    };
+
+    const regiaoObj = regiao ? await getSafe(() => regiaoAPI.obterRegiaoPorId(regiao)) : null;
+    const estadoObj = estado ? await getSafe(() => estadoAPI.obterEstadoPorId(estado)) : null;
+    const cidadeObj = cidade ? await getSafe(() => estadoAPI.obterCidadePorId(cidade)) : null;
+    const tutorObj = tutor ? await getSafe(() => userAPI.obterUserPorId(tutor)) : null;
+
+    
     var proj = {
       id: data.id,
       nome: data.nome,

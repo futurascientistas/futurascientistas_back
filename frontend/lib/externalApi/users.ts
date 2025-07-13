@@ -1,7 +1,6 @@
 import axiosInstance from "@/lib/axios";
 import { User } from "@/types/user";
 import API_ENDPOINTS from "./endpoints";
-import { profile } from "console";
 
 export class UserApiAdapter {
   constructor(private token: string) {}

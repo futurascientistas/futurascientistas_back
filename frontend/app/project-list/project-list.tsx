@@ -486,8 +486,7 @@ export default function ProjectList() {
                     </td>
                     <td className={styles.tableCell}>
                       <div className={styles.tutorInfo} key={projeto.tutor?.id+''+projeto.tutor?.name}>
-                        {/* <User size={14} className={styles.tutorIcon} /> */}
-                        {/* {projeto.tutor.name} */}
+                        {projeto.tutor.name}
                       </div>
                     </td>
                     <td className={styles.tableCell}>
