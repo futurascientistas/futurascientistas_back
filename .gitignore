@@ -48,3 +48,8 @@ cypress/downloads/
 # Arquivos do Storybook (se usar)
 .storybook-out/
 storybook-static/
+
+# .pyc
+*.pyc
+__pycache__/
+
