@@ -21,6 +21,8 @@ import { useUsers } from "@/hooks/use-users";
 import type { FiltrosProjects, Project } from "@/types/project";
 import ModalDetalhesProjeto from "./modal-project-details/modal-project-detail";
 import { useRouter } from "next/navigation";
+import FilterGroup from "./project-filter-group/filter-group";
+import { useRegioes } from "@/hooks/use-regioes";
 
 type SortField = "nome" | "dataInicio" | "dataFim" | "tutor" | "regiao" | "estado" | "cidade" | "formato" | "vagas"
 type SortDirection = "asc" | "desc"
@@ -49,7 +51,8 @@ export default function ProjectList() {
     projetosFiltrados,
   } = useProjects();
   const { estados } = useEstados();
-  // const { tutores } = useUsers('tutor');
+  const { regioes } = useRegioes();
+  const { users: tutores } = useUsers('tutor');
 
   const formatos = ["Presencial", "Remoto"];
 
@@ -61,6 +64,8 @@ export default function ProjectList() {
   };
 
   const handleAplicarFiltros = () => {
+    console.log("Filtros locais", filtrosLocais)
+
     aplicarFiltros(filtrosLocais);
     setMostrarFiltros(false);
   };
@@ -193,7 +198,7 @@ export default function ProjectList() {
   return (
     <div>
       {/* Header da página */}
-      <div className={styles.pageHeader}>
+      {/* <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Lista de Projetos</h1>
           <p className={styles.pageSubtitle}>
@@ -213,10 +218,10 @@ export default function ProjectList() {
           Filtros
           {temFiltrosAtivos && <span className={styles.filterBadge}></span>}
         </button>
-      </div>
+      </div> */}
 
       {/* Painel de Filtros */}
-      {mostrarFiltros && (
+      {/* {mostrarFiltros && (
         <div className={styles.filterPanel}>
           <div className={styles.filterHeader}>
             <h3 className={styles.filterTitle}>
@@ -235,7 +240,7 @@ export default function ProjectList() {
 
           <div className={styles.filterContent}>
             <div className={styles.filterGrid}>
-              {/* Título */}
+              Título
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <Search size={14} />
@@ -250,8 +255,8 @@ export default function ProjectList() {
                 />
               </div>
 
-              {/* Tutor */}
-              {/* <div className={styles.filterGroup}>
+              Tutor
+              <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <User size={14} />
                   Tutor
@@ -270,9 +275,9 @@ export default function ProjectList() {
                     </option>
                   ))}
                 </select>
-              </div> */}
+              </div>
 
-              {/* Estado */}
+              Estado
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <MapPin size={14} />
@@ -292,7 +297,7 @@ export default function ProjectList() {
                 </select>
               </div>
 
-              {/* Cidade */}
+              Cidade
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <MapPin size={14} />
@@ -307,7 +312,7 @@ export default function ProjectList() {
                 />
               </div>
 
-              {/* Modalidade */}
+              Modalidade
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>Formato</label>
                 <select
@@ -326,7 +331,7 @@ export default function ProjectList() {
                 </select>
               </div>
 
-              {/* Instituição */}
+              Instituição
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <Building size={14} />
@@ -343,7 +348,7 @@ export default function ProjectList() {
                 />
               </div>
 
-              {/* Data Início */}
+              Data Início
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <Calendar size={14} />
@@ -359,7 +364,7 @@ export default function ProjectList() {
                 />
               </div>
 
-              {/* Data Fim */}
+              Data Fim
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
                   <Calendar size={14} />
@@ -394,7 +399,25 @@ export default function ProjectList() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
+
+      <FilterGroup 
+        filtros={filtrosLocais}
+        onFiltroChange={handleFiltroChange}
+        onAplicar={handleAplicarFiltros}
+        onLimpar={handleLimparFiltros}
+        onFechar={() => setMostrarFiltros(false)}
+        onToggle={() => setMostrarFiltros(!mostrarFiltros)}
+        mostrar={mostrarFiltros}
+        regioes={regioes}
+        estados={estados}
+        formatos={formatos}
+        tutores={tutores}
+        temFiltrosAtivos={temFiltrosAtivos}
+        isLoading={isLoading}
+        totalProjetos={totalProjetos}
+        qtdeProjetosFiltrados={projetosFiltrados}
+      />
 
       {/* Mensagem de erro */}
       {error && (

@@ -57,6 +57,8 @@ class ProjectFilter(django_filters.FilterSet):
     regioes_aceitas = RegiaoFilter(field_name='regioes_aceitas')
     estados_aceitos = EstadoFilter(field_name='estados_aceitos')
     cidades_aceitas = CidadeFilter(field_name='cidades_aceitas')
+    regiao = django_filters.NumberFilter(field_name="regioes_aceitas__id", label="ID da Região")
+
 
     formato = filters.ChoiceFilter(choices=FORMATOS)
     status = filters.ChoiceFilter(choices=STATUS_PROJETO)

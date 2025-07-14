@@ -1,7 +1,7 @@
 import axiosInstance from "@/lib/axios";
 import { Cidade } from "@/types/cidade";
 import { Estado } from "@/types/estado";
-import { Project, ProjectPayload } from "@/types/project";
+import { FiltrosProjects, Project, ProjectPayload } from "@/types/project";
 import { Regiao } from "@/types/regiao";
 import { EstadoApiAdapter } from "./estados"
 import { RegiaoApiAdapter } from "./regioes";
@@ -23,8 +23,6 @@ export class ProjectApiAdapter {
     );
 
     projetos = projetos.filter(item => item !== undefined);
-
-    console.log("Projetos carregados", projetos)
 
     return projetos;
   }
@@ -172,35 +170,24 @@ export class ProjectApiAdapter {
     return proj;
   }
 
-  
+  async filtrarProjetos(queryParams: URLSearchParams): Promise<Project[]> {
+    var endpoint = `${API_ENDPOINTS.PROJETOS_TODOS}?${queryParams.toString()}`;
 
-  // static async listarProjects(): Promise<Project[]> {
-  //   const response = await axios.get('/projetos/todos/');
-  //   return response.data;
-  // }
+    console.log("Endpoint", endpoint)
 
-  // static async filtrarProjects(filtros: any): Promise<Project[]> {
-  //   const response = await axios.post('/projetos/filtro/', filtros);
-  //   return response.data;
-  // }
+    const res = await axiosInstance.get(endpoint, {
+      headers: { Authorization: `Bearer ${this.token}` },
+    });
 
-  // static async criarProject(projeto: Project): Promise<Project> {
-  //   const response = await axios.post('/projetos/criar/', projeto);
-  //   return response.data;
-  // }
+    var projetos = await Promise.all(
+      res.data.map((projeto: any) => {
+        return this.mapProject(projeto, this.token)
+      })
+    );
 
-  // static async getProjectById(id: string): Promise<Project> {
-  //   const response = await axios.get(`/projetos/${id}/`);
+    projetos = projetos.filter(item => item !== undefined);
+    // console.log("Filtrados", projetos)
 
-  // }
-
-  // static async buscarProjetosExternos(token: string) {
-  //   const res = await axios.get('/projetos/todos/', { headers: { Authorization: `Bearer ${token}` } });
-  //   return res.data;
-  // }
-
-  // static async criarProjetoExterno(token: string, projeto: Project) {
-  //   const res = await axios.post('/projetos/criar/', projeto, { headers: { Authorization: `Bearer ${token}` } });
-  //   return res.data;
-  // }
+    return projetos;
+  }
 }
