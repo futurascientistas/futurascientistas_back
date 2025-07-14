@@ -1,10 +1,12 @@
 import axiosInstance from "@/lib/axios";
 import { Cidade } from "@/types/cidade";
 import { Estado } from "@/types/estado";
-import { Project, ProjectPayload } from "@/types/project";
+import { FiltrosProjects, Project, ProjectPayload } from "@/types/project";
 import { Regiao } from "@/types/regiao";
 import { EstadoApiAdapter } from "./estados"
+import { RegiaoApiAdapter } from "./regioes";
 import API_ENDPOINTS from "./endpoints";
+import { UserApiAdapter } from "./users";
 
 export class ProjectApiAdapter {
   constructor(private token: string) {}
@@ -13,22 +15,28 @@ export class ProjectApiAdapter {
     const res = await axiosInstance.get(API_ENDPOINTS.PROJETOS_TODOS, {
       headers: { Authorization: `Bearer ${this.token}` },
     });
-    return res.data.map(this.mapProject);
+    
+    var projetos = await Promise.all(
+      res.data.map((projeto: any) => {
+        return this.mapProject(projeto, this.token)
+      })
+    );
+
+    projetos = projetos.filter(item => item !== undefined);
+
+    return projetos;
   }
 
-  async criarProjeto(projeto: Project): Promise<Project> {
+  private buildProjectPayload(projeto: Project) {
     // dafault values
     projeto.formato = projeto.formato.toLowerCase() || "presencial";
     projeto.ehRemoto = projeto.ehRemoto || false;
     projeto.regioesAceitas = projeto.regioesAceitas || [];
     
+    // Projeto Remoto e Presencial devem preencher região
     var regioes_aceitas = "";
-    if(projeto.formato == 'remoto') {
-      regioes_aceitas = "1,2,3,4,5"
-    } else {
-      regioes_aceitas = projeto.regiao.id.toString();
-    }
-    
+    regioes_aceitas = projeto.regiao.id.toString();
+
     var inicio_inscricoes = projeto.inicioInscricoes;
     var fim_inscricoes = projeto.fimInscricoes;
     var cidades_aceitas = projeto.cidade ? projeto.cidade.id.toString() : "";
@@ -51,24 +59,64 @@ export class ProjectApiAdapter {
       "estados_aceitos": estados_aceitos,
     };
 
-    console.log("Project payload: ", payload)
+    return payload;
+  }
+
+  async criarProjeto(projeto: Project): Promise<Project> {
+    var payload = this.buildProjectPayload(projeto)
 
     const res = await axiosInstance.post(API_ENDPOINTS.PROJETOS_CRIAR, payload, {
       headers: { Authorization: `Bearer ${this.token}` },
     });
-    return this.mapProject(res.data);
+    return this.mapProject(res.data, this.token);
   }
 
-  private mapProject(data: any): Project {
-    // var tutor
-    // const estadoAdapter = new EstadoApiAdapter(this.token);
-    // const estado = await estadoAdapter.obterEstadoPorId(data.estado.id)
+  async getProjetoPorId(id: string): Promise<Project> {
+    const res = await axiosInstance.get(API_ENDPOINTS.projetoPorID(id), {
+      headers: { Authorization: `Bearer ${this.token}` },
+    });
+
+    return this.mapProject(res.data, this.token);
+  }
+
+  async atualizarProjeto(id: string, projeto: Project): Promise<Project> {
+    const payload = this.buildProjectPayload(projeto)
+    const res = await axiosInstance.put(API_ENDPOINTS.atualizarProjeto(id), payload, {
+      headers: { Authorization: `Bearer ${this.token}` },
+    });
+    return this.mapProject(res.data, this.token); 
+  }
+
+  private async mapProject(data: any, token: any): Promise<Project> {
     var estado = data.estados_aceitos_obj[0];
     var cidade = data.cidades_aceitas_obj[0];
     var regiao = data.regioes_aceitas_obj[0];
     var tutor = data.tutora;
+    var dataInicio = data.data_inicio ? data.data_inicio.split("T")[0] : "";
+    var dataFim = data.data_fim ? data.data_fim.split("T")[0] : "";
+    var dataInicioInscricao = data.inicio_inscricoes ? data.inicio_inscricoes.split("T")[0] : "";
+    var dataFimInscricao = data.fim_inscricoes ? data.fim_inscricoes.split("T")[0] : "";
 
-    return {
+    var regiaoAPI = new RegiaoApiAdapter(token);
+    var estadoAPI = new EstadoApiAdapter(token);
+    var userAPI = new UserApiAdapter(token);
+
+    const getSafe = async (fn: () => Promise<any>) => {
+      try {
+        return await fn();
+      } catch (e) {
+        console.warn("Erro ao buscar dados relacionados:", e);
+        return null;
+      }
+    };
+
+    const regiaoObj = regiao ? await getSafe(() => regiaoAPI.obterRegiaoPorId(regiao)) : null;
+    const estadoObj = estado ? await getSafe(() => estadoAPI.obterEstadoPorId(estado)) : null;
+    const cidadeObj = cidade ? await getSafe(() => estadoAPI.obterCidadePorId(cidade)) : null;
+    const tutorObj = tutor ? await getSafe(() => userAPI.obterUserPorId(tutor)) : null;
+
+    
+    var proj = {
       id: data.id,
       nome: data.nome,
       descricao: data.descricao,
@@ -79,13 +127,12 @@ export class ProjectApiAdapter {
       status: data.status,
       vagas: data.vagas,
       ativo: data.ativo,
-      inicioInscricoes: data.inicio_inscricoes,
-      fimInscricoes: data.fim_inscricoes,
-      dataInicio: data.data_inicio,
-      dataFim: data.data_fim,
+      inicioInscricoes: dataInicioInscricao,
+      fimInscricoes: dataFimInscricao,
+      dataInicio: dataInicio,
+      dataFim: dataFim,
       criadoEm: data.criado_em,
       atualizadoEm: data.atualizado_em,
-      tutor: data.tutora,
       regioesAceitas: data.regioes_aceitas_obj.map(
         (nome: string): Regiao => ({
           nome,
@@ -113,37 +160,34 @@ export class ProjectApiAdapter {
       estadoID: estado,
       cidadeID: cidade,
       tutorID: tutor,
-      instituicao: "",
+      instituicao: data.instituicao?? "",
+      regiao: regiaoObj,
+      estado: estadoObj,
+      cidade: cidadeObj,
+      tutor: tutorObj,
     };
+
+    return proj;
   }
 
-  // static async listarProjects(): Promise<Project[]> {
-  //   const response = await axios.get('/projetos/todos/');
-  //   return response.data;
-  // }
+  async filtrarProjetos(queryParams: URLSearchParams): Promise<Project[]> {
+    var endpoint = `${API_ENDPOINTS.PROJETOS_TODOS}?${queryParams.toString()}`;
 
-  // static async filtrarProjects(filtros: any): Promise<Project[]> {
-  //   const response = await axios.post('/projetos/filtro/', filtros);
-  //   return response.data;
-  // }
+    console.log("Endpoint", endpoint)
 
-  // static async criarProject(projeto: Project): Promise<Project> {
-  //   const response = await axios.post('/projetos/criar/', projeto);
-  //   return response.data;
-  // }
+    const res = await axiosInstance.get(endpoint, {
+      headers: { Authorization: `Bearer ${this.token}` },
+    });
 
-  // static async getProjectById(id: string): Promise<Project> {
-  //   const response = await axios.get(`/projetos/${id}/`);
+    var projetos = await Promise.all(
+      res.data.map((projeto: any) => {
+        return this.mapProject(projeto, this.token)
+      })
+    );
 
-  // }
+    projetos = projetos.filter(item => item !== undefined);
+    // console.log("Filtrados", projetos)
 
-  // static async buscarProjetosExternos(token: string) {
-  //   const res = await axios.get('/projetos/todos/', { headers: { Authorization: `Bearer ${token}` } });
-  //   return res.data;
-  // }
-
-  // static async criarProjetoExterno(token: string, projeto: Project) {
-  //   const res = await axios.post('/projetos/criar/', projeto, { headers: { Authorization: `Bearer ${token}` } });
-  //   return res.data;
-  // }
+    return projetos;
+  }
 }

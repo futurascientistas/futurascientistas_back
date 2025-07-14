@@ -1,103 +1,87 @@
-'use client';
-import { useCreateProject } from '@/hooks/projects/use-create-project';
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import SuccessModal from '@/components/sucess-modal/sucess-modal';
+import styles from "../../project/projectform.module.css";
+import { FormValidator, ValidationError } from "../../project/form-validation";
+import UserAutocomplete from '@/components/user-autocomplete/user-autocomplete';
 import { useRegioes } from '@/hooks/use-regioes';
 import { useEstados } from '@/hooks/use-estados';
 import { useCidades } from '@/hooks/use-cidades';
-import { Project } from '@/types/project';
-import { useEffect, useState } from 'react';
-import styles from "./projectform.module.css";
-import { FormValidator, ValidationError } from './form-validation';
-import { useRouter } from "next/navigation";
-import UserAutocomplete from '@/components/user-autocomplete/user-autocomplete';
-import SuccessModal from '@/components/sucess-modal/sucess-modal';
+import { useEditProject } from '@/hooks/projects/use-edit-project';
+import type { Project } from '@/types/project';
 
+interface EditProjectProps {
+  projectId: string;
+}
 
-const projetoDefault: Project = {
-  id: "",
-  nome: "",
-  regiao: null,
-  estado: null,
-  cidade: null,
-  formato: "",
-  instituicao: "",
-  descricao: "",
-  vagas: 5,
-  dataInicio: "",
-  dataFim: "",
-  inicioInscricoes: "",
-  fimInscricoes: "",
-  regioesAceitas: [],
-  tutor: null,
-  criadoPor: '',
-  atualizadoPor: '',
-  ehRemoto: false,
-  status: '',
-  ativo: false,
-  criadoEm: '',
-  atualizadoEm: '',
-  estadosAceitos: [],
-  cidadesAceitas: []
-};
-
-export default function ProjetosPage() {
-  // Form controls
-  const [isRemoto, setIsRemoto] = useState(false);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
-  const [projeto, setProjeto] = useState(projetoDefault);
+export default function EditarProjeto({ projectId }: EditProjectProps) {
   const router = useRouter();
 
-  // Hooks para carregamento de dados
-  const { criarProjeto, isLoading, error: projectError, success: projectSuccess } = useCreateProject();
-  const { regioes, isLoading: regioesLoading, error: regioesError } = useRegioes();
-  const { estados: estadosDefault, filtrarEstadosPorRegiao, isLoading: estadosLoading } = useEstados();
-  const { cidades, isLoading: cidadesLoading } = useCidades(projeto.estado ? projeto.estado.uf || "" : "");
-
-  // Estados
-  const [estados, setEstados] = useState(estadosDefault);
+  const { project, isLoading, error: projectError, success: projectSuccess, atualizarProjeto } = useEditProject(projectId);
+  const [projeto, setProjeto] = useState<Project | null>(null);
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [isRemoto, setIsRemoto] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   
   // Formato de projeto
-  const formatos = ["Presencial", "Remoto"];
+  const formatos = ["presencial", "remoto"];
 
-  // Form Messages
-  const [errors, setErrors] = useState<ValidationError[]>([]);
-  const [successMessage, setSuccessMessage] = useState("");
+  const isProjetoInicializado = useMemo(() => projeto !== null, [projeto]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const uf = useMemo(() => projeto?.estado?.uf || "", [projeto]);
+  const regiaoEstado = useMemo(() => projeto?.regiao?.id || 0, [projeto]);
+  const { cidades, isLoading: cidadesLoading } = useCidades(uf);
+  const { regioes, isLoading: regioesLoading, error: regioesError } = useRegioes();
+  const { filtrarEstadosPorRegiao, isLoading: estadosLoading } = useEstados();
+  const [estados, setEstados] = useState([]);
 
-    const validationErrors = FormValidator.validateProject(projeto)
-    if (validationErrors.length > 0) {
-      setErrors(validationErrors)
-      return;
+  useEffect(() => {
+    if (project && !isProjetoInicializado) {
+      setProjeto(project);
+      setIsRemoto(project.ehRemoto);
+      setEstados(filtrarEstadosPorRegiao(project.regiao.id));
     }
+  }, [project, isProjetoInicializado]);
 
-    setErrors([])
-    await criarProjeto(projeto);
-  };
+  useEffect(() => {
+    if (projectSuccess) {
+      setIsSuccessModalOpen(true);
+      const timer = setTimeout(() => router.push('/project-list'), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [projectSuccess, router]);
+
+  if (isLoading || !projeto) {
+    return <div>Carregando projeto...</div>;
+  }
+
+  if (projectError) {
+    return <div className={styles.errorMessage}>{projectError}</div>;
+  }
 
   const handleInputChange = (field: keyof Project, value: any) => {
-    if(field === "estado") {
-      const estadoSelecionado = estados?.find((estado) => estado.id === value);
-      setProjeto((prev) => ({ ...prev, [field]: estadoSelecionado, cidade: null })); // limpa cidade ao mudar estado
+    console.log("Tutor selecionado", value)
 
-    } else if (field === "cidade") {
-      const cidadeSelecionada = cidades?.find((cidade) => cidade.id === value);
-      setProjeto((prev) => ({ ...prev, [field]: cidadeSelecionada }));
+    if(field === "estado") {
+      setProjeto((prev) => ({ ...prev, [field]: value, cidade: null })); // limpa cidade ao mudar estado
 
     } else if(field === "regiao") {
-      const regiaoSelecionada = regioes?.find((regiao) => regiao.id === value);
-      setProjeto((prev) => ({ ...prev, [field]: regiaoSelecionada, estado: null, cidade: null })); // limpa estado e cidade ao mudar região
+      setProjeto((prev) => ({ ...prev, [field]: value, estado: null, cidade: null })); // limpa estado e cidade ao mudar região
 
       // Atualiza estados com base na região selecionada
       if(!isRemoto) {
-        const estadosFiltrados = filtrarEstadosPorRegiao(value);
+        const estadosFiltrados = filtrarEstadosPorRegiao(value.id);
         setEstados(estadosFiltrados);
       }
 
     } else if(field === "formato") {
-      setIsRemoto(value === "Remoto");
+      setIsRemoto(value === "remoto");
       setProjeto((prev) => ({ ...prev, [field]: value }));
-      setProjeto((prev) => ({ ...prev, ["ehRemoto"]: value === "Remoto" }));
+      setProjeto((prev) => ({ ...prev, ["ehRemoto"]: value === "remoto" }));
 
     }else {
       setProjeto((prev) => ({ ...prev, [field]: value }));
@@ -108,17 +92,20 @@ export default function ProjetosPage() {
     }
   };
 
-  const handleUserChange = (tutor: any) => {
-    setProjeto((prev) => ({
-      ...prev,
-      tutor: tutor,
-    }))
+  const handleUserChange = (tutor: any) => handleInputChange('tutor', tutor);
 
-    if (errors.length > 0) {
-      setErrors((prev) => prev.filter((error) => error.field !== "tutorId"))
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projeto) return;
+
+    const validationErrors = FormValidator.validateProject(projeto);
+    if (validationErrors.length) {
+      setErrors(validationErrors);
+      return;
     }
 
-  }
+    await atualizarProjeto(projeto);
+  };
 
   const getFieldError = (fieldName: string) => {
     var result = FormValidator.getFieldError(errors, fieldName);
@@ -129,30 +116,17 @@ export default function ProjetosPage() {
     return !!getFieldError(fieldName);
   };
 
-  useEffect(() => {
-    if(projectSuccess) {
-      setIsSuccessModalOpen(true)
-      const timer = setTimeout(() => {
-        router.push("/project-list");
-        setIsSuccessModalOpen(false)
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  })
-
   return (
     <div className={styles.container}>
       <div className={styles.contentWrapper}> 
         <div className={`${styles.card} ${styles.spacer}`}>
           {/* Card Header */}
           <div className={styles.cardHeader}>
-            <h2 className={styles.cardTitle}>Cadastrar Novo Projeto</h2>
+            <h2 className={styles.cardTitle}>Atualizar Projeto</h2>
           </div>
 
           {/* Card Content - Form*/}
           <div className={styles.cardContent}>
-            
             {/* Error messages and Success Messages */}
             {getFieldError("general") && (
               <div className={styles.errorMessage}>{getFieldError("general")}</div>
@@ -187,12 +161,12 @@ export default function ProjetosPage() {
                 <select
                   id="formato"
                   value={projeto.formato}
-                  onChange={(e) => handleInputChange("formato", e.target.value)}
+                  onChange={(e) => { handleInputChange("formato", e.target.value) }}
                   className={`${styles.select} ${hasFieldError("formato") ? styles.inputError : "" }`}
                 >
                   <option value="">Selecione o formato</option>
                   {formatos.map((formato) => (
-                    <option key={formato} value={formato}> {formato} </option>
+                    <option key={formato} value={formato}> {formato.charAt(0).toUpperCase() + formato.slice(1)} </option>
                   ))}
                 </select>
                 {hasFieldError("formato") && (
@@ -206,14 +180,18 @@ export default function ProjetosPage() {
                 <label htmlFor="regiao" className={styles.label}>Região <span className={styles.mandatory}>*</span></label>
                 <select
                   id="regiao"
-                  value={projeto.regiao?.id || ""}
-                  onChange={(e) => handleInputChange("regiao", Number(e.target.value))}
+                  value={projeto.regiao?.id ?? 0}
+                  onChange={(e) => {
+                    const selectedId = Number(e.target.value);
+                    const selectedRegiao = regioes.find(r => r.id === selectedId) || null;
+                    handleInputChange("regiao", selectedRegiao)
+                  }}
                   className={`${styles.select} ${hasFieldError("regiao") ? styles.inputError : "" }`}
                   disabled={regioesLoading}
                 >
                   <option value={0}>Selecione a região</option>
                   {regioes.map((regiao) => (
-                    <option key={regiao.id} value={regiao.id.toString()}>
+                    <option key={regiao.id} value={regiao.id}>
                       {regiao.nome}
                     </option>
                   ))}
@@ -235,7 +213,11 @@ export default function ProjetosPage() {
                       <select
                         id="estado"
                         value={projeto.estado?.id || ""}
-                        onChange={(e) => handleInputChange("estado", Number(e.target.value))}
+                        onChange={(e) => {
+                          const selectedEstadoId = Number(e.target.value);
+                          const selectedEstado = estados.find(estado => estado.id === selectedEstadoId) || null;
+                          handleInputChange("estado", selectedEstado)
+                        }}
                         className={`${styles.select} ${hasFieldError("estado") ? styles.inputError : "" }`}
                         disabled={estadosLoading || projeto.regiao === null}
                       >
@@ -260,7 +242,11 @@ export default function ProjetosPage() {
                       <select
                         id="cidade"
                         value={projeto.cidade?.id || ""}
-                        onChange={(e) => handleInputChange("cidade", Number(e.target.value))}
+                        onChange={(e) => {
+                          const selectedCidadeId = Number(e.target.value);
+                          const selectedCidade = cidades.find(cidade => cidade.id === selectedCidadeId) || null;
+                          handleInputChange("cidade", selectedCidade)
+                        }}
                         className={`${styles.select} ${hasFieldError("cidade") ? styles.inputError : "" }`}
                         disabled={cidadesLoading || projeto.estado === null}
                       >
@@ -389,10 +375,11 @@ export default function ProjetosPage() {
 
               {/* Tutor */}
               <div className={styles.formGroup}>
+                {projeto.tutor.name}
                 <label htmlFor="tutor" className={styles.label}>Tutor <span className={styles.mandatory}>*</span></label>
                 <UserAutocomplete
                   groupName='tutor' 
-                  value={""} 
+                  value={project.tutor.id || ""} 
                   onChange={ handleUserChange } />
                   {hasFieldError("tutor") && <span className={styles.fieldError}>{getFieldError("tutor")}</span>}
               </div>
@@ -425,7 +412,7 @@ export default function ProjetosPage() {
                   estadosLoading
                 }
               >
-                {isLoading ? "Salvando..." : "Salvar projeto"}
+                {isLoading ? "Salvando..." : "Atualizar projeto"}
               </button>
 
             </form>

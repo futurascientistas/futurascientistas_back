@@ -85,6 +85,7 @@ export interface ProjectPayload {
 export interface FiltrosProjects {
   titulo?: string
   tutorId?: string
+  regiao?: string
   estado?: string
   cidade?: string
   formato?: string

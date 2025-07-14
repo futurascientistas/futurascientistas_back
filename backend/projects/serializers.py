@@ -6,8 +6,8 @@ from .models import Project
 
 class ProjectSerializer(serializers.ModelSerializer):
     regioes_aceitas = serializers.CharField(write_only=True, required=False)
-    estados_aceitos = serializers.CharField(write_only=True, required=False)
-    cidades_aceitas = serializers.CharField(write_only=True, required=False)
+    estados_aceitos = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    cidades_aceitas = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     regioes_aceitas_obj = serializers.PrimaryKeyRelatedField(many=True, read_only=True, source='regioes_aceitas')
     estados_aceitos_obj = serializers.PrimaryKeyRelatedField(many=True, read_only=True, source='estados_aceitos')

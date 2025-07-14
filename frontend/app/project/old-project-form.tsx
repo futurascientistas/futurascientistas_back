@@ -6,7 +6,7 @@ import styles from "./projectform.module.css";
 import { ProjectService } from "@/services/projectService";
 import { FormValidator, type ValidationError } from "./form-validation";
 import type { ProjectFormData } from "@/types/project";
-import { useProjects } from "@/hooks/use-projects";
+import { useProjects } from "@/hooks/projects/use-projects";
 import { useTutores } from "@/hooks/use-users";
 import { useRegioes } from "@/hooks/use-regioes";
 import { useEstadosDinamicos } from "@/hooks/use-estados-dinamicos";

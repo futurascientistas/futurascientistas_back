@@ -9,21 +9,29 @@ export class RegiaoApiAdapter {
     const response = await axiosInstance.get(API_ENDPOINTS.REGIOES, {
       headers: {
         Authorization: `Bearer ${this.token}`,
-      },
+      }
     });
 
     return response.data.map(mapRegiao);
   }
 
   async obterRegiaoPorId(id: number): Promise<Regiao> {
-    // console.log("URL da requisição:", API_ENDPOINTS.regiaoPorID(id));
-    const response = await axiosInstance.get(API_ENDPOINTS.regiaoPorID(id), {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
+    if(!id)
+      return null
+    try {
+      const response = await axiosInstance.get(API_ENDPOINTS.regiaoPorID(id), {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
 
-    return mapRegiao(response.data);
+      var result = mapRegiao(response.data);
+      return result;
+    }catch(ex) {
+      console.log("Exception:", ex);
+    }
+    
+    return null;
   }
 }
 
