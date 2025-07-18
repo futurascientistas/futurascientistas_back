@@ -80,3 +80,8 @@ python manage.py runserver
 
 ---
 
+### Rodar o docker da aplicao
+
+```bash
+docker-compose up -d
+```
