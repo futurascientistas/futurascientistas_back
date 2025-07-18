@@ -180,8 +180,15 @@ CELERY_TIMEZONE = 'America/Sao_Paulo'
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
+    # Executa a cada 1 minuto (para testes)
     'executar-tarefa-teste-a-cada-1-minuto': {
         'task': 'applications.tasks.processar_homologacao_projeto',
-        'schedule': crontab(minute='*/1'), 
+        'schedule': crontab(minute='*/1'),
+    },
+
+    # Executa diariamente à meia-noite
+    'atualizar-status-projetos-todo-dia': {
+        'task': 'projects.tasks.atualizar_status_projetos',
+        'schedule': crontab(hour=0, minute=0),
     },
 }
