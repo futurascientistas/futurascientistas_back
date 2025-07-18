@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  celery_worker:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: celery -A futuras_cientistas.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+
+  celery_beat:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: celery -A futuras_cientistas.celery_app beat --loglevel=info
+    depends_on:
+      - redis
