@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'django_celery_beat',
+
 ]
 
 MIDDLEWARE = [   
@@ -90,7 +92,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'admin',
-        'HOST': 'localhost',
+        'HOST': 'host.docker.internal',
         'PORT': '5432'
     }
 }
@@ -168,6 +170,18 @@ EMAIL_HOST_USER = 'centeneprojetofuturascientista@gmail.com'
 EMAIL_HOST_PASSWORD = 'ycgq ontk thpv seip'  
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'  
+CELERY_TIMEZONE = 'America/Sao_Paulo'
+
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'executar-tarefa-teste-a-cada-1-minuto': {
+        'task': 'applications.tasks.processar_homologacao_projeto',
+        'schedule': crontab(minute='*/1'), 
+    },
+}

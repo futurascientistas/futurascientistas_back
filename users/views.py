@@ -104,6 +104,7 @@ class CadastroAPIView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             user.set_password(senha)
+            user.is_active = True
             user.save()
 
             refresh = RefreshToken.for_user(user)

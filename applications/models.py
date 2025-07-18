@@ -106,3 +106,31 @@ class ApplicationStatusLog(models.Model):
         anterior = self.status_anterior_display or self.status_anterior or "-"
         novo = self.status_novo_display or self.status_novo or "-"
         return f"Inscrição {self.inscricao.id} | {anterior} → {novo} por {self.modificado_por or 'Desconhecido'} em {self.data_modificacao:%d/%m/%Y %H:%M}"
+
+class AcompanhamentoProjeto(models.Model):
+    STATUS_PROJETO_CHOICES = [
+        ('em_andamento', 'Em Andamento'),
+        ('concluido', 'Concluído'),
+        ('incompleto', 'Incompleto'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    participante = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='acompanhamentos')
+    projeto = models.ForeignKey('projects.Project', on_delete=models.CASCADE)
+    data_inicio = models.DateField(auto_now_add=True)
+    frequencia = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    nota_final = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    status_projeto = models.CharField(max_length=20, choices=STATUS_PROJETO_CHOICES, default='em_andamento')
+    projeto_entregue = models.BooleanField(default=False)
+    observacoes = models.TextField(blank=True)
+    
+    class Meta:
+        unique_together = ('participante', 'projeto')
+        verbose_name_plural = 'Acompanhamentos de Projeto'
+    
+    def __str__(self):
+        return f"{self.participante} - {self.projeto}"
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)

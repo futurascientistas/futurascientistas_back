@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Application
+from projects.models import Project
 from django.utils import timezone
 
 class ApplicationSerializer(serializers.ModelSerializer):
@@ -91,3 +92,20 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class ProjectWithApplicationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = [
+            'id', 'nome', 'data_resultado_homologacao',
+            'inicio_inscricoes', 'fim_inscricoes', 'status'
+        ]
+    
+    inscricoes_aprovadas = serializers.SerializerMethodField()
+    
+    def get_inscricoes_aprovadas(self, obj):
+        return Application.objects.filter(
+            projeto=obj,
+            aprovado=True
+        ).count()
