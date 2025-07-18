@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.core.exceptions import ValidationError, PermissionDenied
 from .models import *
+from django.db import transaction
 from applications.models import Application
 
 
@@ -101,3 +102,62 @@ def registrar_log_status_inscricao(inscricao, status_anterior, status_novo, usua
             status_novo_display=get_status_display(status_novo),
             modificado_por=modificado_por,
         )
+
+@transaction.atomic
+def calcular_ranking(inscricao):
+    ranking = 0.0
+
+    # I. Perfil Acadêmico (Máximo 4,0 pontos)
+    grau = inscricao.grau_formacao  
+
+    if grau == GrauFormacao.DOUTORADO:
+        perfil = 4.0
+    elif grau == GrauFormacao.MESTRADO:
+        perfil = 3.0
+    elif grau == GrauFormacao.ESPECIALIZACAO:
+        perfil = 2.0
+    elif grau in [GrauFormacao.LICENCIATURA, GrauFormacao.BACHARELADO, GrauFormacao.GRADUACAO]:
+        perfil = 1.0
+    else:
+        perfil = 0.0
+
+    # II. Atividade Docente (Máximo 4,0 pontos)
+    docente = 0.0
+    docente += min(float(inscricao.docencia_superior or 0) * 0.2, 1.0)       # 0.2 ponto por semestre
+    docente += min(float(inscricao.docencia_medio or 0) * 0.2, 1.0)          # 0.2 ponto por ano
+    docente += min(float(inscricao.orientacao_ic or 0) * 0.2, 1.0)           # 0.2 ponto por ano
+    if inscricao.feira_ciencias:
+        docente += 0.2                                                       # 0.2 ponto por evento
+
+    docente = min(docente, 4.0)
+    ranking += docente
+
+    # III. Atividade de Pesquisa (a preencher conforme critérios)
+    pesquisa = 0.0
+    # Exemplo: pesquisa += ...
+    pesquisa = min(pesquisa, 4.0)
+    ranking += pesquisa
+
+    # IV. Outras Atividades (a preencher conforme critérios)
+    outras = 0.0
+    # Exemplo: outras += ...
+    outras = min(outras, 1.0)
+    ranking += outras
+
+    # Atualiza os campos na inscrição
+    inscricao.ranking = ranking
+    inscricao.perfil_academico_pontuacao = perfil
+    inscricao.atividade_docente_pontuacao = docente
+    inscricao.atividade_pesquisa_pontuacao = pesquisa
+    inscricao.outras_atividades_pontuacao = outras
+
+    inscricao.save()
+
+def calcular_ranking_todas_professoras(projeto):
+    inscricoes_professoras = Application.objects.filter(
+        projeto=projeto,
+        usuario__groups__name='professora' 
+    )
+
+    for inscricao in inscricoes_professoras:
+        calcular_ranking.delay(inscricao.id)
