@@ -99,6 +99,25 @@ class Project(models.Model):
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
     atualizado_em = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
 
+    data_divulgacao_resultado = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Data de divulgação do resultado'
+    )
+
+    data_inicio_projeto = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Data prevista de início do projeto'
+    )
+
+    data_ifm = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Data do IFM (Início da Formação de Monitoras)'
+    )
+
+
     def __str__(self):
         return self.nome
 
