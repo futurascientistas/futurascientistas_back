@@ -60,7 +60,7 @@ DATABASES = {
         'NAME': 'nome_do_banco',
         'USER': 'seu_user',
         'PASSWORD': 'sua_senha',
-        'HOST': 'localhost',
+        'HOST': 'host.docker.internal',
         'PORT': '5432',
     }
 }
