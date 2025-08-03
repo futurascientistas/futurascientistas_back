@@ -24,7 +24,7 @@ def adicionar_usuario_ao_grupo(usuario: User, nome_grupo: str, operador: User):
     Adiciona o usuário ao grupo especificado, se o operador for admin.
     Atualiza os grupos do usuário e garante consistência.
     """
-    if not operador.is_admin:
+    if not operador.is_staff:
         raise PermissionDenied("Somente admins podem alterar grupos de usuários.")
 
     grupo, created = Group.objects.get_or_create(name=nome_grupo)

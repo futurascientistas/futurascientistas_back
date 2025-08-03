@@ -8,6 +8,7 @@ from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
 from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer
 from users.models import Genero, Raca, Deficiencia
+from django.views.generic import TemplateView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
@@ -123,3 +124,7 @@ class DeficienciaViewSet(viewsets.ModelViewSet):
     queryset = Deficiencia.objects.all()
     serializer_class = DeficienciaSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+
+class HomePageView(TemplateView):
+    template_name = "components/landing-page/home.html"

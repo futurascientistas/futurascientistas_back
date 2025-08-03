@@ -6,6 +6,7 @@ import uuid
 FORMATOS = [
     ('presencial', 'Presencial'),
     ('remoto', 'Remoto'),
+    ('hibrido', 'Hibrido')
 ]
 
 STATUS_PROJETO = [
@@ -90,28 +91,28 @@ class Project(models.Model):
     vagas = models.PositiveIntegerField(verbose_name='Vagas')
     ativo = models.BooleanField(default=True, verbose_name='Ativo')
     
-    inicio_inscricoes = models.DateTimeField(verbose_name='Início das inscrições')
-    fim_inscricoes = models.DateTimeField(verbose_name='Fim das inscrições')
+    inicio_inscricoes = models.DateField(verbose_name='Início das inscrições')
+    fim_inscricoes = models.DateField(verbose_name='Fim das inscrições')
 
-    data_inicio = models.DateTimeField(verbose_name='Data de início')
-    data_fim = models.DateTimeField(verbose_name='Data de fim')
+    data_inicio = models.DateField(verbose_name='Data de início')
+    data_fim = models.DateField(verbose_name='Data de fim')
 
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name='Criado em')
     atualizado_em = models.DateTimeField(auto_now=True, verbose_name='Atualizado em')
 
-    data_divulgacao_resultado = models.DateTimeField(
+    data_divulgacao_resultado = models.DateField(
         null=True,
         blank=True,
         verbose_name='Data de divulgação do resultado'
     )
 
-    data_inicio_projeto = models.DateTimeField(
+    data_inicio_projeto = models.DateField(
         null=True,
         blank=True,
         verbose_name='Data prevista de início do projeto'
     )
 
-    data_ifm = models.DateTimeField(
+    data_ifm = models.DateField(
         null=True,
         blank=True,
         verbose_name='Data do IFM (Início da Formação de Monitoras)'
