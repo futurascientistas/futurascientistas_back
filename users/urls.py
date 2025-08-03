@@ -7,8 +7,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 urlpatterns = [
 
     # Autenticação
-    path('auth/cadastro/', CadastroAPIView.as_view(), name='cadastro'),
-    path('auth/login/', LoginAPIView.as_view(), name='login'),
+    # path('auth/cadastro/', CadastroAPIView.as_view(), name='cadastro'),
+    # path('auth/login/', LoginAPIView.as_view(), name='login'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/recuperacao_senha/', RecuperacaoSenhaAPIView.as_view(), name='recuperacao_senha'),
 

@@ -5,6 +5,7 @@ import magic
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import viewsets, status, permissions, generics
@@ -14,6 +15,11 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponse
+from django.views.generic.edit import FormView
+from .forms import CadastroForm
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
 from django.http import JsonResponse
 
 
@@ -360,3 +366,49 @@ class AnexoDownloadView(APIView):
             'mime_type': mime_type,
             'tipo_arquivo': 'Possível PDF' if mime_type == 'application/pdf' else 'Outro',
         })
+    
+
+class CadastroView(FormView):
+    template_name = "components/users/registration_form.html"
+    form_class = CadastroForm
+    success_url = reverse_lazy("login")
+
+    def form_valid(self, form):
+        data = form.cleaned_data
+        email = data['email']
+        cpf = re.sub(r'\D', '', data['cpf'])
+        senha = data['password']
+        nome = data['nome']
+
+        if User.objects.filter(email=email).exists():
+            form.add_error('email', 'Email já cadastrado.')
+            return self.form_invalid(form)
+
+        if User.objects.filter(cpf=cpf).exists():
+            form.add_error('cpf', 'CPF já cadastrado.')
+            return self.form_invalid(form)
+
+        user = User(nome=nome, email=email, cpf=cpf)
+        user.set_password(senha)
+        user.is_active = True
+        user.save()
+        messages.success(self.request, "Usuário cadastrado com sucesso!")
+        return super().form_valid(form)
+
+def login_view(request):
+    if request.method == 'POST':
+        cpf = request.POST.get('cpf')
+        senha = request.POST.get('senha')
+        user = authenticate(request, username=cpf, password=senha)
+        if user is not None:
+            login(request, user)
+            return redirect('home')  # ou outra página interna
+        else:
+            messages.error(request, 'CPF ou senha inválidos.')
+
+    return render(request, 'components/users/login.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')

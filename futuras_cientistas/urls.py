@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from core.views import *
+from users.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,5 +11,9 @@ urlpatterns = [
     path('inscricoes/', include('applications.urls')),
     path('api/', include('core.urls')),
     path('', HomePageView.as_view(), name='homepage'),
+    path('cadastro', CadastroView.as_view(), name='cadastro'),
+    path('login', login_view, name='login'), 
+    path('logout', logout_view, name='logout'),
+
 ]
 
