@@ -15,23 +15,23 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 class RegiaoListCreateView(generics.ListCreateAPIView):
     queryset = Regiao.objects.all()
     serializer_class = RegiaoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 class RegiaoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Regiao.objects.all()
     serializer_class = RegiaoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 # ESTADO
 class EstadoListCreateView(generics.ListCreateAPIView):
     queryset = Estado.objects.all()
     serializer_class = EstadoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 class EstadoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Estado.objects.all()
     serializer_class = EstadoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 class EstadosByRegiaoList(generics.ListAPIView):
     serializer_class = EstadoSerializer
@@ -55,12 +55,12 @@ class EstadosByRegiaoList(generics.ListAPIView):
 class CidadeListCreateView(generics.ListCreateAPIView):
     queryset = Cidade.objects.all()
     serializer_class = CidadeSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 class CidadeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Cidade.objects.all()
     serializer_class = CidadeSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 
 class CidadesByEstadoView(generics.ListAPIView):
@@ -93,33 +93,31 @@ class CidadeBulkCreateView(APIView):
 class InstituicaoListCreateView(generics.ListCreateAPIView):
     queryset = Instituicao.objects.all()
     serializer_class = InstituicaoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 class InstituicaoRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Instituicao.objects.all()
     serializer_class = InstituicaoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 # GENERO
 class GeneroListCreateAPIView(generics.ListCreateAPIView):
     queryset = Genero.objects.all()
     serializer_class = GeneroSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 
 class GeneroRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Genero.objects.all()
     serializer_class = GeneroSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+
 
 
 class RacaViewSet(viewsets.ModelViewSet):
     queryset = Raca.objects.all()
     serializer_class = RacaSerializer
-    permission_classes = [IsAdminOrReadOnly]
 
 
 class DeficienciaViewSet(viewsets.ModelViewSet):
     queryset = Deficiencia.objects.all()
     serializer_class = DeficienciaSerializer
-    permission_classes = [IsAdminOrReadOnly]

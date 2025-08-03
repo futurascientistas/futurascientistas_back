@@ -101,3 +101,21 @@ def registrar_log_status_inscricao(inscricao, status_anterior, status_novo, usua
             status_novo_display=get_status_display(status_novo),
             modificado_por=modificado_por,
         )
+
+
+
+
+from .models import Application, ApplicationStatusLog
+
+def register_status_change(application: Application, old_status: str | None, actor: str | None) -> None:
+    if old_status == application.status:
+        return
+    ApplicationStatusLog.objects.create(
+        inscricao=application,
+        projeto=application.projeto,
+        status_anterior=old_status,
+        status_novo=application.status,
+        status_anterior_display=dict(Application.STATUS_ESCOLHAS).get(old_status) if old_status else None,
+        status_novo_display=dict(Application.STATUS_ESCOLHAS).get(application.status),
+        modificado_por=actor,
+    )

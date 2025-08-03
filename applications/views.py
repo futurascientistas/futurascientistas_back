@@ -79,3 +79,158 @@ class AnexoDownloadView(APIView):
         return HttpResponse(arquivo, content_type=mime_type, headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
         })
+    
+
+
+
+
+
+# ------------------------------------------------------------
+
+
+# apps/applications/views.py
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView, DetailView, ListView
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
+
+from .models import Application
+from .forms import ApplicationForm
+
+
+class ApplicationListView(LoginRequiredMixin, ListView):
+    model = Application
+    template_name = "applications/application_list.html"
+    context_object_name = "applications"
+    paginate_by = 20
+
+    def get_queryset(self):
+        qs = (Application.objects
+              .select_related("projeto", "usuario")
+              .order_by("-atualizado_em"))
+        # Exemplo simples: usuário vê as próprias inscrições; admin/superuser vê todas
+        if not self.request.user.is_superuser:
+            qs = qs.filter(usuario=self.request.user)
+        # Filtro por status (opcional)
+        status = self.request.GET.get("status")
+        if status:
+            qs = qs.filter(status=status)
+        search = self.request.GET.get("q")
+        if search:
+            qs = qs.filter(
+                Q(projeto__titulo__icontains=search) |
+                Q(observacoes__icontains=search)
+            )
+        return qs
+
+
+class ApplicationCreateView(LoginRequiredMixin, CreateView):
+    model = Application
+    form_class = ApplicationForm
+    template_name = "applications/application_form.html"
+    success_url = reverse_lazy("applications:list")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request  # usado para log
+        return kwargs
+
+    def form_valid(self, form: ApplicationForm):
+        form.instance.usuario = self.request.user  # owner
+        return super().form_valid(form)
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        form = ctx["form"]
+        ctx["binary_uploads"] = [
+            {
+                "name": name,
+                "label": label,
+                "upload": form[f"{name}__upload"],  # BoundField
+                "clear": form[f"{name}__clear"],    # BoundField
+            }
+            for name, label in form.binary_file_fields.items()
+        ]
+        return ctx
+
+
+class ApplicationUpdateView(LoginRequiredMixin, UpdateView):
+    model = Application
+    form_class = ApplicationForm
+    template_name = "applications/application_form.html"
+    success_url = reverse_lazy("applications:list")
+
+    def get_queryset(self):
+        qs = Application.objects.all()
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(usuario=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request"] = self.request
+        return kwargs
+
+
+class ApplicationDetailView(LoginRequiredMixin, DetailView):
+    model = Application
+    template_name = "applications/application_detail.html"
+    context_object_name = "application"
+
+    def get_queryset(self):
+        qs = Application.objects.select_related("projeto", "usuario").prefetch_related("logs_status")
+        if self.request.user.is_superuser:
+            return qs
+        return qs.filter(usuario=self.request.user)
+
+
+
+
+
+# apps/applications/views.py
+from django.http import Http404, HttpResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.encoding import iri_to_uri
+from django.views.decorators.http import require_GET
+import mimetypes
+
+from .models import Application
+from .forms import ApplicationForm  # para reaproveitar a lista de campos binários
+
+ALLOWED_BINARY_FIELDS = tuple(ApplicationForm.BINARY_FILE_FIELDS.keys())
+
+@require_GET
+def download_application_file(request, pk: str, field: str):
+    # segurança: só permite campos conhecidos
+    if field not in ALLOWED_BINARY_FIELDS:
+        raise Http404("Arquivo não encontrado.")
+
+    try:
+        app = Application.objects.get(pk=pk)
+    except Application.DoesNotExist:
+        raise Http404("Inscrição não encontrada.")
+
+    # autorização: dono ou superuser
+    if not (request.user.is_superuser or app.usuario_id == request.user.id):
+        raise Http404("Arquivo não encontrado.")
+
+    blob = getattr(app, field)
+    if not blob:
+        raise Http404("Arquivo não encontrado.")
+
+    # não temos nome/tipo original; defina um nome padrão
+    filename = f"{field}.bin"
+    content_type, _ = mimetypes.guess_type(filename)
+    if not content_type:
+        content_type = "application/octet-stream"
+
+    resp = HttpResponse(bytes(blob), content_type=content_type)
+    resp["Content-Disposition"] = f'attachment; filename="{iri_to_uri(filename)}"'
+    return resp

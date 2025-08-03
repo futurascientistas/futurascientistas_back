@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{% if object %}Editar{% else %}Nova{% endif %} Inscrição</h1>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+
+  <fieldset>
+    <legend>Vaga</legend>
+    {{ form.projeto.errors }}{{ form.projeto.label_tag }} {{ form.projeto }}
+    {{ form.status.errors }}{{ form.status.label_tag }} {{ form.status }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Identificação e Contato</legend>
+    {{ form.como_soube_programa.errors }}{{ form.como_soube_programa.label_tag }} {{ form.como_soube_programa }}
+    {{ form.telefone_responsavel.errors }}{{ form.telefone_responsavel.label_tag }} {{ form.telefone_responsavel }}
+    {{ form.curriculo_lattes_url.errors }}{{ form.curriculo_lattes_url.label_tag }} {{ form.curriculo_lattes_url }}
+    {{ form.observacoes.errors }}{{ form.observacoes.label_tag }} {{ form.observacoes }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Acessibilidade e Cotas</legend>
+    {{ form.cota_desejada.label_tag }} {{ form.cota_desejada }}
+    {{ form.tipo_deficiencia.label_tag }} {{ form.tipo_deficiencia }}
+
+
+    {{ form.necessita_material_especial.label_tag }} {{ form.necessita_material_especial }}
+    {{ form.tipo_material_necessario.label_tag }} {{ form.tipo_material_necessario }}
+
+
+    {{ form.concorrer_reserva_vagas.label_tag }} {{ form.concorrer_reserva_vagas }}
+    {{ form.mulher_trans.label_tag }} {{ form.mulher_trans }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Documentos</legend>
+
+    {% for item in binary_uploads %}
+      <div style="margin-bottom:8px;">
+        <label for="{{ item.upload.id_for_label }}">{{ item.label }}</label><br>
+
+        {{ item.upload.errors }}
+        {{ item.upload }}
+
+        <label style="margin-left:8px;">
+          {{ item.clear }} Remover atual
+        </label>
+      </div>
+    {% endfor %}
+  </fieldset>
+
+
+
+
+
+  <fieldset>
+    <legend>Trajetória Acadêmica e Científica</legend>
+    {{ form.perfil_academico.label_tag }} {{ form.perfil_academico }}
+    {{ form.docencia_superior.label_tag }} {{ form.docencia_superior }}
+    {{ form.docencia_medio.label_tag }} {{ form.docencia_medio }}
+    {{ form.orientacao_ic.label_tag }} {{ form.orientacao_ic }}
+    <div>
+      {{ form.feira_ciencias }} {{ form.feira_ciencias.label_tag }}
+      {{ form.livro_publicado }} {{ form.livro_publicado.label_tag }}
+      {{ form.capitulo_publicado }} {{ form.capitulo_publicado.label_tag }}
+      {{ form.periodico_indexado }} {{ form.periodico_indexado.label_tag }}
+      {{ form.anais_congresso }} {{ form.anais_congresso.label_tag }}
+      {{ form.curso_extensao }} {{ form.curso_extensao.label_tag }}
+      {{ form.curso_capacitacao }} {{ form.curso_capacitacao.label_tag }}
+      {{ form.orientacoes_estudantes }} {{ form.orientacoes_estudantes.label_tag }}
+      {{ form.participacoes_bancas }} {{ form.participacoes_bancas.label_tag }}
+      {{ form.apresentacao_oral }} {{ form.apresentacao_oral.label_tag }}
+      {{ form.premiacoes }} {{ form.premiacoes.label_tag }}
+      {{ form.missao_cientifica }} {{ form.missao_cientifica.label_tag }}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Declarações</legend>
+    <div>
+      {{ form.aceite_declaracao_veracidade }} {{ form.aceite_declaracao_veracidade.label_tag }}
+    </div>
+    <div>
+      {{ form.aceite_requisitos_tecnicos }} {{ form.aceite_requisitos_tecnicos.label_tag }}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Notas</legend>
+    {{ form.portugues.label_tag }} {{ form.portugues }}
+    {{ form.matematica.label_tag }} {{ form.matematica }}
+    {{ form.biologia.label_tag }} {{ form.biologia }}
+    {{ form.quimica.label_tag }} {{ form.quimica }}
+    {{ form.fisica.label_tag }} {{ form.fisica }}
+    {{ form.historia.label_tag }} {{ form.historia }}
+    {{ form.geografia.label_tag }} {{ form.geografia }}
+  </fieldset>
+
+  <div style="margin-top:16px;">
+    <button type="submit">Salvar</button>
+    <a href="{% url 'applications:list' %}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

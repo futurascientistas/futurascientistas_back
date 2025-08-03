@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h1>Minhas Inscrições</h1>
+
+<form method="get" class="mb-3">
+  <input type="text" name="q" placeholder="Buscar por projeto/observações" value="{{ request.GET.q }}">
+  <select name="status">
+    <option value="">Todos os status</option>
+    {% for value, label in application.STATUS_ESCOLHAS %}{% endfor %}
+  </select>
+  <button type="submit">Filtrar</button>
+  <a href="{% url 'applications:create' %}">Nova Inscrição</a>
+</form>
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Projeto</th>
+      <th>Status</th>
+      <th>Criado em</th>
+      <th>Atualizado em</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for app in applications %}
+      <tr>
+        <td>{{ app.projeto }}</td>
+        <td>{{ app.get_status_display }}</td>
+        <td>{{ app.criado_em|date:"d/m/Y H:i" }}</td>
+        <td>{{ app.atualizado_em|date:"d/m/Y H:i" }}</td>
+        <td>
+          <a href="{% url 'applications:detail' app.pk %}">Detalhes</a> |
+          <a href="{% url 'applications:update' app.pk %}">Editar</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">Nenhuma inscrição encontrada.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">Anterior</a>{% endif %}
+    <span>Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">Próxima</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}

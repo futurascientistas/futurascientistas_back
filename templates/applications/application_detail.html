@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Detalhe da Inscrição</h1>
+
+<p><strong>Projeto:</strong> {{ application.projeto }}</p>
+<p><strong>Status:</strong> {{ application.get_status_display }}</p>
+<p><strong>Criado em:</strong> {{ application.criado_em|date:"d/m/Y H:i" }}</p>
+<p><strong>Atualizado em:</strong> {{ application.atualizado_em|date:"d/m/Y H:i" }}</p>
+
+<h3>Identificação</h3>
+<p><strong>Telefone do responsável:</strong> {{ application.telefone_responsavel }}</p>
+<p><strong>Lattes:</strong> <a href="{{ application.curriculo_lattes_url }}" target="_blank">{{ application.curriculo_lattes_url }}</a></p>
+<p><strong>Observações:</strong> {{ application.observacoes|default:"-" }}</p>
+
+<h3>Trajetória</h3>
+<ul>
+  <li>Perfil acadêmico: {{ application.perfil_academico|default:"-" }}</li>
+  <li>Docência (Superior): {{ application.docencia_superior|default:"-" }}</li>
+  <li>Docência (Médio): {{ application.docencia_medio|default:"-" }}</li>
+  <li>Orientação IC: {{ application.orientacao_ic|default:"-" }}</li>
+</ul>
+
+<h3>Notas</h3>
+<ul>
+  <li>Português: {{ application.portugues }}</li>
+  <li>Matemática: {{ application.matematica }}</li>
+  <li>Biologia: {{ application.biologia }}</li>
+  <li>Química: {{ application.quimica }}</li>
+  <li>Física: {{ application.fisica }}</li>
+  <li>História: {{ application.historia }}</li>
+  <li>Geografia: {{ application.geografia }}</li>
+</ul>
+
+<h3>Logs de Status</h3>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>Quando</th>
+      <th>De</th>
+      <th>Para</th>
+      <th>Por</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for log in application.logs_status.all %}
+      <tr>
+        <td>{{ log.data_modificacao|date:"d/m/Y H:i" }}</td>
+        <td>{{ log.status_anterior_display|default:log.status_anterior|default:"-" }}</td>
+        <td>{{ log.status_novo_display|default:log.status_novo|default:"-" }}</td>
+        <td>{{ log.modificado_por|default:"-" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">Sem alterações registradas.</td></tr>
+    {% endfor %}
+  </tbody>
+
+
+</table>
+
+<p style="margin-top:16px;">
+  <a href="{% url 'applications:update' application.pk %}">Editar</a> |
+  <a href="{% url 'applications:list' %}">Voltar</a>
+</p>
+{% endblock %}
