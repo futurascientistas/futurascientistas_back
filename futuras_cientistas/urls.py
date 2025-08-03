@@ -14,6 +14,7 @@ urlpatterns = [
     path('cadastro', CadastroView.as_view(), name='cadastro'),
     path('login', login_view, name='login'), 
     path('logout', logout_view, name='logout'),
+    path('dashboard/', dashboard, name='dashboard'),
 
 ]
 
