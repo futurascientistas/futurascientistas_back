@@ -1,0 +1,50 @@
+.heroSection {
+  text-align: center;
+  padding: 50px 15px 50px 15px;
+  font-family: 'Raleway', sans-serif;
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+  line-height: 1.15;
+  /* font-family: 'Montserrat', 'Arial', sans-serif; */
+}
+
+.underline {
+  display: inline-block;
+  position: relative;
+  font-weight: 400;
+}
+
+.underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  width: 100%;
+  z-index: 0;
+}
+
+.subtitle {
+  font-size: 1.12rem;
+  color: #444;
+  line-height: 1.45;
+  font-family: 'Montserrat', 'Arial', sans-serif;
+}
+
+/* Responsivo */
+@media (max-width: 650px) {
+  .title {
+    font-size: 2rem;
+  }
+  .subtitle {
+    font-size: 1rem;
+  }
+}

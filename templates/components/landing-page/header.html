@@ -1,0 +1,33 @@
+{% load static %}
+<header class="header">
+  <!-- Logo -->
+  <div class="logo">
+    <div class="headerfc__logo">
+      <img src="{% static 'public/images/futuras-cientistas-logo-horizontal-white.png' %}" alt="Futuras Cientistas" />
+    </div>
+  </div>
+
+  <div class="right-section">
+    <!-- Social Media Icons -->
+    <div class="social-icons">
+      <a href="#" class="social-icon">
+        {% include 'components/icons/message-circle.svg' %}
+      </a>
+      <a href="#" class="social-icon">
+        {% include 'components/icons/instagram.svg' %}
+      </a>
+      <a href="#" class="social-icon">
+        {% include 'components/icons/facebook.svg' %}
+      </a>
+      <a href="#" class="social-icon">
+        {% include 'components/icons/youtube.svg' %}
+      </a>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="headerfc__actions">
+      <a href="/login" class="headerfc__btn">ENTRAR</a>
+      <a href="/cadastro" class="headerfc__btn headerfc__btn_secondary">INSCREVA-SE</a>
+    </div>
+  </div>
+</header>

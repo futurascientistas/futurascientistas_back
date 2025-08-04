@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Futuras Cientistas</title>
+  <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/herosection.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/program-modules.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
+</head>
+<body class="raleway">
+
+  {% include 'components/landing-page/header.html' %}
+
+  {% include 'components/landing-page/herosection.html' %}
+
+  <div class="wrapper">
+    <div class="top-circle">
+      <div class="map-box">
+        <img
+          class="map"
+          src="{% static 'public/images/brasil.png' %}"
+          alt="Mapa do Brasil em roxo"
+        />
+      </div>
+
+      <div class="second-section">
+        <div class="pink-title">Conheça mais o Programa</div>
+        <div class="container-pink">
+          <div class="content-pink">
+            <div class="content-text-1">
+              O Futura Cientistas é um programa do Centro de Tecnologias
+              Estratégicas do Nordeste (Cetene) que estimula o contato de
+              alunas e professoras da rede pública de ensino com as áreas de
+              Ciência, Tecnologia, Engenharia e Matemática; a fim de
+              contribuir com a equidade de gênero no mercado profissional.
+            </div>
+            <div class="image-container-pink">
+              <div class="circle-img-1"></div>
+              <img
+                class="content-img-1"
+                src="{% static 'public/images/menina_real.png' %}"
+                alt="Futura Cientista"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pink"></div>
+
+    <div class="verde">
+      <div class="container-green">
+        <div class="content-green">
+          <div class="image-container-green">
+            <div class="circle-img-2"></div>
+            <img
+              class="content-img-2"
+              src="{% static 'public/images/menina_oculos.png' %}"
+              alt="Futura Cientista"
+            />
+          </div>
+          <div class="content-text-2">
+            Com o desenvolvimento do pensamento e de atividades científicas
+            transdisciplinares, reduzimos barreiras para o acesso e
+            permanência de meninas e mulheres nos espaços científicos. Em 10
+            anos, 70% das participantes do programa foram aprovadas no
+            vestibular. Destas, 80% escolheram cursos nas áreas de Ciência e
+            Tecnologia. As frentes de atuação têm início no ensino médio,
+            entretanto seguem até o ensino superior.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="azul">
+      <div class="container-blue">
+        <div class="content-blue">
+          <div class="content-text-3">
+            OBJETIVO: Estimular o interesse e promover a participação de
+            mulheres professoras e estudantes do ensino médio, nas áreas de
+            Ciência e Tecnologia, através de sua aproximação a centros
+            tecnológicos e instituições de ensino e pesquisa.
+          </div>
+          <div class="image-container-blue">
+            <div class="circle-img-3"></div>
+            <img
+              class="content-img-3"
+              src="{% static 'public/images/professora.png' %}"
+              alt="Futura Cientista"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include 'components/landing-page/program-modules.html' %}
+  {% include 'components/landing-page/footer.html' %}
+
+</body>
+</html>

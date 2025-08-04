@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard</title>
+<style>
+  :root {
+    --sidebar-width-expanded: 280px;
+    --sidebar-width-collapsed: 70px;
+  }
+
+  body {
+    margin: 0; font-family: Arial, sans-serif;
+    display: flex;
+  }
+
+  .sidebar {
+    background: #71569E;
+    color: white;
+    height: 100vh;
+    width: var(--sidebar-width-expanded);
+    transition: width 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar.collapsed {
+    width: var(--sidebar-width-collapsed);
+  }
+
+  .sidebar-header {
+    padding: 1rem;
+    text-align: right;
+  }
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.3rem;
+  }
+
+  .menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+  }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+  }
+  .menu-item:hover {
+    background-color: #593e8a;
+  }
+  .menu-item.active {
+    background-color: #e085b6;
+    color: #fff;
+  }
+
+  .menu-item svg {
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .menu-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Quando collapsed, esconde o texto */
+  .sidebar.collapsed .menu-text {
+    display: none;
+  }
+
+  /* Conteúdo principal */
+  .content {
+    flex-grow: 1;
+    padding: 1rem;
+  }
+
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      z-index: 9999;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      transform: translateX(0);
+      width: var(--sidebar-width-expanded);
+    }
+    .sidebar.collapsed {
+      transform: translateX(-100%);
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right:0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9998;
+    }
+    .overlay.visible {
+      display: block;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="sidebar" class="sidebar">
+  <div class="sidebar-header">
+    <button id="toggleBtn" class="toggle-btn" aria-label="Toggle Sidebar">&laquo;</button>
+  </div>
+  <ul class="menu-list">
+    {% for item in menu_items %}
+    <li class="menu-item {% if active_item == item.id %}active{% endif %}" data-path="{{ item.url }}">
+      {{ item.icon_svg|safe }}
+      <span class="menu-text">{{ item.title }}</span>
+    </li>
+    {% endfor %}
+    <li class="menu-item logout" onclick="window.location.href='{% url 'logout' %}'" style="cursor:pointer;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span class="menu-text">Sair</span>
+    </li>
+  </ul>
+</div>
+
+<div class="content">
+  <h1>Conteúdo da página</h1>
+  <p>Aqui vai o conteúdo principal da dashboard.</p>
+</div>
+
+<div id="overlay" class="overlay"></div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleBtn');
+  const overlay = document.getElementById('overlay');
+  const menuItems = document.querySelectorAll('.menu-item');
+
+  function toggleSidebar() {
+    sidebar.classList.toggle('collapsed');
+    updateToggleButton();
+    updateOverlay();
+  }
+
+  function updateToggleButton() {
+    if(sidebar.classList.contains('collapsed')) {
+      toggleBtn.innerHTML = '&raquo;';
+      toggleBtn.setAttribute('aria-label', 'Expandir sidebar');
+    } else {
+      toggleBtn.innerHTML = '&laquo;';
+      toggleBtn.setAttribute('aria-label', 'Contrair sidebar');
+    }
+  }
+
+  function updateOverlay() {
+    if(window.innerWidth <= 768 && !sidebar.classList.contains('collapsed')) {
+      overlay.classList.add('visible');
+    } else {
+      overlay.classList.remove('visible');
+    }
+  }
+
+  toggleBtn.addEventListener('click', toggleSidebar);
+  overlay.addEventListener('click', toggleSidebar);
+
+  // Navegar ao clicar no menu
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const url = item.getAttribute('data-path');
+      if(url) {
+        window.location.href = url;
+      }
+    });
+  });
+
+  // Responsividade automática ao redimensionar
+  function handleResize() {
+    if(window.innerWidth <= 768) {
+      sidebar.classList.add('collapsed');
+      updateToggleButton();
+      updateOverlay();
+    } else {
+      sidebar.classList.remove('collapsed');
+      updateToggleButton();
+      updateOverlay();
+    }
+  }
+
+  window.addEventListener('resize', handleResize);
+
+  // Inicializa o estado
+  handleResize();
+</script>
+
+</body>
+</html>
