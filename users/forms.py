@@ -30,7 +30,7 @@ class CadastroForm(forms.Form):
         })
     )
     group = forms.ChoiceField(
-        label="Grupo",
+        label="Função",
         required=True,
         choices=[],
         widget=forms.Select(attrs={
@@ -86,7 +86,7 @@ class CadastroForm(forms.Form):
         return cleaned_data
 
 
-from .models import User
+from .models import Deficiencia, Genero, Raca, User
 
 class UserUpdateForm(forms.ModelForm):
     BINARY_FILE_FIELDS = [
@@ -96,6 +96,7 @@ class UserUpdateForm(forms.ModelForm):
         'comprovante_residencia',
         'autodeclaracao_racial',
         'comprovante_deficiencia',
+        'comprovante_autorizacao_responsavel'
     ]
 
     for field_name in BINARY_FILE_FIELDS:
@@ -110,10 +111,31 @@ class UserUpdateForm(forms.ModelForm):
         )
     del field_name  
 
+    raca = forms.ModelChoiceField(
+        queryset=Raca.objects.all(),
+        label="Raça",
+        empty_label="--------",
+        required=False,
+        widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
+    )
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        label="Gênero",
+        empty_label="--------",
+        required=False,
+        widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
+    )
+    deficiencias = forms.ModelMultipleChoiceField(
+        queryset=Deficiencia.objects.all(),
+        label="Deficiências",
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
+    )
+
     class Meta:
         model = User
         fields = [
-            'cpf', 'email', 'nome', 'telefone', 'data_nascimento', 'pronomes',
+            'cpf', 'email', 'nome', 'telefone', 'telefone_responsavel','data_nascimento', 'pronomes',
             'curriculo_lattes',
             'cep', 'rua', 'bairro', 'numero', 'complemento', 'cidade', 'estado',
             'raca', 'genero', 'deficiencias',
@@ -122,11 +144,17 @@ class UserUpdateForm(forms.ModelForm):
             'telefone_escola', 'telefone_responsavel_escola',
         ]
 
+        labels = {
+            'telefone_responsavel': 'Telefone Responsável',
+            'telefone_responsavel_escola': 'Telefone Responsável da Escola',
+        }
+
         widgets = {
             'cpf': forms.TextInput(attrs={'readonly': 'readonly'}),
             'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full'}),
             'nome': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'telefone': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'telefone_responsavel': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'data_nascimento': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full'}),
             'pronomes': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full'}),
@@ -137,9 +165,9 @@ class UserUpdateForm(forms.ModelForm):
             'complemento': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'cidade': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'estado': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'raca': forms.Select(attrs={'class': 'mt-1 block w-full'}),
-            'genero': forms.Select(attrs={'class': 'mt-1 block w-full'}),
-            'deficiencias': forms.SelectMultiple(attrs={'class': 'mt-1 block w-full'}),
+            # 'raca': forms.Select(attrs={'class': 'mt-1 block w-full'}),
+            # 'genero': forms.Select(attrs={'class': 'mt-1 block w-full'}),
+            # 'deficiencias': forms.SelectMultiple(attrs={'class': 'mt-1 block w-full'}),
             'nome_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'tipo_ensino': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'cep_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),

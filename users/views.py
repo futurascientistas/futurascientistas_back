@@ -380,6 +380,7 @@ class CadastroView(FormView):
         cpf = re.sub(r'\D', '', data['cpf'])
         senha = data['password']
         nome = data['nome']
+        funcao = data['group']
 
         if User.objects.filter(email=email).exists():
             form.add_error('email', 'Email já cadastrado.')
@@ -389,7 +390,7 @@ class CadastroView(FormView):
             form.add_error('cpf', 'CPF já cadastrado.')
             return self.form_invalid(form)
 
-        user = User(nome=nome, email=email, cpf=cpf)
+        user = User(nome=nome, email=email, cpf=cpf, funcao=funcao)
         user.set_password(senha)
         user.is_active = True
         user.save()
@@ -417,7 +418,6 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     user_roles = getattr(request.user, 'roles', []) 
-    print("Grupos do usuário:", user_roles) 
 
     menu_items = [
         {

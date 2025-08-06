@@ -7,15 +7,45 @@
 <main class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
   <h2 class="text-2xl font-semibold mb-6">Meu Perfil</h2>
 
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+      <p class="text-blue-700">Você está visualizando como <span class="font-bold">{{ user.funcao|default:"NÃO DEFINIDO" }}</span></p>
+  </div>
+
+  <!-- Step Indicator -->
+  <div class="step-indicator flex justify-center mb-8">
+    <div class="flex items-center overflow-x-auto pb-2 w-full">
+      {% for step in steps %}
+        <div class="flex items-center">
+          <div class="step-item" data-step="{{ step }}">
+            <div class="step-number">{{ step }}</div>
+            <div class="step-name">
+              {% if step == 1 %}Identificação
+              {% elif step == 2 %}Endereço
+              {% elif step == 3 %}Escola
+              {% elif step == 4 %}Documentos
+              {% elif step == 5 %}Histórico
+              {% else %}Declaração
+              {% endif %}
+            </div>
+          </div>
+          {% if not forloop.last %}
+          <div class="step-connector"></div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
     <!-- Step 1: Identificação -->
+    {% if 1 in steps %}
     <div class="form-step" id="step-1">
       <h3 class="text-xl font-semibold mb-4">1. Identificação</h3>
       <div class="space-y-4">
         {% for field in form %}
-          {% if field.name in "cpf,nome,email,telefone,data_nascimento,pronomes,raca,genero,deficiencias,curriculo_lattes" %}
+          {% if field.name in "cpf,nome,email,telefone,telefone_responsavel,data_nascimento,pronomes,raca,genero,deficiencias,curriculo_lattes" %}
             {% include "components/users/form_field.html" with field=field %}
           {% endif %}
         {% endfor %}
@@ -24,8 +54,10 @@
         <button type="button" onclick="nextStep(2)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
       </div>
     </div>
+    {% endif %}
 
     <!-- Step 2: Endereço -->
+    {% if 2 in steps %}
     <div class="form-step hidden" id="step-2">
       <h3 class="text-xl font-semibold mb-4">2. Endereço</h3>
       <div class="space-y-4">
@@ -40,8 +72,10 @@
         <button type="button" onclick="nextStep(3)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
       </div>
     </div>
+    {% endif %}
 
     <!-- Step 3: Escola -->
+    {% if 3 in steps %}
     <div class="form-step hidden" id="step-3">
       <h3 class="text-xl font-semibold mb-4">3. Escola</h3>
       <div class="space-y-4">
@@ -62,29 +96,157 @@
         <button type="button" onclick="nextStep(4)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
       </div>
     </div>
+    {% endif %}
 
     <!-- Step 4: Documentos -->
+    {% if 4 in steps %}
     <div class="form-step hidden" id="step-4">
       <h3 class="text-xl font-semibold mb-4">4. Documentos</h3>
       <div class="space-y-4">
         {% for field in form %}
-          {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "autodeclaracao" in field.name %}
-            {% include "components/users/form_field.html" with field=field %}
+          {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name %}
+            {% if user.funcao != 'professora' or field.name != 'comprovante_autorizacao_responsavel' %}
+              {% include "components/users/form_field.html" with field=field %}
+            {% endif %}
           {% endif %}
         {% endfor %}
-      </div>
+        </div>
       <div class="flex justify-between mt-4">
         <button type="button" onclick="nextStep(3)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        {% if 4 == steps|last %}
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
+        {% else %}
+        <button type="button" onclick="nextStep(5)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Step 5: Histórico -->
+    {% if 5 in steps %}
+    <div class="form-step hidden" id="step-5">
+      <h3 class="text-xl font-semibold mb-4">5. Histórico</h3>
+      <div class="space-y-4">
+        <!-- Adicione aqui campos específicos para Histórico -->
+        {% include "components/users/form_field.html" with field=form.bal_field %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(4)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="button" onclick="nextStep(6)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Step 6: Declaração -->
+    {% if 6 in steps %}
+    <div class="form-step hidden" id="step-6">
+      <h3 class="text-xl font-semibold mb-4">6. Declaração de informações verdadeiras</h3>
+      <div class="space-y-4">
+        {% include "components/users/form_field.html" with field=form.autodeclaracao %}
+        {% include "components/users/form_field.html" with field=form.termo_responsabilidade %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(5)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
         <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
       </div>
     </div>
+    {% endif %}
   </form>
 </main>
+
+<style>
+  /* Estilos melhorados para step indicator */
+  .step-indicator {
+    position: relative;
+    overflow: visible;
+  }
+  
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    min-width: 80px;
+  }
+  
+  .step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  
+  .step-name {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-align: center;
+    max-width: 80px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .step-connector {
+    width: 40px;
+    height: 2px;
+    background-color: #e5e7eb;
+    margin: 0 5px;
+    flex-shrink: 0;
+  }
+  
+  .step-item.active .step-number {
+    background-color: #ec4899;
+    color: white;
+  }
+  
+  .step-item.active .step-name {
+    color: #4b5563;
+    font-weight: 500;
+  }
+  
+  /* Layout responsivo */
+  @media (max-width: 768px) {
+    .step-name {
+      max-width: 60px;
+      font-size: 0.65rem;
+    }
+    .step-connector {
+      width: 20px;
+    }
+  }
+</style>
 
 <script>
   function nextStep(step) {
     document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
-    document.getElementById('step-' + step).classList.remove('hidden');
+    
+    const currentStep = document.getElementById('step-' + step);
+    if (currentStep) {
+      currentStep.classList.remove('hidden');
+    }
+    
+    document.querySelectorAll('.step-item').forEach(item => {
+      item.classList.remove('active');
+      if (parseInt(item.dataset.step) === step) {
+        item.classList.add('active');
+      }
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Ativa o primeiro passo disponível
+    nextStep({{ steps.0 }});
+  });
 </script>
 {% endblock %}

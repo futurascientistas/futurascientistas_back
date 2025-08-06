@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import RegexValidator, FileExtensionValidator
 import uuid
 from .managers import UserManager
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 # Validadores
 cpf_validator = RegexValidator(regex=r'^\d{11}$', message='CPF deve conter 11 dígitos numéricos.')
@@ -29,6 +31,7 @@ class User(AbstractUser):
     email = models.EmailField('Email', unique=True)
     cpf = models.CharField('CPF', max_length=11, unique=True, validators=[cpf_validator])
     telefone = models.CharField('Telefone', max_length=15, blank=True, null=True, validators=[phone_validator])
+    telefone_responsavel = models.CharField('Telefone', max_length=15, blank=True, null=True, validators=[phone_validator])
     nome = models.CharField('Nome completo', max_length=150, blank=True)
     data_nascimento = models.DateField('Data de nascimento', null=True, blank=True)
     pronomes = models.CharField('Pronomes', max_length=50, blank=True)
@@ -79,11 +82,35 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['email']
     objects = UserManager()
 
+    FUNCAO_CHOICES = [
+        ('estudante', 'Estudante'),
+        ('professora', 'Professora'),
+        ('admin', 'Admin'),
+        ('avaliadora', 'Avaliadora'),
+    ]
+
+    funcao = models.CharField(
+        max_length=20, 
+        choices=FUNCAO_CHOICES,
+        null=False,
+        blank=False,
+        default='estudante'
+    )
+
     def save(self, *args, **kwargs):
+        is_new_user = self._state.adding
         super().save(*args, **kwargs)
-        if not self.groups.exists():
-            estudante_group, _ = Group.objects.get_or_create(name='estudante')
-            self.groups.add(estudante_group)
+
+        if is_new_user or self.pk and self.groups.count() == 0:
+            self.sincronizar_grupo()
+
+    def sincronizar_grupo(self):
+        if self.funcao:
+            grupos_funcao = [choice[0] for choice in self.FUNCAO_CHOICES]
+            for grupo in self.groups.filter(name__in=grupos_funcao):
+                self.groups.remove(grupo)
+            grupo, _ = Group.objects.get_or_create(name=self.funcao)
+            self.groups.add(grupo)
 
     def __str__(self):
         return self.email
@@ -91,3 +118,36 @@ class User(AbstractUser):
     @property
     def roles(self):
         return list(self.groups.values_list('name', flat=True))
+
+@receiver(m2m_changed, sender=User.groups.through)
+def sincronizar_funcao(sender, instance, action, **kwargs):
+    """
+    Atualiza a função do usuário quando grupos são modificados
+    via admin Django ou outras interfaces
+    """
+    # Apenas para ações que alteram a relação
+    if action in ['post_add', 'post_remove', 'post_clear']:
+        # Evita recursão infinita
+        if hasattr(instance, '_atualizando_funcao'):
+            return
+            
+        # Marca que estamos atualizando para evitar loop
+        instance._atualizando_funcao = True
+        
+        try:
+            grupos_funcao = [choice[0] for choice in User.FUNCAO_CHOICES]
+            grupos_usuario = instance.groups.filter(name__in=grupos_funcao)
+            
+            if grupos_usuario.exists():
+                # Usa o primeiro grupo de função encontrado
+                grupo_principal = grupos_usuario.first().name
+                if instance.funcao != grupo_principal:
+                    instance.funcao = grupo_principal
+                    # Salva sem disparar o save completo
+                    User.objects.filter(pk=instance.pk).update(funcao=grupo_principal)
+            elif instance.funcao:
+                # Se não tem grupo mas tem função, limpa a função
+                User.objects.filter(pk=instance.pk).update(funcao=None)
+        finally:
+            # Remove a marca de atualização
+            del instance._atualizando_funcao
