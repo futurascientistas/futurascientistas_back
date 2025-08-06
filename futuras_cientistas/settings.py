@@ -91,11 +91,11 @@ WSGI_APPLICATION = 'futuras_cientistas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'NAME': 'virada',
+        'USER': 'virada',
+        'PASSWORD': 'virada',
         'HOST': 'localhost',
-        'PORT': '5432'
+        'PORT': '6432'
     }
 }
 
