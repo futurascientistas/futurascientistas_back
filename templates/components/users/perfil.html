@@ -1,83 +1,90 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% load widget_tweaks %}
 
-{% block title %}Inscrição para Professoras{% endblock %}
-
-{% block extra_css %}
-<style>
-  /* Estilo para lista de erros */
-  .errorlist {
-    color: #dc2626; /* Tailwind red-600 */
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    list-style-type: none;
-    padding-left: 0;
-  }
-</style>
-{% endblock %}
+{% block title %}Meu Perfil{% endblock %}
 
 {% block content %}
-<main class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md font-raleway">
+<main class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
+  <h2 class="text-2xl font-semibold mb-6">Meu Perfil</h2>
 
-  <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
-
-  <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
-    <!-- Campo Projeto -->
-    <div>
-      <label for="{{ form.project.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-        {{ form.project.label }}
-        {% if form.project.field.required %}
-          <span class="text-red-600" aria-hidden="true">*</span>
-        {% endif %}
-      </label>
-      {% render_field form.project
-          class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-          id=form.project.id_for_label %}
-      {% if form.project.help_text %}
-        <small class="text-gray-600">{{ form.project.help_text }}</small>
-      {% endif %}
-      {% if form.project.errors %}
-        <ul class="errorlist" role="alert" aria-live="assertive">
-          {% for error in form.project.errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+    <!-- Step 1: Identificação -->
+    <div class="form-step" id="step-1">
+      <h3 class="text-xl font-semibold mb-4">1. Identificação</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if field.name in "cpf,nome,email,telefone,data_nascimento,pronomes,raca,genero,deficiencias,curriculo_lattes" %}
+            {% include "components/users/form_field.html" with field=field %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-end mt-4">
+        <button type="button" onclick="nextStep(2)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
     </div>
 
-    <!-- Outros campos -->
-    {% for field in form %}
-      {% if field.name != 'project' %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-            {{ field.label }}
-            {% if field.field.required %}
-              <span class="text-red-600" aria-hidden="true">*</span>
-            {% endif %}
-          </label>
-          {% render_field field
-              class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              id=field.id_for_label %}
-          {% if field.help_text %}
-            <small class="text-gray-600">{{ field.help_text }}</small>
+    <!-- Step 2: Endereço -->
+    <div class="form-step hidden" id="step-2">
+      <h3 class="text-xl font-semibold mb-4">2. Endereço</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if field.name in "cep,rua,bairro,numero,complemento,cidade,estado" %}
+            {% include "components/users/form_field.html" with field=field %}
           {% endif %}
-          {% if field.errors %}
-            <ul class="errorlist" role="alert" aria-live="assertive">
-              {% for error in field.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(1)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="button" onclick="nextStep(3)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
 
-    <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded transition-colors duration-300">
-      Enviar Inscrição
-    </button>
+    <!-- Step 3: Escola -->
+    <div class="form-step hidden" id="step-3">
+      <h3 class="text-xl font-semibold mb-4">3. Escola</h3>
+      <div class="space-y-4">
+        {% include "components/users/form_field.html" with field=form.nome_escola %}
+        {% include "components/users/form_field.html" with field=form.tipo_ensino %}
+        {% include "components/users/form_field.html" with field=form.cep_escola %}
+        {% include "components/users/form_field.html" with field=form.rua_escola %}
+        {% include "components/users/form_field.html" with field=form.bairro_escola %}
+        {% include "components/users/form_field.html" with field=form.numero_escola %}
+        {% include "components/users/form_field.html" with field=form.complemento_escola %}
+        {% include "components/users/form_field.html" with field=form.cidade_escola %}
+        {% include "components/users/form_field.html" with field=form.estado_escola %}
+        {% include "components/users/form_field.html" with field=form.telefone_escola %}
+        {% include "components/users/form_field.html" with field=form.telefone_responsavel_escola %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(2)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="button" onclick="nextStep(4)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Documentos -->
+    <div class="form-step hidden" id="step-4">
+      <h3 class="text-xl font-semibold mb-4">4. Documentos</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "autodeclaracao" in field.name %}
+            {% include "components/users/form_field.html" with field=field %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(3)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
+      </div>
+    </div>
   </form>
-
 </main>
+
+<script>
+  function nextStep(step) {
+    document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
+    document.getElementById('step-' + step).classList.remove('hidden');
+  }
+</script>
 {% endblock %}
