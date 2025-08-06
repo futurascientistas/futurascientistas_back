@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from .services import validar_e_retornar_inscricao, atualizar_inscricao
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from .serializers import ApplicationSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -12,10 +12,32 @@ from users.permissions import *
 from .models import *
 import magic
 import mimetypes
-
+from django.contrib import messages
+from .forms import ApplicationProfessorForm
+from .models import Project
+from django.contrib.auth.decorators import login_required
 
 from .serializers import ApplicationSerializer
 from .services import inscrever_usuario_em_projeto
+
+
+
+@login_required
+def inscricao_professora(request):
+    if request.method == 'POST':
+        form = ApplicationProfessorForm(request.POST, request.FILES)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.usuario = request.user
+            app.save()
+            messages.success(request, "Inscrição enviada com sucesso!")
+            return redirect('home')  
+        else:
+            messages.error(request, "Por favor corrija os erros no formulário.")
+    else:
+        form = ApplicationProfessorForm()
+
+    return render(request, 'components/applications/professor_application_form.html', {'form': form})
 
 class InscreverProjetoView(generics.CreateAPIView):
     serializer_class = ApplicationSerializer
