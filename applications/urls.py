@@ -8,6 +8,7 @@ urlpatterns = [
     path('atualizar_inscricao/<uuid:application_id>/', EditarInscricaoView.as_view(), name='update_application'),
     path('<uuid:inscricao_id>/baixar/<str:campo>/', AnexoDownloadView.as_view(), name='baixar_arquivo_inscricao'),
     path('professora/', inscricao_professora, name='inscricao_professora'),
+    path('aluna/', inscricao_aluna, name='inscricao_aluna'),
 
     
 ]

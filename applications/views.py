@@ -13,7 +13,7 @@ from .models import *
 import magic
 import mimetypes
 from django.contrib import messages
-from .forms import ApplicationProfessorForm
+from .forms import *
 from .models import Project
 from django.contrib.auth.decorators import login_required
 
@@ -38,6 +38,24 @@ def inscricao_professora(request):
         form = ApplicationProfessorForm()
 
     return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+
+@login_required
+def inscricao_aluna(request):
+    if request.method == 'POST':
+        form = ApplicationAlunoForm(request.POST, request.FILES)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.usuario = request.user
+            app.save()
+            messages.success(request, "Inscrição enviada com sucesso!")
+            return redirect('home')  
+        else:
+            messages.error(request, "Por favor corrija os erros no formulário.")
+    else:
+        form = ApplicationAlunoForm()
+
+    return render(request, 'components/applications/student_application_form.html', {'form': form})
 
 class InscreverProjetoView(generics.CreateAPIView):
     serializer_class = ApplicationSerializer
