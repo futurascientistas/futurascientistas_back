@@ -162,3 +162,170 @@ def get_valid_group(group_names):
                 return grupo
 
     return Group.objects.get_or_create(name='estudante')[0]
+
+def menu_sidebar(request):
+    if not request.user.is_authenticated:
+        return {}
+
+    # Captura roles do usuário (ajuste conforme sua lógica)
+    user_roles = getattr(request.user, 'roles', [])
+
+    menu_items = [
+        {
+            "id": "cadastro",
+            "title": "Criar projeto",
+            "roles": ["admin", "tutor"],
+            "url": "/project",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 5v14m-7-7h14"/>
+                </svg>
+            """
+        },
+        {
+            "id": "lista_projetos",
+            "title": "Lista de Projetos",
+            "roles": ["admin", "tutor"],
+            "url": "/project-list",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M3 10h18"/>
+                </svg>
+            """
+        },
+        {
+            "id": "inscricao_aluna",
+            "title": "Minha Inscrição",
+            "roles": ["estudante"],
+            "url": "/inscricao-aluna",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M5.5 21h13a2 2 0 0 0-13 0z"/>
+                </svg>
+            """
+        },
+        {
+            "id": "inscricao_professora",
+            "title": "Minha Inscrição",
+            "roles": ["professora"],
+            "url": "/inscricoes/professora",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M5.5 21h13a2 2 0 0 0-13 0z"/>
+                </svg>
+            """
+        },
+        {
+            "id": "projetos_disponiveis",
+            "title": "Projetos Disponíveis",
+            "roles": ["estudante", "professora"],
+            "url": "/projetos-disponiveis",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
+                <rect x="2" y="2" width="20" height="16" rx="2" ry="2"/>
+                </svg>
+            """
+        },
+        {
+            "id": "cronograma",
+            "title": "Cronograma",
+            "roles": [],  # visível para todos
+            "url": "/dashboard/cronograma",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            """
+        },
+        {
+            "id": "avaliacao",
+            "title": "Avaliação de inscrição",
+            "roles": ["admin"],
+            "url": "/dashboard/avaliacao",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8 12 2"/>
+                </svg>
+            """
+        },
+        {
+            "id": "notificacoes",
+            "title": "Notificações",
+            "roles": [],  # visível para todos
+            "url": "/dashboard/notificacoes",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            """
+        },
+        {
+            "id": "frequencia",
+            "title": "Frequência",
+            "roles": ["admin"],  # admin e tutor
+            "url": "/dashboard/frequencia",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"/>
+                <path d="M7 17l4-4 3 3 4-7"/>
+                </svg>
+            """
+        },
+        {
+            "id": "indicadores",
+            "title": "Indicadores",
+            "roles": ["admin"],  # admin e tutor
+            "url": "/dashboard/indicadores",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20V10"/>
+                <path d="M18 20V4"/>
+                <path d="M6 20v-6"/>
+                </svg>
+            """
+        },
+        {
+            "id": "analise",
+            "title": "Análise de relatórios (TCC)",
+            "roles": ["admin"],  # admin e tutor
+            "url": "/dashboard/analise",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16v16H4z"/>
+                <path d="M4 9h16"/>
+                <path d="M9 20V9"/>
+                </svg>
+            """
+        },
+        {
+            "id": "dados",
+            "title": "Dados de projetos",
+            "roles": ["admin", "tutor"],
+            "url": "/dashboard/dados",
+            "icon_svg": """
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <path d="M3 9h18"/>
+                <path d="M9 21V9"/>
+                </svg>
+            """
+        },
+    ]
+
+
+    filtered_items = [
+        item for item in menu_items
+        if (not item['roles']) or any(role in item["roles"] for role in user_roles)
+    ]
+
+    return {
+        'menu_items': filtered_items
+    }

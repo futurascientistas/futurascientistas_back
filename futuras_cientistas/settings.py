@@ -13,6 +13,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import os
+import environ
+
+
+env = environ.Env(
+    # Definições de tipos padrão.
+    # Exemplo: DEBUG=(bool, False) -> se a var não existir, assume False
+    DEBUG=(bool, False)
+)
+
+env_file = os.path.join(Path(__file__).resolve().parent.parent, ".env")
+if os.path.isfile(env_file):
+    env.read_env(env_file)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +34,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_)@(-q1p%=*@p4^sr840xvd9j@b0$7u^$t0s2ly+6hnmfffqv9'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG=True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 
 # Application definition
@@ -63,6 +75,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'futuras_cientistas.urls'
@@ -77,6 +91,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'futuras_cientistas.context_processors.menu_items_processor',
             ],
         },
     },
@@ -91,13 +106,14 @@ WSGI_APPLICATION = 'futuras_cientistas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd9sj8g0ko53vij',
-        'USER': 'ubrda2s1dur47b',
-        'PASSWORD': 'pe9e745eedcb8a9e9269b58a10fc6fd9fed5769dc0ee756d9ae0061f53faed055',
-        'HOST': 'c18qegamsgjut6.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
-        'PORT': '5432'
+        'NAME': env("DB_NAME"),
+        'USER': env("DB_USER"),
+        'PASSWORD': env("DB_PASSWORD"),
+        'HOST': env("DB_HOST"),
+        'PORT': env("DB_PORT"),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -121,9 +137,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
@@ -133,13 +149,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'public'),
 ]
 
-STATIC_ROOT = BASE_DIR / "staticfiles" 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -170,19 +190,19 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'users.User' 
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Definir o backend SMTP
-EMAIL_HOST = 'smtp.gmail.com'  
-EMAIL_PORT = 587  
-EMAIL_USE_TLS = True  
-EMAIL_HOST_USER = 'centeneprojetofuturascientista@gmail.com'  
-EMAIL_HOST_PASSWORD = 'ycgq ontk thpv seip'  
+EMAIL_BACKEND = env('EMAIL_BACKEND')  
+EMAIL_HOST = env('EMAIL_HOST') 
+EMAIL_PORT = env('EMAIL_PORT') 
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')  
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'  
-CELERY_TIMEZONE = 'America/Sao_Paulo'
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_ACCEPT_CONTENT = env('CELERY_ACCEPT_CONTENT') 
+CELERY_TASK_SERIALIZER = env('CELERY_TASK_SERIALIZER')
+CELERY_RESULT_BACKEND =  env('CELERY_RESULT_BACKEND')
+CELERY_TIMEZONE = env('CELERY_TIMEZONE')
 
 
 from celery.schedules import crontab
@@ -200,3 +220,5 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=0, minute=0),
     },
 }
+
+
