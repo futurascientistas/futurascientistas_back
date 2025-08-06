@@ -10,6 +10,8 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .filters import ProjectFilter
 from .services import importar_planilha_projetos, registrar_log_status
 from django.utils import timezone
+from django.core.paginator import Paginator
+from django.db.models import Q
 
 class ProjectCreateAPIView(generics.CreateAPIView):
     queryset = Project.objects.all()
@@ -131,5 +133,4 @@ def detalhes_projeto(request, projeto_id):
     return render(request, 'components/projects/detalhes_projeto.html', {'projeto': projeto})
 
 
-from django.core.paginator import Paginator
-from django.db.models import Q
+

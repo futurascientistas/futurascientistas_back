@@ -23,9 +23,12 @@ django-cors-headers==4.7.0
 django-filter==25.1
 djangorestframework==3.16.0
 djangorestframework-simplejwt==5.5.0
+et_xmlfile==2.0.0
+gunicorn==23.0.0
 Markdown==3.8
 numpy==2.2.6
 openpyxl==3.1.5
+packaging==25.0
 pandas==2.3.0
 psycopg==3.2.7
 PyJWT==2.9.0
@@ -38,8 +41,13 @@ sqlparse==0.5.3
 tzdata==2025.2
 celery==5.3.0
 redis==4.5.1
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.10
 django-celery-beat
+django-widget-tweaks
+python-magic-bin==0.4.14
+python-dotenv==1.1.1
+whitenoise==6.9.0
+python-magic==0.4.27
 
 ```
 
@@ -60,7 +68,7 @@ DATABASES = {
         'NAME': 'nome_do_banco',
         'USER': 'seu_user',
         'PASSWORD': 'sua_senha',
-        'HOST': 'host.docker.internal',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
@@ -80,8 +88,3 @@ python manage.py runserver
 
 ---
 
-### Rodar o docker da aplicao
-
-```bash
-docker-compose up -d
-```

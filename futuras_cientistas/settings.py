@@ -29,6 +29,7 @@ if os.path.isfile(env_file):
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+ROOT_URLCONF = 'futuras_cientistas.urls'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -62,6 +63,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_celery_beat',
     'widget_tweaks',
+    'whitenoise',
 
 
 ]
@@ -172,6 +174,7 @@ REST_FRAMEWORK = {
     ),
 }
 
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
@@ -182,6 +185,10 @@ SIMPLE_JWT = {
 }
 
 SIMPLE_JWT = {
+    "AUTH_COOKIE": "access_token",
+    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1), 
     'ROTATE_REFRESH_TOKENS': False,  

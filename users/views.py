@@ -625,3 +625,90 @@ def perfil_view(request):
     }
 
     return render(request, 'components/users/perfil.html', context)
+
+class ProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserSerializer(request.user, context={"request": request})
+        return Response(serializer.data)
+
+    # def get(self, request):
+    #     user = request.user
+    #     grupos = user.groups.all()
+    #     grupos_data = [{"id": g.id, "name": g.name} for g in grupos]
+
+    #     return Response({
+    #         "id": user.id,
+    #         "nome": user.nome,
+    #         "email": user.email,
+    #         "cpf": user.cpf,
+    #         "password_needs_reset": user.password_needs_reset,
+    #         "grupos": grupos_data
+    #     })
+
+class PasswordResetView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        user = request.user
+        if not user.password_needs_reset:
+            return Response({'mensagem': 'Senha já foi redefinida!'}, status=400)
+        nova_senha = request.data.get("new_password")
+
+        senha_valida = validar_senha(nova_senha)
+        if senha_valida != True:
+            return Response({'mensagem': senha_valida}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(nova_senha)
+        user.password_needs_reset = False
+        user.save()
+        return Response({'mensagem': 'Senha redefinida com sucesso!'})
+    
+
+class LogoutAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get('refresh_token')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+                response = Response({'mensagem': 'Logout realizado com sucesso!'}, status=status.HTTP_205_RESET_CONTENT)
+                response.delete_cookie('access_token')
+                response.delete_cookie('refresh_token')
+                return response
+            else:
+                return Response({'mensagem': 'Token de refresh não encontrado.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'mensagem': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+class UserGroupsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id=None):
+        if user_id:
+            # Apenas admins podem consultar grupos de outro usuário
+            if not request.user.is_superuser and request.user.id != int(user_id):
+                return Response({'detail': 'Acesso negado.'}, status=status.HTTP_403_FORBIDDEN)
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Se nenhum ID for passado, retorna os grupos do usuário autenticado
+            user = request.user
+
+        groups = user.groups.all()
+        data = [{'id': group.id, 'name': group.name} for group in groups]
+        return Response(data)
+    
+
+class DefaultGroupsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        grupos_padrao = ['admin', 'estudante', 'avaliadora', 'professora']
+        grupos = Group.objects.filter(name__in=grupos_padrao)
+        data = [{'id': group.id, 'name': group.name} for group in grupos]
+        return Response(data)

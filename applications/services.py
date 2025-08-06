@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from .models import *
 from django.db import transaction
 from applications.models import Application
-
+from .models import Application, ApplicationStatusLog
 
 def validar_e_retornar_inscricao(user, pk):
     inscricao = Application.objects.get(pk=pk)
@@ -161,3 +161,17 @@ def calcular_ranking_todas_professoras(projeto):
 
     for inscricao in inscricoes_professoras:
         calcular_ranking.delay(inscricao.id)
+
+
+def register_status_change(application: Application, old_status: str | None, actor: str | None) -> None:
+    if old_status == application.status:
+        return
+    ApplicationStatusLog.objects.create(
+        inscricao=application,
+        projeto=application.projeto,
+        status_anterior=old_status,
+        status_novo=application.status,
+        status_anterior_display=dict(Application.STATUS_ESCOLHAS).get(old_status) if old_status else None,
+        status_novo_display=dict(Application.STATUS_ESCOLHAS).get(application.status),
+        modificado_por=actor,
+    )

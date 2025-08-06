@@ -26,6 +26,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return attrs
 
+    def _parse_ids(self, value: str) -> list[int]:
+        if not value:
+            return []
+        return [int(v.strip()) for v in value.split(',') if v.strip().isdigit()]
+
     def _parse_values(self, value: str) -> List[str]:
         if not value:
             return []

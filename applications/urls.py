@@ -12,5 +12,10 @@ urlpatterns = [
     path('editar/<uuid:inscricao_id>/', editar_inscricao, name='editar_inscricao'),
     path('aluna/', inscricao_aluna, name='inscricao_aluna'),
 
-    
+    path("", ApplicationListView.as_view(), name="list"),
+    path("novo/", ApplicationCreateView.as_view(), name="create"),
+    path("<uuid:pk>/editar/", ApplicationUpdateView.as_view(), name="update"),
+    path("<uuid:pk>/", ApplicationDetailView.as_view(), name="detail"),
+    path("<uuid:pk>/download/<str:field>/", download_application_file, name="download"),
+
 ]
