@@ -1,3 +1,4 @@
+
 """
 Django settings for futuras_cientistas project.
 
@@ -91,7 +92,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'futuras_cientistas.context_processors.menu_items_processor',
             ],
         },
     },
@@ -220,5 +220,3 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=0, minute=0),
     },
 }
-
-
