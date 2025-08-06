@@ -111,7 +111,7 @@ class Application(models.Model):
     outras_atividades_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Outras Atividades")
 
     def clean(self):
-        now = timezone.now()
+        now = timezone.now().date()  
         if not (self.projeto.inicio_inscricoes <= now <= self.projeto.fim_inscricoes):
             raise ValidationError("Inscrição fora do prazo permitido do projeto.")
 

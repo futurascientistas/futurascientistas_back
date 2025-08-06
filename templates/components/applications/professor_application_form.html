@@ -5,9 +5,8 @@
 
 {% block extra_css %}
 <style>
-  /* Estilo para lista de erros */
   .errorlist {
-    color: #dc2626; /* Tailwind red-600 */
+    color: #dc2626;
     font-size: 0.875rem;
     margin-top: 0.25rem;
     list-style-type: none;
@@ -17,14 +16,13 @@
 {% endblock %}
 
 {% block content %}
-<main class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md font-raleway">
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
 
   <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
 
   <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
     {% csrf_token %}
 
-    <!-- Campo Projeto -->
     <div>
       <label for="{{ form.project.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
         {{ form.project.label }}
@@ -32,9 +30,7 @@
           <span class="text-red-600" aria-hidden="true">*</span>
         {% endif %}
       </label>
-      {% render_field form.project
-          class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-          id=form.project.id_for_label %}
+      {% render_field form.project class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=form.project.id_for_label %}
       {% if form.project.help_text %}
         <small class="text-gray-600">{{ form.project.help_text }}</small>
       {% endif %}
@@ -47,7 +43,6 @@
       {% endif %}
     </div>
 
-    <!-- Outros campos -->
     {% for field in form %}
       {% if field.name != 'project' %}
         <div>
@@ -57,9 +52,7 @@
               <span class="text-red-600" aria-hidden="true">*</span>
             {% endif %}
           </label>
-          {% render_field field
-              class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              id=field.id_for_label %}
+          {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=field.id_for_label %}
           {% if field.help_text %}
             <small class="text-gray-600">{{ field.help_text }}</small>
           {% endif %}
@@ -79,5 +72,5 @@
     </button>
   </form>
 
-</main>
+</div>
 {% endblock %}
