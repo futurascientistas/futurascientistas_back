@@ -1,0 +1,209 @@
+.wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Semicírculo rosa no topo */
+.topCircle {
+  /* width: 100vw; */
+  /* aspect-ratio: 1 / 1; */
+  background-color: #ef7cb3;
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* transform: translateY(-50%); */
+  position: relative;
+  z-index: 0;
+  padding-top: 10vw;
+  height: 48vw;
+  margin-top: 20vw;
+}
+.secondSection {
+  margin-top: 5vw;
+}
+/* Faixa Rosa inclinada para baixo */
+.pink {
+  background-color: #ef7cb3;
+  clip-path: polygon(100% 0%, 100% 0%, 0% 27.3%, 0% 0%);
+  width: 100%;
+  height: 80vw;
+  /* padding: 99px 20px; */
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  margin-top: -5px;
+}
+.containerPink {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+}
+.contentPink {
+  color: black;
+  display: flex;
+  flex-direction: row;
+  padding: 80px 65px 20px 90px
+}
+.imageContainerPink {
+  position: relative;
+}
+.circleImg1 {
+  position: relative;
+  left: 25%;
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  border-radius: 118px;
+  z-index: 1;
+}
+.contentImg1 {
+  position: relative;
+  z-index: 2;
+  margin-top: -25vw;
+  width: 75vw;
+}
+.pinkTitle {
+  font-weight: 700;
+  font-size: 35px;
+  margin: 0 auto;
+  text-align: center;
+  color: #fff;
+}
+.contentText1 {
+  text-align: justify;
+  font-size: 20px;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Verde */
+/* Paralelograma verde */
+.verde {
+  background-color: #5EB7AF;
+  clip-path: polygon(100% 0%, 100% 76%, 0% 100%, 0% 24%);
+  width: 100%;
+  height: 40vw;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  margin-top: -84vw;
+}
+.containerGreen {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+.contentGreen {
+  color: black;
+  display: flex;
+  flex-direction: row;
+  padding: 220px 100px 20px 70px
+}
+.imageContainerGreen {
+  position: relative;
+}
+.circleImg2 {
+  position: relative;
+  left: 15%;
+  top: 15%;
+  width: 200px;
+  height: 200px;
+  background: #fff;
+  border-radius: 118px;
+  z-index: 1;
+}
+.contentImg2 {
+  position: relative;
+  z-index: 2;
+  margin-top: -12vw;
+  width: 88vw;
+}
+.contentText2 {
+  text-align: justify;
+  font-size: 20px;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Azul */
+/* Paralelograma azul */
+.azul {
+  background-color: #7EB1DA;
+  clip-path: polygon(100% 0%, 100% 76%, 0% 100%, 0% 24%);
+  width: 100%;
+  height: 40vw;
+  text-align: center;
+  position: relative;
+  z-index: 3;
+  margin-top: -10vw;
+}
+.containerBlue {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 4;
+}
+.contentBlue {
+  color: black;
+  display: flex;
+  flex-direction: row;
+  padding: 250px 65px 20px 90px
+}
+.imageContainerBlue {
+  position: relative;
+  margin-right: 5%;
+}
+.circleImg3 {
+  position: relative;
+  left: 37%;
+  top: -40%;
+  width: 230px;
+  height: 230px;
+  background: #fff;
+  border-radius: 118px;
+  z-index: 1;
+}
+.contentImg3 {
+  position: relative;
+  z-index: 2;
+  margin-top: -24vw;
+  margin-left: 33%;
+  width: 52vw;
+}
+.contentText3 {
+  text-align: justify;
+  font-size: 20px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.mapBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -30vw;
+}
+
+.map {
+  width: 30vw;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+.raleway {
+  min-height: 100vh;
+  background-color: inherit; 
+}

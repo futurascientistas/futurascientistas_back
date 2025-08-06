@@ -1,0 +1,193 @@
+/* Reset simples */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fce4ec; /* rosa claro */
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Container do formulário */
+.form-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+/* Logo */
+.form-logo {
+  display: block;
+  margin: 0 auto 1.5rem;
+  max-width: 180px;
+}
+
+/* Título */
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+p a {
+  color: #e91e63; /* rosa forte */
+  text-decoration: none;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+/* Labels */
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #444;
+}
+
+/* Campos input */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.8rem;
+  border: 1.5px solid #ccc;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: #e91e63;
+  outline: none;
+}
+
+/* Campo com erro */
+input.error {
+  border-color: #f44336;
+}
+
+/* Mensagem de erro */
+.error-message {
+  color: #f44336;
+  font-size: 0.8rem;
+  margin-top: -0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Barra de força da senha */
+.password-strength {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+}
+
+.password-strength div {
+  flex: 1;
+  background-color: #ddd;
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.password-strength div.red {
+  background-color: #f44336;
+}
+
+.password-strength div.orange {
+  background-color: #ff9800;
+}
+
+.password-strength div.yellow {
+  background-color: #ffeb3b;
+}
+
+.password-strength div.green {
+  background-color: #4caf50;
+}
+
+/* Botão */
+button {
+  width: 100%;
+  background-color: #e91e63;
+  border: none;
+  color: white;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #d81b60;
+}
+
+/* Mensagem de sucesso */
+.success-message {
+  background-color: #dcedc8;
+  border: 1px solid #aed581;
+  color: #558b2f;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Container para alertas */
+.alert {
+  margin-bottom: 1rem;
+}
+
+/* Link dentro do alert */
+.alert a {
+  color: #e91e63;
+  text-decoration: underline;
+}
+
+/* Pequeno texto informativo */
+.small-text {
+  font-size: 0.75rem;
+  color: #777;
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+/* Responsivo */
+@media (max-width: 480px) {
+  .form-container {
+    padding: 1.5rem;
+    width: 90%;
+  }
+}
