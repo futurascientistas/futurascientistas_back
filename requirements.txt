@@ -58,8 +58,7 @@ python-crontab==3.3.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.1.1
-python-magic-bin==0.4.14
-python-magic-win64==0.4.13
+python-magic==0.4.27
 pytz==2025.2
 redis==4.5.1
 requests==2.32.3
