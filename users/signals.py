@@ -8,12 +8,12 @@ from .models import User
 
 GRUPOS_PADROES = ['admin', 'estudante', 'avaliadora', 'professora']
 
-@receiver(post_save, sender=User)
-def user_created(sender, instance, created, **kwargs):
-    if created:
-        estudante_group, _ = Group.objects.get_or_create(name='estudante')
-        instance.groups.add(estudante_group)
-        instance.save()  
+# @receiver(post_save, sender=User)
+# def user_created(sender, instance, created, **kwargs):
+#     if created:
+#         estudante_group, _ = Group.objects.get_or_create(name='estudante')
+#         instance.groups.add(estudante_group)
+#         instance.save()  
 
 @receiver(post_migrate)
 def criar_grupos_padrao(sender, **kwargs):
