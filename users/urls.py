@@ -9,6 +9,7 @@ urlpatterns = [
     # Autenticação
     # path('auth/cadastro/', CadastroAPIView.as_view(), name='cadastro'),
     # path('auth/login/', LoginAPIView.as_view(), name='login'),
+    path('dashboard/perfil/', perfil_view, name='perfil'),
     path('auth/cadastro1/', CadastroAPIView.as_view(), name='cadastro'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/recuperacao_senha/', RecuperacaoSenhaAPIView.as_view(), name='recuperacao_senha'),

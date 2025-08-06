@@ -1,0 +1,90 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<main class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
+  <h2 class="text-2xl font-semibold mb-6">Meu Perfil</h2>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Step 1: Identificação -->
+    <div class="form-step" id="step-1">
+      <h3 class="text-xl font-semibold mb-4">1. Identificação</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if field.name in "cpf,nome,email,telefone,data_nascimento,pronomes,raca,genero,deficiencias,curriculo_lattes" %}
+            {% include "components/users/form_field.html" with field=field %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-end mt-4">
+        <button type="button" onclick="nextStep(2)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Endereço -->
+    <div class="form-step hidden" id="step-2">
+      <h3 class="text-xl font-semibold mb-4">2. Endereço</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if field.name in "cep,rua,bairro,numero,complemento,cidade,estado" %}
+            {% include "components/users/form_field.html" with field=field %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(1)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="button" onclick="nextStep(3)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Escola -->
+    <div class="form-step hidden" id="step-3">
+      <h3 class="text-xl font-semibold mb-4">3. Escola</h3>
+      <div class="space-y-4">
+        {% include "components/users/form_field.html" with field=form.nome_escola %}
+        {% include "components/users/form_field.html" with field=form.tipo_ensino %}
+        {% include "components/users/form_field.html" with field=form.cep_escola %}
+        {% include "components/users/form_field.html" with field=form.rua_escola %}
+        {% include "components/users/form_field.html" with field=form.bairro_escola %}
+        {% include "components/users/form_field.html" with field=form.numero_escola %}
+        {% include "components/users/form_field.html" with field=form.complemento_escola %}
+        {% include "components/users/form_field.html" with field=form.cidade_escola %}
+        {% include "components/users/form_field.html" with field=form.estado_escola %}
+        {% include "components/users/form_field.html" with field=form.telefone_escola %}
+        {% include "components/users/form_field.html" with field=form.telefone_responsavel_escola %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(2)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="button" onclick="nextStep(4)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Documentos -->
+    <div class="form-step hidden" id="step-4">
+      <h3 class="text-xl font-semibold mb-4">4. Documentos</h3>
+      <div class="space-y-4">
+        {% for field in form %}
+          {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "autodeclaracao" in field.name %}
+            {% include "components/users/form_field.html" with field=field %}
+          {% endif %}
+        {% endfor %}
+      </div>
+      <div class="flex justify-between mt-4">
+        <button type="button" onclick="nextStep(3)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
+      </div>
+    </div>
+  </form>
+</main>
+
+<script>
+  function nextStep(step) {
+    document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
+    document.getElementById('step-' + step).classList.remove('hidden');
+  }
+</script>
+{% endblock %}
