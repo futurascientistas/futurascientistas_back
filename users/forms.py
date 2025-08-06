@@ -84,3 +84,94 @@ class CadastroForm(forms.Form):
                 raise forms.ValidationError(senha_valida)
 
         return cleaned_data
+
+
+from .models import User
+
+class UserUpdateForm(forms.ModelForm):
+    BINARY_FILE_FIELDS = [
+        'documento_cpf',
+        'documento_rg',
+        'foto',
+        'comprovante_residencia',
+        'autodeclaracao_racial',
+        'comprovante_deficiencia',
+    ]
+
+    for field_name in BINARY_FILE_FIELDS:
+        locals()[f"{field_name}__upload"] = forms.FileField(
+            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
+            required=False,
+            help_text="Deixe em branco para manter o arquivo atual."
+        )
+        locals()[f"{field_name}__clear"] = forms.BooleanField(
+            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}",
+            required=False
+        )
+    del field_name  
+
+    class Meta:
+        model = User
+        fields = [
+            'cpf', 'email', 'nome', 'telefone', 'data_nascimento', 'pronomes',
+            'curriculo_lattes',
+            'cep', 'rua', 'bairro', 'numero', 'complemento', 'cidade', 'estado',
+            'raca', 'genero', 'deficiencias',
+            'nome_escola', 'tipo_ensino', 'cep_escola', 'rua_escola', 'bairro_escola',
+            'numero_escola', 'complemento_escola', 'cidade_escola', 'estado_escola',
+            'telefone_escola', 'telefone_responsavel_escola',
+        ]
+
+        widgets = {
+            'cpf': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full'}),
+            'nome': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'telefone': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'data_nascimento': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full'}),
+            'pronomes': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full'}),
+            'cep': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'rua': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'bairro': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'numero': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'complemento': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'cidade': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'estado': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'raca': forms.Select(attrs={'class': 'mt-1 block w-full'}),
+            'genero': forms.Select(attrs={'class': 'mt-1 block w-full'}),
+            'deficiencias': forms.SelectMultiple(attrs={'class': 'mt-1 block w-full'}),
+            'nome_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'tipo_ensino': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'cep_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'rua_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'bairro_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'numero_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'complemento_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'cidade_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'estado_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'telefone_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'telefone_responsavel_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cpf'].disabled = True  
+
+    def _apply_binary_uploads(self, instance):
+        for field_name in self.BINARY_FILE_FIELDS:
+            upload_field = f"{field_name}__upload"
+            clear_field = f"{field_name}__clear"
+            if self.cleaned_data.get(clear_field):
+                setattr(instance, field_name, None)
+                continue
+            uploaded = self.files.get(upload_field)
+            if uploaded:
+                setattr(instance, field_name, uploaded.read())
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        self._apply_binary_uploads(instance)
+        if commit:
+            instance.save()
+            self.save_m2m()
+        return instance

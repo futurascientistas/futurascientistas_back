@@ -16,7 +16,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponse
 from django.views.generic.edit import FormView
-from .forms import CadastroForm
+from .forms import *
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -583,3 +583,19 @@ def dashboard(request):
         "user_roles": user_roles,
     }
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
+
+@login_required
+def perfil_view(request):
+    user = request.user
+
+    if request.method == 'POST':
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('perfil')  
+    else:
+        form = UserUpdateForm(instance=user)
+
+
+
+    return render(request, 'components/users/perfil.html', {'form': form})
