@@ -380,6 +380,7 @@ class CadastroView(FormView):
         cpf = re.sub(r'\D', '', data['cpf'])
         senha = data['password']
         nome = data['nome']
+        funcao = data['group']
 
         if User.objects.filter(email=email).exists():
             form.add_error('email', 'Email já cadastrado.')
@@ -389,7 +390,7 @@ class CadastroView(FormView):
             form.add_error('cpf', 'CPF já cadastrado.')
             return self.form_invalid(form)
 
-        user = User(nome=nome, email=email, cpf=cpf)
+        user = User(nome=nome, email=email, cpf=cpf, funcao=funcao)
         user.set_password(senha)
         user.is_active = True
         user.save()
@@ -417,167 +418,8 @@ def logout_view(request):
 @login_required
 def dashboard(request):
     user_roles = getattr(request.user, 'roles', []) 
-    print("Grupos do usuário:", user_roles) 
-
-    menu_items = [
-        {
-            "id": "cadastro",
-            "title": "Criar projeto",
-            "roles": ["admin", "tutor"],
-            "url": "/project",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 5v14m-7-7h14"/>
-                </svg>
-            """
-        },
-        {
-            "id": "lista_projetos",
-            "title": "Lista de Projetos",
-            "roles": ["admin", "tutor"],
-            "url": "/project-list",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <path d="M3 10h18"/>
-                </svg>
-            """
-        },
-        {
-            "id": "inscricao_aluna",
-            "title": "Minha Inscrição",
-            "roles": ["estudante"],
-            "url": "/inscricao-aluna",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4"/>
-                <path d="M5.5 21h13a2 2 0 0 0-13 0z"/>
-                </svg>
-            """
-        },
-        {
-            "id": "projetos_disponiveis",
-            "title": "Projetos Disponíveis",
-            "roles": ["estudante"],
-            "url": "/projetos-disponiveis",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
-                <rect x="2" y="2" width="20" height="16" rx="2" ry="2"/>
-                </svg>
-            """
-        },
-        {
-            "id": "cronograma",
-            "title": "Cronograma",
-            "roles": [],  # visível para todos
-            "url": "/dashboard/cronograma",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-            """
-        },
-        {
-            "id": "avaliacao",
-            "title": "Avaliação de inscrição",
-            "roles": ["admin"],
-            "url": "/dashboard/avaliacao",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8 12 2"/>
-                </svg>
-            """
-        },
-        {
-            "id": "notificacoes",
-            "title": "Notificações",
-            "roles": [],  # visível para todos
-            "url": "/dashboard/notificacoes",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-            """
-        },
-        {
-            "id": "frequencia",
-            "title": "Frequência",
-            "roles": [],  # admin e tutor
-            "url": "/dashboard/frequencia",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 3v18h18"/>
-                <path d="M7 17l4-4 3 3 4-7"/>
-                </svg>
-            """
-        },
-        {
-            "id": "indicadores",
-            "title": "Indicadores",
-            "roles": [],  # admin e tutor
-            "url": "/dashboard/indicadores",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20V10"/>
-                <path d="M18 20V4"/>
-                <path d="M6 20v-6"/>
-                </svg>
-            """
-        },
-        {
-            "id": "analise",
-            "title": "Análise de relatórios (TCC)",
-            "roles": [],  # admin e tutor
-            "url": "/dashboard/analise",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16v16H4z"/>
-                <path d="M4 9h16"/>
-                <path d="M9 20V9"/>
-                </svg>
-            """
-        },
-        {
-            "id": "dados",
-            "title": "Dados de projetos",
-            "roles": ["admin", "tutor"],
-            "url": "/dashboard/dados",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <path d="M3 9h18"/>
-                <path d="M9 21V9"/>
-                </svg>
-            """
-        },
-        {
-            "id": "logout",
-            "title": "Sair",
-            "roles": [],  # todos podem ver
-            "url": "/logout",
-            "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-            """
-        },
-    ]
-
-
-    filtered_items = [
-        item for item in menu_items
-        if any(role in item["roles"] for role in user_roles)
-    ]
 
     context = {
-        "menu_items": filtered_items,
         "active_item": "cadastro",
         "user": request.user,
         "user_roles": user_roles,
@@ -587,15 +429,41 @@ def dashboard(request):
 @login_required
 def perfil_view(request):
     user = request.user
+    
+    # Define os campos a serem removidos, dependendo da função do usuário
+    campos_estudante = [
+        'telefone_responsavel',
+        'comprovante_autorizacao_responsavel',
+        'comprovante_autorizacao_responsavel__upload',
+        'comprovante_autorizacao_responsavel__clear'
+    ]
+
+    # Define os passos do formulário
+    if user.funcao == 'professora':
+        steps = [1, 2, 3, 4]
+    else:
+        steps = [1, 2, 3, 4, 5, 6]
 
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('perfil')  
+        form = UserUpdateForm(request.POST, request.FILES, instance=user)
     else:
         form = UserUpdateForm(instance=user)
 
+    # Move a lógica de remoção de campos para fora dos blocos POST/GET
+    if user.funcao == 'professora':
+        for campo in campos_estudante:
+            if campo in form.fields:
+                del form.fields[campo]
 
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Seu perfil foi atualizado com sucesso!')
+        return redirect('dashboard')
+    
+    context = {
+        'form': form,
+        'user': user,
+        'steps': steps,
+    }
 
-    return render(request, 'components/users/perfil.html', {'form': form})
+    return render(request, 'components/users/perfil.html', context)

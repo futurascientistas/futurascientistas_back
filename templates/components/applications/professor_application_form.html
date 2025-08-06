@@ -87,10 +87,44 @@
         </div>
       {% endif %}
     {% endfor %}
+    {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
 
-    <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded transition-colors duration-300">
-      Enviar Inscrição
-    </button>
+<div class="flex gap-4">
+  <button type="submit" name="acao" value="salvar" style="
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    background-color: #e2e8f0;
+    color: #1f2937;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+  " 
+  onmouseover="this.style.backgroundColor='#cbd5e1'; this.style.transform='scale(1.02)'"
+  onmouseout="this.style.backgroundColor='#e2e8f0'; this.style.transform='scale(1)'">
+    Salvar
+  </button>
+
+  <button type="submit" name="acao" value="enviar" style="
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    background-color: #ec4899;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, transform 0.2s;
+  " 
+  onmouseover="this.style.backgroundColor='#db2777'; this.style.transform='scale(1.02)'"
+  onmouseout="this.style.backgroundColor='#ec4899'; this.style.transform='scale(1)'">
+    Enviar
+  </button>
+</div>
+
+{% endif %}
+
   </form>
 
 </div>

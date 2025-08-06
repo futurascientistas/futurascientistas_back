@@ -128,3 +128,7 @@ class DeficienciaViewSet(viewsets.ModelViewSet):
 
 class HomePageView(TemplateView):
     template_name = "components/landing-page/home.html"
+
+
+class NaoEcontrada(TemplateView):
+    template_name = "components/landing-page/page_404.html"

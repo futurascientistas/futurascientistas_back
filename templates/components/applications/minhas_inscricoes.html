@@ -2,45 +2,62 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
+<div class="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-lg">
 
-  <h1 class="text-2xl font-semibold mb-6 text-gray-900">Minhas Inscrições</h1>
+  <h1 class="text-3xl font-bold mb-8 text-gray-900">Minhas Inscrições</h1>
 
   {% if inscricoes %}
-    <table class="table-auto w-full border-collapse border border-gray-300">
-      <thead>
-        <tr>
-          <th class="border border-gray-300 px-4 py-2 text-left">Projeto</th>
-          <th class="border border-gray-300 px-4 py-2 text-left">Status</th>
-          <th class="border border-gray-300 px-4 py-2 text-left">Data de Criação</th>
-          <th class="border border-gray-300 px-4 py-2 text-left">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for inscricao in inscricoes %}
-          <tr class="even:bg-gray-50">
-            <td class="border border-gray-300 px-4 py-2">{{ inscricao.projeto }}</td>
-            <td class="border border-gray-300 px-4 py-2">{{ inscricao.status }}</td>
-            <td class="border border-gray-300 px-4 py-2">{{ inscricao.created_at|date:"d/m/Y H:i" }}</td>
-            <td class="border border-gray-300 px-4 py-2">
-              {% if inscricao.status|lower == "pendente" or inscricao.status|lower == "rascunho" %}
-                  <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-500 hover:text-pink-700">
-                  <!-- Ícone de lápis SVG simples -->
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l9.414-9.414a1 1 0 000-1.414l-4.586-4.586a1 1 0 00-1.414 0L4 15.414V20z"/>
-                  </svg>
-                </a>
-              {% else %}
-                <!-- Nenhuma ação disponível -->
-                -
-              {% endif %}
-            </td>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Projeto</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Atualizado em</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">Ações</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for inscricao in inscricoes %}
+            <tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
+              <td class="px-6 py-4 text-sm text-gray-800">{{ inscricao.projeto }}</td>
+              <td class="px-6 py-4 text-sm">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                  {% if inscricao.status == 'rascunho' %}
+                    bg-yellow-100 text-yellow-800
+                  {% elif inscricao.status == 'avaliacao' %}
+                    bg-blue-100 text-blue-800
+                  {% elif inscricao.status == 'aprovado' %}
+                    bg-green-100 text-green-800
+                  {% elif inscricao.status == 'pendente' %}
+                    bg-gray-100 text-gray-800
+                  {% else %}
+                    bg-red-100 text-red-800
+                  {% endif %}
+                ">
+                  {{ inscricao.get_status_display }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">{{ inscricao.atualizado_em|date:"d/m/Y H:i" }}</td>
+              <td class="px-6 py-4 text-sm">
+                {% if inscricao.status|lower == "pendente" or inscricao.status|lower == "rascunho" %}
+                  <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-600 hover:text-pink-800 inline-flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l9.414-9.414a1 1 0 000-1.414l-4.586-4.586a1 1 0 00-1.414 0L4 15.414V20z" />
+                    </svg>
+                    Editar
+                  </a>
+                {% else %}
+                  <span class="text-gray-400 italic">Não disponível</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
-    <p class="text-gray-700">Você ainda não possui inscrições.</p>
+    <p class="text-gray-600 mt-4">Você ainda não possui inscrições.</p>
   {% endif %}
 
 </div>

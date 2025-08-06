@@ -13,7 +13,7 @@ from .models import *
 import magic
 import mimetypes
 from django.contrib import messages
-from .forms import ApplicationProfessorForm
+from .forms import *
 from .models import Project
 from django.contrib.auth.decorators import login_required
 
@@ -51,6 +51,7 @@ def inscricao_professora(request):
 
 
 @login_required
+
 def minhas_inscricoes(request):
     inscricoes = Application.objects.filter(usuario=request.user).order_by('-criado_em')  
     
@@ -63,15 +64,41 @@ def editar_inscricao(request, inscricao_id):
     if request.method == "POST":
         form = ApplicationProfessorForm(request.POST, request.FILES, instance=inscricao)
         if form.is_valid():
-            form.save()
+            instancia = form.save(commit=False)
+
+            acao = request.POST.get('acao')
+                
+            if acao == 'enviar':
+                instancia.status = 'avaliacao'  
+            elif acao == 'salvar':
+                instancia.status = 'rascunho'  
+            
+            instancia.save()
             messages.success(request, "Inscrição atualizada com sucesso!")
-            return redirect('minhas_inscricoes')  # ou a URL que mostra as inscrições
+            return redirect('application:minhas_inscricoes')
         else:
             messages.error(request, "Por favor, corrija os erros.")
     else:
         form = ApplicationProfessorForm(instance=inscricao)
 
     return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+
+def inscricao_aluna(request):
+    if request.method == 'POST':
+        form = ApplicationAlunoForm(request.POST, request.FILES)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.usuario = request.user
+            app.save()
+            messages.success(request, "Inscrição enviada com sucesso!")
+            return redirect('home')  
+        else:
+            messages.error(request, "Por favor corrija os erros no formulário.")
+    else:
+        form = ApplicationAlunoForm()
+
+    return render(request, 'components/applications/student_application_form.html', {'form': form})
 
 class InscreverProjetoView(generics.CreateAPIView):
     serializer_class = ApplicationSerializer

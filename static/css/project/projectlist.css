@@ -1,0 +1,203 @@
+.projectCardsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+
+.projectCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.projectCard:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+  transform: translateY(-4px);
+}
+
+.cardHeader {
+  margin-bottom: 1rem;
+}
+
+.projectName {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e293b; /* cor primária escura */
+  margin: 0;
+}
+
+.projectInstitution {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #64748b; /* cinza médio */
+  margin-top: 0.25rem;
+}
+
+.cardBody p {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+  color: #334155; /* cinza escuro */
+  line-height: 1.4;
+}
+
+.cardBody p strong {
+  color: #0f172a; /* quase preto para labels */
+}
+
+.cardFooter {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.openButton {
+  background-color: #e085b6; 
+  color: #fff;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1rem;
+  box-shadow: 0 3px 8px rgba(224, 133, 182, 0.6); 
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.openButton:hover {
+  background-color: #c15a9c; 
+  box-shadow: 0 5px 15px rgba(193, 90, 156, 0.7);
+}
+
+.modalityBadge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  user-select: none;
+}
+
+.modalityRemote {
+  background-color: #e0f2fe; /* azul claro */
+  color: #0284c7; /* azul mais forte */
+}
+
+.modalityPresencial {
+  background-color: #d1fae5; /* verde claro */
+  color: #16a34a; /* verde */
+}
+
+.filterInput {
+  width: 100%;
+  max-width: 360px;
+  padding: 0.5rem 2.5rem 0.5rem 1rem; 
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #334155;
+  background-color: #f9fafb;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%2364788b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-search' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.2rem 1.2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filterInput:focus {
+  border-color: #71569E; 
+  box-shadow: 0 0 8px rgba(113, 86, 158, 0.5);
+  outline: none;
+  background-color: #fff;
+}
+
+.pageHeader {
+  margin-bottom: 2rem;
+  padding: 0 1rem;
+}
+
+.pageTitle {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  font-size: 2.5rem; 
+  color: #050505; 
+  margin: 0 0 0.25rem 0;
+  position: relative;
+  padding-bottom: 0.5rem;
+  border-bottom: 3px solid #71569E;
+
+}
+
+.pageSubtitle {
+  margin-top: 0.25rem;
+}
+
+
+.filterInput {
+  flex-grow: 1;
+  min-width: 200px;
+  max-width: 360px;
+  padding: 0.5rem 2.5rem 0.5rem 1rem; 
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #334155;
+  background-color: #f9fafb;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%2364788b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-search' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.2rem 1.2rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filterInput:focus {
+  border-color: #71569E; 
+  box-shadow: 0 0 8px rgba(113, 86, 158, 0.5);
+  outline: none;
+  background-color: #fff;
+}
+
+.filterSelect {
+  min-width: 180px;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  font-size: 1rem;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filterSelect:hover,
+.filterSelect:focus {
+  border-color: #71569E;
+  box-shadow: 0 0 8px rgba(113, 86, 158, 0.5);
+  outline: none;
+}
+
+/* Botão de filtro */
+.filterButton {
+  background-color: #71569E;
+  color: #fff;
+  font-weight: 600;
+  padding: 0.55rem 1.5rem;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(113, 86, 158, 0.5);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filterButton:hover,
+.filterButton:focus {
+  background-color: #593a82;
+  box-shadow: 0 5px 15px rgba(89, 58, 130, 0.7);
+  outline: none;
+}
