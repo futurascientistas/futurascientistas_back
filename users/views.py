@@ -587,15 +587,41 @@ def dashboard(request):
 @login_required
 def perfil_view(request):
     user = request.user
+    
+    # Define os campos a serem removidos, dependendo da função do usuário
+    campos_estudante = [
+        'telefone_responsavel',
+        'comprovante_autorizacao_responsavel',
+        'comprovante_autorizacao_responsavel__upload',
+        'comprovante_autorizacao_responsavel__clear'
+    ]
+
+    # Define os passos do formulário
+    if user.funcao == 'professora':
+        steps = [1, 2, 3, 4]
+    else:
+        steps = [1, 2, 3, 4, 5, 6]
 
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('perfil')  
+        form = UserUpdateForm(request.POST, request.FILES, instance=user)
     else:
         form = UserUpdateForm(instance=user)
 
+    # Move a lógica de remoção de campos para fora dos blocos POST/GET
+    if user.funcao == 'professora':
+        for campo in campos_estudante:
+            if campo in form.fields:
+                del form.fields[campo]
 
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Seu perfil foi atualizado com sucesso!')
+        return redirect('dashboard')
+    
+    context = {
+        'form': form,
+        'user': user,
+        'steps': steps,
+    }
 
-    return render(request, 'components/users/perfil.html', {'form': form})
+    return render(request, 'components/users/perfil.html', context)
