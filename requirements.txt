@@ -1,3 +1,4 @@
+
 amqp==5.3.1
 asgiref==3.8.1
 asn1crypto==1.5.1
@@ -76,3 +77,5 @@ virtualenv==20.26.6
 wcwidth==0.2.13
 wheel==0.45.1
 whitenoise==6.9.0
+django-widget-tweaks
+
