@@ -1,16 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import (
-    RegiaoListCreateView, RegiaoRetrieveUpdateDestroyView,
-    EstadoListCreateView, EstadoRetrieveUpdateDestroyView,
-    CidadeListCreateView, CidadeRetrieveUpdateDestroyView,
-    InstituicaoListCreateView, InstituicaoRetrieveUpdateDestroyView,
-    CidadeBulkCreateView, EstadosByRegiaoList,
-    CidadesByEstadoView, GeneroListCreateAPIView,
-    GeneroRetrieveUpdateDestroyAPIView,
-    RacaViewSet, DeficienciaViewSet,
-    HomePageView  
-)
+from .views import *
+
 
 router = DefaultRouter()
 router.register(r'racas', RacaViewSet, basename='raca')
@@ -41,4 +32,5 @@ urlpatterns = [
     # GENERO
     path('generos/', GeneroListCreateAPIView.as_view(), name='genero-list-create'),
     path('generos/<int:pk>/', GeneroRetrieveUpdateDestroyAPIView.as_view(), name='genero-detail'),
+
 ]

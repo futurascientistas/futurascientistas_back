@@ -112,6 +112,10 @@ class Application(models.Model):
 
     def clean(self):
         now = timezone.now().date()  
+        if not self.projeto:
+            # Se não tem projeto, lança erro específico para campo projeto
+            raise ValidationError({'projeto': 'O projeto deve ser selecionado.'})
+    
         if not (self.projeto.inicio_inscricoes <= now <= self.projeto.fim_inscricoes):
             raise ValidationError("Inscrição fora do prazo permitido do projeto.")
 

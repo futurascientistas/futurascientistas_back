@@ -24,6 +24,16 @@ from .services import inscrever_usuario_em_projeto
 
 @login_required
 def inscricao_professora(request):
+    ano_atual = timezone.now().year
+
+    inscricoes_ano = Application.objects.filter(
+        usuario=request.user,
+        criado_em__year=ano_atual
+    )
+
+    if inscricoes_ano.exists():
+        return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes_ano})
+
     if request.method == 'POST':
         form = ApplicationProfessorForm(request.POST, request.FILES)
         if form.is_valid():
@@ -31,11 +41,35 @@ def inscricao_professora(request):
             app.usuario = request.user
             app.save()
             messages.success(request, "Inscrição enviada com sucesso!")
-            return redirect('home')  
+            return redirect('dashboard')
         else:
             messages.error(request, "Por favor corrija os erros no formulário.")
     else:
         form = ApplicationProfessorForm()
+
+    return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+
+@login_required
+def minhas_inscricoes(request):
+    inscricoes = Application.objects.filter(usuario=request.user).order_by('-criado_em')  
+    
+    return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes})
+
+@login_required
+def editar_inscricao(request, inscricao_id):
+    inscricao = get_object_or_404(Application, id=inscricao_id, usuario=request.user)
+
+    if request.method == "POST":
+        form = ApplicationProfessorForm(request.POST, request.FILES, instance=inscricao)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Inscrição atualizada com sucesso!")
+            return redirect('minhas_inscricoes')  # ou a URL que mostra as inscrições
+        else:
+            messages.error(request, "Por favor, corrija os erros.")
+    else:
+        form = ApplicationProfessorForm(instance=inscricao)
 
     return render(request, 'components/applications/professor_application_form.html', {'form': form})
 

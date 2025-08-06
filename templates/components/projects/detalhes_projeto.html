@@ -1,0 +1,15 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% block content %}
+  <h1 class="text-2xl font-bold mb-2">{{ projeto.nome }}</h1>
+  <p class="mb-4">{{ projeto.descricao }}</p>
+
+  <ul class="text-sm text-gray-700 space-y-1">
+    <li><strong>Status:</strong> {{ projeto.get_status_display }}</li>
+    <li><strong>Formato:</strong> {{ projeto.get_formato_display }}</li>
+    <li><strong>Vagas:</strong> {{ projeto.vagas }}</li>
+    <li><strong>Inscrições:</strong> {{ projeto.inicio_inscricoes }} a {{ projeto.fim_inscricoes }}</li>
+    <li><strong>Duração:</strong> {{ projeto.data_inicio }} a {{ projeto.data_fim }}</li>
+  </ul>
+
+  <a href="{% url 'lista_projetos' %}" class="mt-4 inline-block text-blue-600 hover:underline">← Voltar para a lista</a>
+{% endblock %}

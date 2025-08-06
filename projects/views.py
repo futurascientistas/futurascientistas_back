@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .serializers import ProjectSerializer
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render, redirect
 from .filters import ProjectFilter
 from .services import importar_planilha_projetos, registrar_log_status
 from django.utils import timezone
@@ -120,3 +121,15 @@ class VerificarInscricaoView(APIView):
 
         pode_inscrever = projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes
         return Response({"pode_inscrever": pode_inscrever})
+
+def lista_projetos(request):
+    projetos = Project.objects.all()
+    return render(request, 'components/projects/lista_projetos.html', {'projetos': projetos})
+
+def detalhes_projeto(request, projeto_id):
+    projeto = get_object_or_404(Project, id=projeto_id)
+    return render(request, 'components/projects/detalhes_projeto.html', {'projeto': projeto})
+
+
+from django.core.paginator import Paginator
+from django.db.models import Q
