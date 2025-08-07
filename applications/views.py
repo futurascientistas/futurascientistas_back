@@ -8,6 +8,7 @@ from .serializers import ApplicationSerializer
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
+from django.http import HttpResponseForbidden
 from users.permissions import *
 from .models import *
 import magic
@@ -61,8 +62,18 @@ def minhas_inscricoes(request):
 def editar_inscricao(request, inscricao_id):
     inscricao = get_object_or_404(Application, id=inscricao_id, usuario=request.user)
 
+    if 'professora' in request.user.roles:
+        FormClass = ApplicationProfessorForm
+        template = 'components/applications/professor_application_form.html'
+    elif 'estudante' in request.user.roles:
+        FormClass = ApplicationAlunoForm
+        template = 'components/applications/student_application_form.html'  
+    
+    else:
+        return HttpResponseForbidden("Você não tem permissão para editar essa inscrição.")
+    
     if request.method == "POST":
-        form = ApplicationProfessorForm(request.POST, request.FILES, instance=inscricao)
+        form = FormClass(request.POST, request.FILES, instance=inscricao)
         if form.is_valid():
             instancia = form.save(commit=False)
 
@@ -79,12 +90,23 @@ def editar_inscricao(request, inscricao_id):
         else:
             messages.error(request, "Por favor, corrija os erros.")
     else:
-        form = ApplicationProfessorForm(instance=inscricao)
+        form = FormClass(instance=inscricao)
 
-    return render(request, 'components/applications/professor_application_form.html', {'form': form})
+    return render(request, template, {'form': form})
 
 
+@login_required
 def inscricao_aluna(request):
+    ano_atual = timezone.now().year
+
+    inscricoes_ano = Application.objects.filter(
+        usuario=request.user,
+        criado_em__year=ano_atual
+    )
+
+    if inscricoes_ano.exists():
+        return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes_ano})
+
     if request.method == 'POST':
         form = ApplicationAlunoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -92,7 +114,7 @@ def inscricao_aluna(request):
             app.usuario = request.user
             app.save()
             messages.success(request, "Inscrição enviada com sucesso!")
-            return redirect('home')  
+            return redirect('dashboard')
         else:
             messages.error(request, "Por favor corrija os erros no formulário.")
     else:
