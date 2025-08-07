@@ -1,5 +1,6 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% load widget_tweaks %}
+{% load custom_filters %}
 
 {% block title %}Meu Perfil{% endblock %}
 
@@ -11,21 +12,14 @@
       <p class="text-blue-700">Você está visualizando como <span class="font-bold">{{ user.funcao|default:"NÃO DEFINIDO" }}</span></p>
   </div>
 
-  <!-- Step Indicator -->
   <div class="step-indicator flex justify-center mb-8">
     <div class="flex items-center overflow-x-auto pb-2 w-full">
       {% for step in steps %}
         <div class="flex items-center">
-          <div class="step-item" data-step="{{ step }}">
-            <div class="step-number">{{ step }}</div>
+          <div class="step-item" data-step="{{ step.number }}">
+            <div class="step-number">{{ step.number }}</div>
             <div class="step-name">
-              {% if step == 1 %}Identificação
-              {% elif step == 2 %}Endereço
-              {% elif step == 3 %}Escola
-              {% elif step == 4 %}Documentos
-              {% elif step == 5 %}Histórico
-              {% else %}Declaração
-              {% endif %}
+              {{ step.name }}
             </div>
           </div>
           {% if not forloop.last %}
@@ -39,9 +33,8 @@
   <form method="post" enctype="multipart/form-data" class="space-y-6">
     {% csrf_token %}
 
-    <!-- Step 1: Identificação -->
-    {% if 1 in steps %}
-    <div class="form-step" id="step-1">
+    {% if 1 in steps|get_value_for_key:"number" %}
+    <div class="form-step hidden" id="step-1">
       <h3 class="text-xl font-semibold mb-4">1. Identificação</h3>
       <div class="space-y-4">
         {% for field in form %}
@@ -56,8 +49,7 @@
     </div>
     {% endif %}
 
-    <!-- Step 2: Endereço -->
-    {% if 2 in steps %}
+    {% if 2 in steps|get_value_for_key:"number" %}
     <div class="form-step hidden" id="step-2">
       <h3 class="text-xl font-semibold mb-4">2. Endereço</h3>
       <div class="space-y-4">
@@ -74,8 +66,7 @@
     </div>
     {% endif %}
 
-    <!-- Step 3: Escola -->
-    {% if 3 in steps %}
+    {% if 3 in steps|get_value_for_key:"number" %}
     <div class="form-step hidden" id="step-3">
       <h3 class="text-xl font-semibold mb-4">3. Escola</h3>
       <div class="space-y-4">
@@ -98,8 +89,7 @@
     </div>
     {% endif %}
 
-    <!-- Step 4: Documentos -->
-    {% if 4 in steps %}
+    {% if 4 in steps|get_value_for_key:"number" %}
     <div class="form-step hidden" id="step-4">
       <h3 class="text-xl font-semibold mb-4">4. Documentos</h3>
       <div class="space-y-4">
@@ -113,40 +103,143 @@
         </div>
       <div class="flex justify-between mt-4">
         <button type="button" onclick="nextStep(3)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
-        {% if 4 == steps|last %}
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
+        {% if 5 in steps|get_value_for_key:"number" %}
+          <button type="button" onclick="nextStep(5)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
         {% else %}
-        <button type="button" onclick="nextStep(5)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+          <button type="button" onclick="nextStep(6)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
         {% endif %}
+      </div>
     </div>
     {% endif %}
 
-    <!-- Step 5: Histórico -->
-    {% if 5 in steps %}
+    {% if 5 in steps|get_value_for_key:"number" %}
     <div class="form-step hidden" id="step-5">
       <h3 class="text-xl font-semibold mb-4">5. Histórico</h3>
+
       <div class="space-y-4">
-        <!-- Adicione aqui campos específicos para Histórico -->
-        {% include "components/users/form_field.html" with field=form.bal_field %}
+        {% include "components/users/form_field.html" with field=form.historico_escolar %}
+        {% include "components/users/form_field.html" with field=form.autorizacao_responsavel %}
+
+        <div class="mb-6">
+          <label class="text-sm font-medium text-gray-700 block mb-2">Notas por Disciplina</label>
+          
+          <div class="flex flex-col sm:flex-row items-start sm:items-end space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+            <div class="flex-grow w-full sm:w-auto">
+              <label for="disciplina-input" class="text-sm font-medium text-gray-700 block mb-1">
+                Adicionar uma nova disciplina
+              </label>
+              <input type="text" id="disciplina-input" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500" placeholder="Ex: Matemática, Física">
+            </div>
+            <button type="button" onclick="adicionarDisciplina()" class="bg-pink-500 text-white px-4 py-2 rounded-md h-10 w-full sm:w-auto">
+              Adicionar Disciplina
+            </button>
+          </div>
+
+          <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Disciplina
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Bimestre
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nota
+                  </th>
+                  <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Excluir
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="notas-table-body" class="bg-white divide-y divide-gray-200">
+                {{ formset.management_form }}
+                {% for form_nota in formset %}
+                <tr class="form-row">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {% include "components/users/form_field_inline.html" with field=form_nota.disciplina %}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {% include "components/users/form_field_inline.html" with field=form_nota.bimestre %}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {% include "components/users/form_field_inline.html" with field=form_nota.valor %}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    {% if form_nota.instance.pk %}
+                      <div class="flex items-center justify-center h-full">
+                        {{ form_nota.DELETE }}
+                        <button type="button" onclick="removerForm(this)" class="text-red-500 hover:text-red-700 ml-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    {% else %}
+                       <div class="flex items-center justify-center h-full">
+                        <button type="button" onclick="removerForm(this)" class="text-red-500 hover:text-red-700">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    {% endif %}
+                  </td>
+                  <td class="hidden">
+                      {{ form_nota.id }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
+
       <div class="flex justify-between mt-4">
-        <button type="button" onclick="nextStep(4)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
-        <button type="button" onclick="nextStep(6)" class="bg-pink-500 text-white px-4 py-2 rounded">Próximo</button>
+        <button type="button" onclick="nextStep(4)" class="bg-gray-300 px-4 py-2 rounded">
+          Voltar
+        </button>
+        {% if 5 in steps|get_value_for_key:"number" %}
+        <button type="button" onclick="nextStep(6)" class="bg-pink-500 text-white px-4 py-2 rounded">
+          Próximo
+        </button>
+        {% else %}
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
+          Atualizar
+        </button>
+        {% endif %}
       </div>
     </div>
     {% endif %}
 
-    <!-- Step 6: Declaração -->
-    {% if 6 in steps %}
+    {% if 6 in steps|get_value_for_key:"number" %}
     <div class="form-step hidden" id="step-6">
       <h3 class="text-xl font-semibold mb-4">6. Declaração de informações verdadeiras</h3>
       <div class="space-y-4">
-        {% include "components/users/form_field.html" with field=form.autodeclaracao %}
+        <div class="bg-gray-100 p-4 rounded-md border border-gray-200">
+            <p class="text-sm font-medium text-gray-700 mb-2">Ao prosseguir com esta inscrição, você declara que:</p>
+            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                <li>Todas as informações fornecidas são verdadeiras e corretas</li>
+                <li>Os documentos enviados são autênticos e não foram alterados</li>
+                <li>Está ciente de que informações falsas podem resultar no cancelamento da inscrição</li>
+                <li>Autoriza o uso dos dados fornecidos para fins do processo seletivo</li>
+            </ul>
+        </div>
+        <div class="flex items-start mt-4">
+            <input type="checkbox" name="autodeclaracao" id="id_autodeclaracao"
+                   class="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                   {% if form.autodeclaracao.value %}checked{% endif %} />
+            <label for="id_autodeclaracao" class="ml-2 block text-sm text-gray-700">
+                Declaro que todas as informações fornecidas são verdadeiras *
+            </label>
+        </div>
         {% include "components/users/form_field.html" with field=form.termo_responsabilidade %}
       </div>
       <div class="flex justify-between mt-4">
         <button type="button" onclick="nextStep(5)" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
+        <button type="submit" id="submit-step-6" class="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed" disabled>Atualizar</button>
       </div>
     </div>
     {% endif %}
@@ -246,7 +339,115 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     // Ativa o primeiro passo disponível
-    nextStep({{ steps.0 }});
+    const stepsData = JSON.parse('{{ steps|get_value_for_key:"number"|safe|escapejs }}');
+    const firstStepNumber = stepsData.length > 0 ? stepsData[0] : null;
+    if (firstStepNumber) {
+        nextStep(firstStepNumber);
+    }
+    esconderLinhaVaziaInicial();
+
+    // Lógica para o step 6
+    const declarationCheckbox = document.getElementById('id_autodeclaracao');
+    const submitButton = document.getElementById('submit-step-6');
+
+    if (declarationCheckbox && submitButton) {
+        function toggleSubmitButton() {
+            submitButton.disabled = !declarationCheckbox.checked;
+        }
+
+        declarationCheckbox.addEventListener('change', toggleSubmitButton);
+
+        // Define o estado inicial do botão
+        toggleSubmitButton();
+    }
   });
+
+  const emptyFormTemplate = `
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {% include "components/users/form_field_inline.html" with field=formset.empty_form.disciplina %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {% include "components/users/form_field_inline.html" with field=formset.empty_form.bimestre %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+      {% include "components/users/form_field_inline.html" with field=formset.empty_form.valor %}
+    </td>
+    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+      <div class="flex items-center justify-center h-full">
+        <button type="button" onclick="removerForm(this)" class="text-red-500 hover:text-red-700">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </td>
+    <td class="hidden">
+      {% include "components/users/form_field_inline.html" with field=formset.empty_form.id %}
+      {% include "components/users/form_field_inline.html" with field=formset.empty_form.DELETE %}
+    </td>
+  `;
+
+  function adicionarLinha(disciplina = null) {
+    const tableBody = document.getElementById('notas-table-body');
+    const totalFormsInput = document.querySelector('input[name="notas-TOTAL_FORMS"]');
+    let totalForms = parseInt(totalFormsInput.value);
+
+    // Cria um novo elemento tr e define seu conteúdo HTML
+    const newRow = document.createElement('tr');
+    newRow.className = 'form-row new-form';
+    
+    const newRowHTML = emptyFormTemplate.replace(/__prefix__/g, totalForms);
+    newRow.innerHTML = newRowHTML.trim();
+
+    if (disciplina) {
+        const disciplinaSelect = newRow.querySelector('[name$="disciplina"]');
+        if (disciplinaSelect) {
+            const newOption = document.createElement('option');
+            newOption.value = disciplina;
+            newOption.textContent = disciplina;
+            newOption.selected = true;
+            disciplinaSelect.appendChild(newOption);
+        }
+    }
+
+    tableBody.appendChild(newRow);
+    totalFormsInput.value = totalForms + 1;
+  }
+
+  function adicionarDisciplina() {
+    const disciplinaInput = document.getElementById('disciplina-input');
+    const disciplina = disciplinaInput.value.trim();
+
+    if (disciplina) {
+      adicionarLinha(disciplina);
+      disciplinaInput.value = '';
+    } else {
+      alert('Por favor, digite o nome da disciplina.');
+    }
+  }
+
+  function removerForm(element) {
+    const row = element.closest('.form-row');
+    const deleteInput = row.querySelector('input[type="checkbox"]');
+    if (deleteInput) {
+      deleteInput.checked = true;
+      row.style.display = 'none';
+    } else {
+      row.remove();
+    }
+  }
+  
+  function esconderLinhaVaziaInicial() {
+      const tableBody = document.getElementById('notas-table-body');
+      if (tableBody) {
+          const firstRow = tableBody.querySelector('.form-row');
+          if (firstRow) {
+              const disciplinaSelect = firstRow.querySelector('[name$="disciplina"]');
+              if (disciplinaSelect && disciplinaSelect.value === "") {
+                  firstRow.style.display = 'none';
+              }
+          }
+      }
+  }
 </script>
 {% endblock %}

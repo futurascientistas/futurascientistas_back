@@ -1,7 +1,10 @@
-from django import forms
 import re
+from django import forms
+from django.forms import inlineformset_factory
 from django.contrib.auth.models import Group
 from .services import validar_email, validar_cpf, validar_senha
+from .models import HistoricoEscolar, Nota, Disciplina
+
 
 class CadastroForm(forms.Form):
     nome = forms.CharField(
@@ -203,3 +206,25 @@ class UserUpdateForm(forms.ModelForm):
             instance.save()
             self.save_m2m()
         return instance
+    
+class NotaForm(forms.ModelForm):
+    class Meta:
+        model = Nota
+        fields = ['disciplina', 'bimestre', 'valor']
+        widgets = {
+            'bimestre': forms.Select(attrs={'class': 'seu-estilo-css'}),
+            'valor': forms.NumberInput(attrs={'class': 'seu-estilo-css', 'step': '0.01'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['disciplina'].queryset = Disciplina.objects.all()
+
+HistoricoNotaFormSet = inlineformset_factory(
+    HistoricoEscolar,
+    Nota,
+    form=NotaForm,
+    fields=['disciplina', 'bimestre', 'valor'],
+    extra=1, 
+    can_delete=True
+)
