@@ -13,7 +13,6 @@ cpf_validator = RegexValidator(regex=r'^\d{11}$', message='CPF deve conter 11 d√
 phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message='Telefone inv√°lido.')
 extensoes_aceitas = FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png'])
 
-# Modelos auxiliares
 class Genero(models.Model):
     nome = models.CharField(max_length=100)
     def __str__(self): return self.nome
@@ -23,6 +22,10 @@ class Raca(models.Model):
     def __str__(self): return self.nome
 
 class Deficiencia(models.Model):
+    nome = models.CharField(max_length=100)
+    def __str__(self): return self.nome
+
+class Cota(models.Model):
     nome = models.CharField(max_length=100)
     def __str__(self): return self.nome
 

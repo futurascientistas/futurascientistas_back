@@ -3,6 +3,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.utils import timezone
+from users.models import Cota, Deficiencia
 import uuid
 
 from projects.models import Project
@@ -50,14 +51,32 @@ class Application(models.Model):
     area_atuacao = models.CharField(max_length=100, blank=True, verbose_name="Área de atuação")
 
     # Vaga e Acessibilidade
-    cota_desejada = models.CharField(max_length=100, blank=True, verbose_name="Cota desejada")
-    tipo_deficiencia = models.CharField(max_length=200, blank=True, verbose_name="Tipo de deficiência")
     necessita_material_especial = models.BooleanField(default=False, verbose_name="Necessita material especial?")
     tipo_material_necessario = models.TextField(blank=True, verbose_name="Tipo de material necessário")
     laudo_medico_deficiencia = models.BinaryField(null=True, blank=True, verbose_name="Laudo médico de deficiência")
     concorrer_reserva_vagas = models.BooleanField(default=False, verbose_name="Concorrer às vagas reservadas?")
     autodeclaracao_racial = models.BinaryField(null=True, blank=True, verbose_name="Autodeclaração racial")
-    mulher_trans = models.BooleanField(default=False, verbose_name="Mulher trans")
+    modalidade_vaga = models.CharField(
+        max_length=10,
+        choices=[('ampla', 'Ampla concorrência'), ('cota', 'Cota')],
+        null=True,
+        blank=True
+    )
+    cota_desejada = models.ForeignKey(
+        Cota,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Cota desejada"
+    )
+    tipo_deficiencia = models.ForeignKey(
+        Deficiencia,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tipo de deficiência"
+    )
+    tipo_deficiencia = models.CharField(max_length=200, blank=True, verbose_name="Tipo de deficiência")
 
     # Documentação
     boletim_escolar = models.BinaryField(null=True, blank=True, verbose_name="Boletim escolar")
@@ -109,6 +128,7 @@ class Application(models.Model):
     atividade_docente_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Atividade Docente")
     atividade_pesquisa_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Atividade de Pesquisa")
     outras_atividades_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Outras Atividades")
+
 
     def clean(self):
         now = timezone.now().date()  
