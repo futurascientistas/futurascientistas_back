@@ -400,6 +400,7 @@ class CadastroView(FormView):
 def login_view(request):
     if request.method == 'POST':
         cpf = request.POST.get('cpf')
+        cpf = re.sub(r'\D', '', cpf)
         senha = request.POST.get('senha')
         user = authenticate(request, username=cpf, password=senha)
         if user is not None:

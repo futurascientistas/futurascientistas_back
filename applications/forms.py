@@ -1,6 +1,7 @@
 from django import forms
 from .models import Application, GrauFormacao
 from projects.models import *
+from users.models import *
 
 class ApplicationAlunoForm(forms.ModelForm):
     # Apenas os campos BinaryField para upload de documentos de identificação
@@ -118,6 +119,25 @@ class ApplicationProfessorForm(forms.ModelForm):
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
+    cota_desejada = forms.ModelChoiceField(
+        queryset=Cota.objects.all(),  
+        label="Cota",
+        empty_label="Selecione uma cota",
+         required=False,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
+
+    tipo_deficiencia = forms.ModelChoiceField(
+        queryset=Deficiencia.objects.all(),  
+        label="Deficiencia",
+         required=False,
+        empty_label="Selecione uma deficiencia",
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
 
     for field_name in BINARY_FILE_FIELDS:
         locals()[f"{field_name}__upload"] = forms.FileField(
@@ -144,7 +164,6 @@ class ApplicationProfessorForm(forms.ModelForm):
             'necessita_material_especial',
             'tipo_material_necessario',
             'concorrer_reserva_vagas',
-            'mulher_trans',
             'grau_formacao',
             'perfil_academico',
             'docencia_superior',

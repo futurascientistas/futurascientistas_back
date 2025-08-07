@@ -33,4 +33,7 @@ urlpatterns = [
     path('generos/', GeneroListCreateAPIView.as_view(), name='genero-list-create'),
     path('generos/<int:pk>/', GeneroRetrieveUpdateDestroyAPIView.as_view(), name='genero-detail'),
 
+    
+    # Cota
+    path('cotas/', CotaListCreateView.as_view(), name='cota-list-create'),
 ]
