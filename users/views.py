@@ -430,38 +430,50 @@ def dashboard(request):
 def perfil_view(request):
     user = request.user
     
-    # Define os campos a serem removidos, dependendo da função do usuário
-    campos_estudante = [
-        'telefone_responsavel',
-        'comprovante_autorizacao_responsavel',
-        'comprovante_autorizacao_responsavel__upload',
-        'comprovante_autorizacao_responsavel__clear'
-    ]
-
-    # Define os passos do formulário
-    if user.funcao == 'professora':
-        steps = [1, 2, 3, 4]
-    else:
-        steps = [1, 2, 3, 4, 5, 6]
-
+    historico, created = HistoricoEscolar.objects.get_or_create(usuario=user)
+    
     if request.method == 'POST':
         form = UserUpdateForm(request.POST, request.FILES, instance=user)
+        formset = HistoricoNotaFormSet(request.POST, request.FILES, instance=historico)
+        
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            messages.success(request, 'Seu perfil foi atualizado com sucesso!')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Ocorreu um erro na validação do formulário. Verifique os campos.')
     else:
         form = UserUpdateForm(instance=user)
+        formset = HistoricoNotaFormSet(instance=historico)
 
-    # Move a lógica de remoção de campos para fora dos blocos POST/GET
     if user.funcao == 'professora':
+        steps = [
+            {'number': 1, 'name': 'Identificação'},
+            {'number': 2, 'name': 'Endereço'},
+            {'number': 3, 'name': 'Escola'},
+            {'number': 4, 'name': 'Documentos'},
+            {'number': 6, 'name': 'Declaração'}
+        ]
+    else: 
+        steps = [
+            {'number': 1, 'name': 'Identificação'},
+            {'number': 2, 'name': 'Endereço'},
+            {'number': 3, 'name': 'Escola'},
+            {'number': 4, 'name': 'Documentos'},
+            {'number': 5, 'name': 'Histórico'},
+            {'number': 6, 'name': 'Declaração'}
+        ]
+
+    if user.funcao == 'professora':
+        campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
         for campo in campos_estudante:
             if campo in form.fields:
                 del form.fields[campo]
 
-    if request.method == 'POST' and form.is_valid():
-        form.save()
-        messages.success(request, 'Seu perfil foi atualizado com sucesso!')
-        return redirect('dashboard')
-    
     context = {
         'form': form,
+        'formset': formset, 
         'user': user,
         'steps': steps,
     }

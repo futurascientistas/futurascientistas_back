@@ -4,103 +4,178 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Futuras Cientistas</title>
+  
+  <!-- Carrega o Tailwind CSS para estilização rápida e responsiva -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Configuração do Tailwind para usar a fonte Inter e aplicar arredondamento -->
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bg-custom-pink { background-color: #fce4ec; }
+    .bg-custom-green { background-color: #e8f5e9; }
+    .bg-custom-blue { background-color: #e3f2fd; }
+    .text-custom-pink { color: #d81b60; }
+
+    @keyframes pulse-slow {
+      0% { transform: scale(0.8); opacity: 0.2; }
+      50% { transform: scale(1.2); opacity: 0.4; }
+      100% { transform: scale(0.8); opacity: 0.2; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 6s infinite ease-in-out;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    #background-map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url('{% static 'public/images/brasil.png' %}');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: -1;
+      opacity: 0.1;
+      filter: grayscale(100%);
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      flex-grow: 1;
+    }
+
+    .content-section {
+        background-color: rgba(255, 255, 255, 0.9); 
+    }
+    .bg-custom-pink, .bg-custom-green, .bg-custom-blue {
+        background-color: #fce4ec; 
+    }
+
+    .footer {
+        position: relative; 
+        z-index: 1; 
+    }
+  </style>
+
+
   <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
   <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
-  <link rel="stylesheet" href="{% static 'css/landing-page/herosection.css' %}">
   <link rel="stylesheet" href="{% static 'css/landing-page/program-modules.css' %}">
   <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
 </head>
-<body class="raleway">
+<body class="raleway bg-gray-50 text-gray-800">
+
+  <div id="background-map"></div>
 
   {% include 'components/landing-page/header.html' %}
+  
+  <section id="hero-page" class="relative flex flex-col items-center justify-center text-center py-20 px-4 bg-gradient-to-br from-purple-600 to-pink-500 text-white overflow-hidden shadow-xl" style="min-height: 100vh;">
 
-  {% include 'components/landing-page/herosection.html' %}
-
-  <div class="wrapper">
-    <div class="top-circle">
-      <div class="map-box">
-        <img
-          class="map"
-          src="{% static 'public/images/brasil.png' %}"
-          alt="Mapa do Brasil em roxo"
-        />
+      <div class="absolute inset-0 z-0 opacity-20">
+        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" style="stop-color:rgb(255,255,255);stop-opacity:0.8" />
+              <stop offset="100%" style="stop-color:rgb(255,255,255);stop-opacity:0" />
+            </radialGradient>
+          </defs>
+          <circle cx="20" cy="20" r="15" fill="url(#grad1)" class="animate-pulse-slow" style="animation-delay: 0s;"></circle>
+          <circle cx="80" cy="40" r="20" fill="url(#grad1)" class="animate-pulse-slow" style="animation-delay: 2s;"></circle>
+          <circle cx="50" cy="80" r="10" fill="url(#grad1)" class="animate-pulse-slow" style="animation-delay: 4s;"></circle>
+        </svg>
       </div>
 
-      <div class="second-section">
-        <div class="pink-title">Conheça mais o Programa</div>
-        <div class="container-pink">
-          <div class="content-pink">
-            <div class="content-text-1">
+      <div class="relative z-10 max-w-3xl mx-auto"> 
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
+          Inspire <span class="relative inline-block">meninas<span class="absolute left-0 bottom-0 w-full h-2 bg-yellow-300 transform -skew-x-12"></span></span> a transformar o futuro pela ciência
+        </h1>
+        <p class="text-lg md:text-xl leading-relaxed opacity-90">
+          O programa Futuras Cientistas conecta alunas do ensino médio à pesquisa científica por meio
+          de experiências práticas, mentoria e formação cidadã.
+        </p>
+      </div>
+  </section>
+
+  <main class="container mx-auto px-4 py-8 max-w-screen-lg">
+    <div id="content-sections">
+      <section id="about-page" class="space-y-12 mt-12">
+        <!-- Primeira Seção: O que é o Futuras Cientistas -->
+        <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-pink"> <!-- Removido rounded-xl e shadow-lg -->
+          <div class="md:w-1/2">
+            <p class="text-lg leading-relaxed text-gray-900">
               O Futura Cientistas é um programa do Centro de Tecnologias
               Estratégicas do Nordeste (Cetene) que estimula o contato de
               alunas e professoras da rede pública de ensino com as áreas de
-              Ciência, Tecnologia, Engenharia e Matemática; a fim de
+              <strong class="font-semibold">Ciência, Tecnologia, Engenharia e Matemática (STEM)</strong>; a fim de
               contribuir com a equidade de gênero no mercado profissional.
-            </div>
-            <div class="image-container-pink">
-              <div class="circle-img-1"></div>
-              <img
-                class="content-img-1"
-                src="{% static 'public/images/menina_real.png' %}"
-                alt="Futura Cientista"
-              />
-            </div>
+            </p>
           </div>
-        </div>
-      </div>
+          <figure class="md:w-1/2 flex justify-center items-center relative">
+            <img class="relative z-10 w-full max-w-xs md:max-w-sm rounded-lg object-cover border-4 border-white" 
+                 src="{% static 'public/images/menina_real.png' %}" 
+                 alt="Jovem estudante sorrindo, representando uma futura cientista"/>
+          </figure>
+        </article>
+
+        <!-- Segunda Seção: Impacto e Resultados do Programa -->
+        <article class="flex flex-col md:flex-row-reverse items-center gap-8 p-8 bg-custom-green mt-12"> <!-- Removido rounded-xl e shadow-lg, adicionado mt-12 para espaçamento -->
+          <div class="md:w-1/2">
+            <p class="text-lg leading-relaxed text-gray-900">
+              Com o desenvolvimento do pensamento e de atividades científicas
+              transdisciplinares, reduzimos barreiras para o acesso e
+              permanência de meninas e mulheres nos espaços científicos. Em 10
+              anos, <strong class="font-semibold">70% das participantes do programa foram aprovadas no
+              vestibular. Destas, 80% escolheram cursos nas áreas de Ciência e
+              Tecnologia.</strong> As frentes de atuação têm início no ensino médio,
+              entretanto seguem até o ensino superior.
+            </p>
+          </div>
+          <figure class="md:w-1/2 flex justify-center items-center relative">
+            <img class="relative z-10 w-full max-w-xs md:max-w-sm rounded-lg object-cover border-4 border-white"
+                 src="{% static 'public/images/menina_oculos.png' %}"
+                 alt="Jovem estudante com óculos, pensativa, em ambiente de estudo"/>
+          </figure>
+        </article>
+
+        <!-- Terceira Seção: Objetivo do Programa -->
+        <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-blue mt-12"> <!-- Removido rounded-xl e shadow-lg, adicionado mt-12 para espaçamento -->
+          <div class="md:w-1/2">
+            <p class="text-lg leading-relaxed text-gray-900">
+              <strong class="font-bold text-custom-pink">OBJETIVO:</strong> Estimular o interesse e promover a participação de
+              mulheres professoras e estudantes do ensino médio, nas áreas de
+              Ciência e Tecnologia, através de sua aproximação a centros
+              tecnológicos e instituições de ensino e pesquisa.
+            </p>
+          </div>
+          <figure class="md:w-1/2 flex justify-center items-center relative">
+            <img class="relative z-10 w-full max-w-xs md:max-w-sm rounded-lg object-cover border-4 border-white"
+                 src="{% static 'public/images/professora.png' %}"
+                 alt="Professora sorrindo em ambiente de laboratório com alunas"/>
+          </figure>
+        </article>
+      </section>
+
+      <section id="modules-page" class="space-y-12 mt-12">
+        {% include 'components/landing-page/program-modules.html' %}
+      </section>
     </div>
-
-    <div class="pink"></div>
-
-    <div class="verde">
-      <div class="container-green">
-        <div class="content-green">
-          <div class="image-container-green">
-            <div class="circle-img-2"></div>
-            <img
-              class="content-img-2"
-              src="{% static 'public/images/menina_oculos.png' %}"
-              alt="Futura Cientista"
-            />
-          </div>
-          <div class="content-text-2">
-            Com o desenvolvimento do pensamento e de atividades científicas
-            transdisciplinares, reduzimos barreiras para o acesso e
-            permanência de meninas e mulheres nos espaços científicos. Em 10
-            anos, 70% das participantes do programa foram aprovadas no
-            vestibular. Destas, 80% escolheram cursos nas áreas de Ciência e
-            Tecnologia. As frentes de atuação têm início no ensino médio,
-            entretanto seguem até o ensino superior.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="azul">
-      <div class="container-blue">
-        <div class="content-blue">
-          <div class="content-text-3">
-            OBJETIVO: Estimular o interesse e promover a participação de
-            mulheres professoras e estudantes do ensino médio, nas áreas de
-            Ciência e Tecnologia, através de sua aproximação a centros
-            tecnológicos e instituições de ensino e pesquisa.
-          </div>
-          <div class="image-container-blue">
-            <div class="circle-img-3"></div>
-            <img
-              class="content-img-3"
-              src="{% static 'public/images/professora.png' %}"
-              alt="Futura Cientista"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {% include 'components/landing-page/program-modules.html' %}
-  {% include 'components/landing-page/footer.html' %}
-
+    {% include 'components/landing-page/footer.html' %}
+  </main>
+  
 </body>
 </html>

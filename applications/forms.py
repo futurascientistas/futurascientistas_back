@@ -3,21 +3,33 @@ from .models import Application, GrauFormacao
 from projects.models import *
 
 class ApplicationAlunoForm(forms.ModelForm):
+    # Apenas os campos BinaryField para upload de documentos de identificação
+    # foram mantidos. Os outros foram removidos para simplificar.
     BINARY_FILE_FIELDS = [
         'rg_frente',
         'rg_verso',
         'cpf_anexo',
-        'declaracao_vinculo',
-        'documentacao_comprobatoria_lattes',
     ]
 
     projeto = forms.ModelChoiceField(
-        queryset=Project.objects.all(),  
+        queryset=Project.objects.all(),
         label="Projeto",
         empty_label="Selecione um projeto",
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
+    )
+
+    necessita_material_especial = forms.BooleanField(
+        label="Necessita de material especial?",
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'})
+    )
+
+    tipo_material_necessario = forms.CharField(
+        label="Indicar o tipo de material necessário",
+        widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Ex: Material impresso em braile, Material impresso ampliado'}),
+        required=False
     )
 
     for field_name in BINARY_FILE_FIELDS:
@@ -36,85 +48,57 @@ class ApplicationAlunoForm(forms.ModelForm):
         model = Application
         fields = [
             'projeto',
-            'como_soube_programa',
-            'telefone_responsavel',
-            'curriculo_lattes_url',
-            'area_atuacao',
             'cota_desejada',
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
-            'concorrer_reserva_vagas',
-            'mulher_trans',
-            'grau_formacao',
-            'perfil_academico',
-            'docencia_superior',
-            'docencia_medio',
-            'orientacao_ic',
-            'feira_ciencias',
-            'livro_publicado',
-            'capitulo_publicado',
-            'periodico_indexado',
-            'anais_congresso',
-            'curso_extensao',
-            'curso_capacitacao',
-            'orientacoes_estudantes',
-            'participacoes_bancas',
-            'apresentacao_oral',
-            'premiacoes',
-            'missao_cientifica',
-            'titulo_projeto_submetido',
-            'link_projeto',
-            'numero_edicoes_participadas',
             'aceite_declaracao_veracidade',
             'aceite_requisitos_tecnicos',
         ]
 
         widgets = {
-            'como_soube_programa': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Como soube do programa?'}),
-            'telefone_responsavel': forms.TextInput(attrs={'placeholder': 'Telefone da responsável'}),
-            'curriculo_lattes_url': forms.URLInput(attrs={'placeholder': 'URL do Currículo Lattes'}),
-            'area_atuacao': forms.TextInput(attrs={'placeholder': 'Área de atuação'}),
-            'cota_desejada': forms.TextInput(attrs={'placeholder': 'Cota desejada'}),
-            'tipo_deficiencia': forms.TextInput(attrs={'placeholder': 'Tipo de deficiência'}),
-            'tipo_material_necessario': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Descreva o tipo de material necessário'}),
-            'grau_formacao': forms.Select(choices=GrauFormacao.choices),
-            'perfil_academico': forms.TextInput(attrs={'placeholder': 'Perfil acadêmico'}),
-            'docencia_superior': forms.NumberInput(attrs={'min': 0}),
-            'docencia_medio': forms.NumberInput(attrs={'min': 0}),
-            'orientacao_ic': forms.NumberInput(attrs={'min': 0}),
-            'titulo_projeto_submetido': forms.TextInput(attrs={'placeholder': 'Título do projeto submetido'}),
-            'link_projeto': forms.URLInput(attrs={'placeholder': 'Link para o projeto'}),
-            'numero_edicoes_participadas': forms.NumberInput(attrs={'min': 0}),
+            'aceite_declaracao_veracidade': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
+            'aceite_requisitos_tecnicos': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
         
-
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:
-            upload_field = f"{field_name}__upload"
-            clear_field = f"{field_name}__clear"
-            if self.cleaned_data.get(clear_field):
+            upload_field_name = f"{field_name}__upload"
+            clear_field_name = f"{field_name}__clear"
+            
+            if self.cleaned_data.get(clear_field_name):
                 setattr(instance, field_name, None)
-                continue
-            uploaded = self.files.get(upload_field)
-            if uploaded:
-                setattr(instance, field_name, uploaded.read())
+            
+            uploaded_file = self.files.get(upload_field_name)
+            if uploaded_file:
+                setattr(instance, field_name, uploaded_file.read())
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         self._apply_binary_uploads(instance)
         if commit:
             instance.save()
-            self.save_m2m()
         return instance
 
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        if not cleaned_data.get('projeto'):
+            self.add_error('projeto', 'O projeto é obrigatório.')
+        if not cleaned_data.get('cota_desejada'):
+            self.add_error('cota_desejada', 'A vaga que deseja concorrer é obrigatória.')
+        if not cleaned_data.get('aceite_declaracao_veracidade'):
+            self.add_error('aceite_declaracao_veracidade', 'É necessário aceitar a declaração de veracidade.')
+        if not cleaned_data.get('aceite_requisitos_tecnicos'):
+            self.add_error('aceite_requisitos_tecnicos', 'É necessário aceitar os requisitos técnicos.')
+            
+        necessita_material = cleaned_data.get('necessita_material_especial')
+        tipo_material = cleaned_data.get('tipo_material_necessario')
+        
+        if necessita_material and not tipo_material:
+            self.add_error('tipo_material_necessario', 'Por favor, indique o tipo de material necessário.')
 
-    def clean_numero_edicoes_participadas(self):
-        num = self.cleaned_data.get('numero_edicoes_participadas')
-        if num is not None and num < 0:
-            raise forms.ValidationError("Número de edições anteriores não pode ser negativo.")
-        return num
-
+        return cleaned_data
 
 class ApplicationProfessorForm(forms.ModelForm):
 

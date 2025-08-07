@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager, Group
 from django.db import models
 from django.core.validators import RegexValidator, FileExtensionValidator
 import uuid
+
+from futuras_cientistas import settings
 from .managers import UserManager
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
@@ -151,3 +153,27 @@ def sincronizar_funcao(sender, instance, action, **kwargs):
         finally:
             # Remove a marca de atualização
             del instance._atualizando_funcao
+
+class HistoricoEscolar(models.Model):
+    usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    historico_escolar = models.FileField("Upload do histórico escolar", null=True, blank=True)
+    def __str__(self):
+        return f"Histórico de {self.usuario.username}"
+
+class Disciplina(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
+    
+    def __str__(self):
+        return self.nome
+
+class Nota(models.Model):
+    historico = models.ForeignKey(HistoricoEscolar, related_name='notas', on_delete=models.CASCADE)
+    disciplina = models.ForeignKey(Disciplina, on_delete=models.CASCADE)
+    bimestre = models.PositiveSmallIntegerField("Bimestre", choices=[(1, '1º'), (2, '2º'), (3, '3º'), (4, '4º')])
+    valor = models.DecimalField("Valor da Nota", max_digits=4, decimal_places=2, null=True, blank=True)
+    
+    class Meta:
+        unique_together = ('historico', 'disciplina', 'bimestre')
+
+    def __str__(self):
+        return f"{self.disciplina.nome} - {self.bimestre}º Bimestre ({self.historico.usuario.username})"
