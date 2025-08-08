@@ -76,7 +76,6 @@ class Application(models.Model):
         blank=True,
         verbose_name="Tipo de deficiência"
     )
-    tipo_deficiencia = models.CharField(max_length=200, blank=True, verbose_name="Tipo de deficiência")
 
     # Documentação
     boletim_escolar = models.BinaryField(null=True, blank=True, verbose_name="Boletim escolar")
@@ -89,7 +88,7 @@ class Application(models.Model):
 
     # Trajetória Acadêmica e Científica
     grau_formacao = models.CharField(max_length=20,choices=GrauFormacao.choices,verbose_name="Grau de formação mais alto",null=True,blank=True,help_text="Informe o grau de formação mais alto concluído")
-    perfil_academico = models.CharField(max_length=150, blank=True, verbose_name="Perfil acadêmico")
+    perfil_academico = models.CharField(max_length=150, blank=True, null=True, verbose_name="Perfil acadêmico")
     docencia_superior = models.PositiveIntegerField(blank=True, null=True, verbose_name="Docência no ensino superior")
     docencia_medio = models.PositiveIntegerField(blank=True, null=True, verbose_name="Docência no ensino médio")
     orientacao_ic = models.PositiveIntegerField(blank=True, null=True, verbose_name="Orientação de IC")
@@ -105,8 +104,8 @@ class Application(models.Model):
     apresentacao_oral = models.BooleanField(default=False, verbose_name="Apresentações orais?")
     premiacoes = models.BooleanField(default=False, verbose_name="Premiações?")
     missao_cientifica = models.BooleanField(default=False, verbose_name="Missão científica?")
-    titulo_projeto_submetido = models.CharField(max_length=255, blank=True, verbose_name="Título do projeto submetido")
-    link_projeto = models.URLField(blank=True, verbose_name="Link para o projeto")
+    titulo_projeto_submetido = models.CharField(max_length=255, blank=True, null=True,verbose_name="Título do projeto submetido")
+    link_projeto = models.URLField(blank=True, null=True, verbose_name="Link para o projeto")
     numero_edicoes_participadas = models.PositiveIntegerField(default=0, verbose_name="Número de edições anteriores do programa")
 
     # Declarações Finais
