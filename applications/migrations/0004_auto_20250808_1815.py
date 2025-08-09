@@ -9,16 +9,4 @@ class Migration(migrations.Migration):
         ('applications', '0003_alter_application_link_projeto_and_more'),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='application',
-            name='tipo_deficiencia',
-            field=models.ForeignKey(
-                null=True,
-                blank=True,
-                on_delete=models.SET_NULL,
-                to='users.Deficiencia',
-                verbose_name='Tipo de deficiência'
-            ),
-        ),
-    ]
+    operations = []

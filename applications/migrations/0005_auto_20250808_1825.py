@@ -9,16 +9,4 @@ class Migration(migrations.Migration):
         ('applications', '0004_auto_20250808_1815'),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='application',
-            name='tipo_deficiencia',
-            field=models.ForeignKey(
-                null=True,
-                blank=True,
-                on_delete=models.SET_NULL,
-                to='users.Deficiencia',
-                verbose_name='Tipo de deficiência'
-            ),
-        ),
-    ]
+    operations = []
