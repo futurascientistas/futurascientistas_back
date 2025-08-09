@@ -1,7 +1,11 @@
 from django import forms
-from .models import Application, GrauFormacao
+from .models import *
 from projects.models import *
 from users.models import *
+from ckeditor.fields import RichTextField
+from django.utils import timezone
+from django.db.models import Q
+
 
 class ApplicationAlunoForm(forms.ModelForm):
     # Apenas os campos BinaryField para upload de documentos de identificação
@@ -100,6 +104,35 @@ class ApplicationAlunoForm(forms.ModelForm):
             self.add_error('tipo_material_necessario', 'Por favor, indique o tipo de material necessário.')
 
         return cleaned_data
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        hoje = timezone.now().date()
+        projetos = Project.objects.filter(
+            ativo=True,
+            inicio_inscricoes__lte=hoje,
+            fim_inscricoes__gte=hoje,
+        )
+
+        if user:
+            estado_usuario = getattr(user, 'estado', None)
+            # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
+            if estado_usuario and hasattr(estado_usuario, 'id'):
+                projetos = projetos.filter(
+                    Q(estados_aceitos__isnull=True) | Q(estados_aceitos=estado_usuario)
+                ).distinct()
+            else:
+                # Se não tem estado válido, só mostra os que não tem estado restrito
+                projetos = projetos.filter(estados_aceitos__isnull=True)
+
+        else:
+            projetos = Project.objects.none()
+
+        self.fields['projeto'].queryset = projetos
+
+
 
 class ApplicationProfessorForm(forms.ModelForm):
 
@@ -112,13 +145,14 @@ class ApplicationProfessorForm(forms.ModelForm):
     ]
 
     projeto = forms.ModelChoiceField(
-        queryset=Project.objects.all(),  
+        queryset=Project.objects.none(),  
         label="Projeto",
         empty_label="Selecione um projeto",
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
+
     cota_desejada = forms.ModelChoiceField(
         queryset=Cota.objects.all(),  
         label="Cota",
@@ -232,3 +266,36 @@ class ApplicationProfessorForm(forms.ModelForm):
         if num is not None and num < 0:
             raise forms.ValidationError("Número de edições anteriores não pode ser negativo.")
         return num
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        hoje = timezone.now().date()
+        projetos = Project.objects.filter(
+            ativo=True,
+            inicio_inscricoes__lte=hoje,
+            fim_inscricoes__gte=hoje,
+        )
+
+        if user:
+            estado_usuario = getattr(user, 'estado', None)
+            # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
+            if estado_usuario and hasattr(estado_usuario, 'id'):
+                projetos = projetos.filter(
+                    Q(estados_aceitos__isnull=True) | Q(estados_aceitos=estado_usuario)
+                ).distinct()
+            else:
+                # Se não tem estado válido, só mostra os que não tem estado restrito
+                projetos = projetos.filter(estados_aceitos__isnull=True)
+
+        else:
+            projetos = Project.objects.none()
+
+        self.fields['projeto'].queryset = projetos
+
+
+class ComentarioForm(forms.ModelForm):
+    class Meta:
+        model = Comentario
+        fields = ['comentario']

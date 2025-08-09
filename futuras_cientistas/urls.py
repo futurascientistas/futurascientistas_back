@@ -16,7 +16,9 @@ urlpatterns = [
     path('logout', logout_view, name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('404/', NaoEcontrada.as_view(), name='nao-encontrado'),
-
-
 ]
 
+def custom_404_view(request, exception):
+    return render(request, 'components/landing-page/page_404.html', status=404)
+
+handler404 = custom_404_view

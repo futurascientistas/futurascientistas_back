@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from django.http import HttpResponseForbidden
 from users.permissions import *
 from .models import *
+from .services import *
 import magic
 import mimetypes
 from django.contrib import messages
@@ -36,31 +37,64 @@ def inscricao_professora(request):
         return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes_ano})
 
     if request.method == 'POST':
-        form = ApplicationProfessorForm(request.POST, request.FILES)
+        form = ApplicationProfessorForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            app = form.save(commit=False)
-            app.usuario = request.user
-            app.save()
+            instancia = form.save(commit=False)
+            projeto = form.cleaned_data.get('projeto')
+
+            agora = timezone.now().date()
+            
+            if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+                messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
+                return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+            if Application.objects.filter(usuario=request.user, projeto=projeto).exists():
+
+                messages.error(request, "Você já está inscrita neste projeto.")
+                return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+            try:
+                validar_unica_inscricao_no_ciclo(request.user, projeto)
+            except PermissionDenied as e:
+                messages.error(request, str(e))
+                return render(request, 'components/applications/professor_application_form.html', {'form': form})
+
+            print('aq')
+
+            acao = request.POST.get('acao')
+            if acao == 'enviar':
+                instancia.status = 'avaliacao'
+            elif acao == 'salvar':
+                instancia.status = 'rascunho'
+
+            instancia.usuario = request.user
+            instancia.save()
+
+            status_antigo = None
+            status_novo = instancia.status
+            registrar_log_status_inscricao(instancia, status_antigo, status_novo, request.user)
+
             messages.success(request, "Inscrição enviada com sucesso!")
             return redirect('dashboard')
         else:
             messages.error(request, "Por favor corrija os erros no formulário.")
     else:
-        form = ApplicationProfessorForm()
+        form = ApplicationProfessorForm(user=request.user)
 
     return render(request, 'components/applications/professor_application_form.html', {'form': form})
 
-
 @login_required
-
 def minhas_inscricoes(request):
     inscricoes = Application.objects.filter(usuario=request.user).order_by('-criado_em')  
-    
     return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes})
 
 @login_required
 def editar_inscricao(request, inscricao_id):
     inscricao = get_object_or_404(Application, id=inscricao_id, usuario=request.user)
+
+    # Verifica se o usuário é dono da inscrição ou admin
+    if not (inscricao.usuario == request.user or request.user.is_staff or request.user.is_superuser):
+        return HttpResponseForbidden("Você não tem permissão para editar essa inscrição.")
 
     if 'professora' in request.user.roles:
         FormClass = ApplicationProfessorForm
@@ -73,7 +107,7 @@ def editar_inscricao(request, inscricao_id):
         return HttpResponseForbidden("Você não tem permissão para editar essa inscrição.")
     
     if request.method == "POST":
-        form = FormClass(request.POST, request.FILES, instance=inscricao)
+        form = FormClass(request.POST, request.FILES, instance=inscricao, user=request.user)
         if form.is_valid():
             instancia = form.save(commit=False)
 
@@ -90,10 +124,9 @@ def editar_inscricao(request, inscricao_id):
         else:
             messages.error(request, "Por favor, corrija os erros.")
     else:
-        form = FormClass(instance=inscricao)
+        form = FormClass(instance=inscricao, user=request.user)
 
     return render(request, template, {'form': form})
-
 
 @login_required
 def inscricao_aluna(request):
@@ -108,19 +141,91 @@ def inscricao_aluna(request):
         return render(request, 'components/applications/minhas_inscricoes.html', {'inscricoes': inscricoes_ano})
 
     if request.method == 'POST':
-        form = ApplicationAlunoForm(request.POST, request.FILES)
+        form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            app = form.save(commit=False)
-            app.usuario = request.user
-            app.save()
+            instancia = form.save(commit=False)
+            projeto = form.cleaned_data.get('projeto')
+
+            agora = timezone.now().date()
+
+            # Validação do período de inscrição
+            if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+                messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
+                return render(request, 'components/applications/student_application_form.html', {'form': form})
+
+            # Verifica se já existe inscrição para o projeto atual
+            if Application.objects.filter(usuario=request.user, projeto=projeto).exists():
+                messages.error(request, "Você já está inscrita neste projeto.")
+                return render(request, 'components/applications/student_application_form.html', {'form': form})
+
+            # Validação única no ciclo, se aplicável (assumindo função igual)
+            try:
+                validar_unica_inscricao_no_ciclo(request.user, projeto)
+            except PermissionDenied as e:
+                messages.error(request, str(e))
+                return render(request, 'components/applications/student_application_form.html', {'form': form})
+
+            acao = request.POST.get('acao')
+            if acao == 'enviar':
+                instancia.status = 'avaliacao'
+            elif acao == 'salvar':
+                instancia.status = 'rascunho'
+
+            instancia.usuario = request.user
+            instancia.save()
+
+            status_antigo = None
+            status_novo = instancia.status
+            registrar_log_status_inscricao(instancia, status_antigo, status_novo, request.user)
+
             messages.success(request, "Inscrição enviada com sucesso!")
             return redirect('dashboard')
         else:
             messages.error(request, "Por favor corrija os erros no formulário.")
     else:
-        form = ApplicationAlunoForm()
+        form = ApplicationAlunoForm(user=request.user)
 
     return render(request, 'components/applications/student_application_form.html', {'form': form})
+
+@login_required
+def visualizar_inscricao(request, inscricao_id):
+    inscricao = get_object_or_404(Application, id=inscricao_id, usuario=request.user)
+
+    # Verifica se o usuário é dono da inscrição ou admin
+    if not (inscricao.usuario == request.user or request.user.is_staff or request.user.is_superuser):
+        return HttpResponseForbidden("Você não tem permissão para visualizar essa inscrição.")
+
+    # Verifica qual form usar
+    if 'professora' in inscricao.usuario.roles:
+        form = ApplicationProfessorForm(instance=inscricao, user=request.user)
+        template_name = 'components/applications/professor_application_view.html'
+    else:
+        form = ApplicationAlunoForm(instance=inscricao, user=request.user)
+        template_name = 'components/applications/student_application_view.html'
+
+    # Deixa todos os campos como somente leitura
+    for f in form.fields.values():
+        f.disabled = True
+
+    comentarios = Comentario.objects.filter(aplicacao=inscricao).order_by('-criado_em')
+
+    if request.method == 'POST':
+        comentario_form = ComentarioForm(request.POST)
+        if comentario_form.is_valid():
+            comentario = comentario_form.save(commit=False)
+            comentario.usuario = request.user
+            comentario.aplicacao = inscricao
+            comentario.save()
+            return redirect('application:visualizar_inscricao', inscricao_id=inscricao.id)
+    else:
+        comentario_form = ComentarioForm()
+
+    return render(request, template_name, {
+        'form': form,
+        'comentarios': comentarios,
+        'comentario_form': comentario_form,
+        'readonly': True,
+    })
 
 class InscreverProjetoView(generics.CreateAPIView):
     serializer_class = ApplicationSerializer

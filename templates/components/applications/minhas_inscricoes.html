@@ -42,13 +42,15 @@
               <td class="px-6 py-4 text-sm">
                 {% if inscricao.status|lower == "pendente" or inscricao.status|lower == "rascunho" %}
                   <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-600 hover:text-pink-800 inline-flex items-center gap-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M4 20h4.586a1 1 0 00.707-.293l9.414-9.414a1 1 0 000-1.414l-4.586-4.586a1 1 0 00-1.414 0L4 15.414V20z" />
-                    </svg>
                     Editar
                   </a>
+                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 ml-2">
+                    Visualizar
+                  </a>
                 {% else %}
-                  <span class="text-gray-400 italic">Não disponível</span>
+                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                    Visualizar
+                  </a>
                 {% endif %}
               </td>
             </tr>

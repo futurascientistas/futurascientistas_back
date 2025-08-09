@@ -81,6 +81,7 @@ wcwidth==0.2.13
 wheel==0.45.1
 whitenoise==6.9.0
 django-widget-tweaks
-python-magic
+django-ckeditor==25.2
+
 
 

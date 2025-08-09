@@ -49,6 +49,21 @@ def parse_linha_para_dados(row, campos_validos, campos_datetime):
     dados['cidades_aceitas'] = parse_multivalor(row.get('cidades_aceitas'))
     return dados
 
+def projetos_disponiveis_para_usuario(user):
+    hoje = timezone.now().date()
+    estado_usuario = getattr(user, 'estado', None)
+
+    projetos = Project.objects.filter(
+        ativo=True,
+        inicio_inscricoes__lte=hoje,
+        fim_inscricoes__gte=hoje,
+    ).filter(
+        Q(estados_aceitos=None) |  
+        Q(estados_aceitos=estado_usuario)  
+    ).distinct()
+
+    return projetos
+
 def importar_planilha_projetos(importacao_obj, request):
     df = preprocess_dataframe(importacao_obj.arquivo.path)
     campos_validos = [f.name for f in Project._meta.get_fields()]

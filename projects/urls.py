@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import *
 
+handler404 = 'core.views.custom_404_view'
+
 urlpatterns = [
     path('todos/', ProjectListAPIView.as_view(), name='projeto-list'),
     path('criar/', ProjectCreateAPIView.as_view(), name='projeto-criar'),

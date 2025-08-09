@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from ckeditor.fields import RichTextField
 from django.utils import timezone
 from users.models import Cota, Deficiencia
 import uuid
@@ -185,4 +186,13 @@ class AcompanhamentoProjeto(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+class Comentario(models.Model):
+    comentario = RichTextField(verbose_name="Comentário")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    aplicacao = models.ForeignKey(Application, on_delete=models.CASCADE)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.comentario
 
