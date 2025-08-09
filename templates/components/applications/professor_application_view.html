@@ -1,0 +1,144 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load widget_tweaks %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Visualização da Inscrição para Alunas{% endblock %}
+{% block extra_css %}
+<style>
+   .errorlist {
+   color: #dc2626;
+   font-size: 0.875rem;
+   margin-top: 0.25rem;
+   list-style-type: none;
+   padding-left: 0;
+   }
+   /* Campos em modo leitura com fundo cinza claro e sem borda */
+   .readonly-field {
+   background-color: #f3f4f6; /* cinza claro */
+   border: none;
+   padding: 0.5rem 0.75rem;
+   border-radius: 0.375rem;
+   width: 100%;
+   color: #4b5563; /* cinza médio */
+   }
+   .readonly-label {
+   font-weight: 600;
+   color: #374151; /* cinza escuro */
+   margin-bottom: 0.25rem;
+   display: block;
+   }
+</style>
+{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
+   <hr class="border-gray-300 mb-4">
+   <h1 class="text-2xl font-semibold mb-6 text-gray-900 text-center">
+      Visualização da Inscrição - Projeto {{ form.instance.projeto.nome }}
+   </h1>
+   <hr class="border-gray-300 mt-4 mb-8">
+   {% if form.instance.status %}
+   <div class="mt-6 flex justify-center">
+      <div class="inline-block px-5 py-2 rounded-full border-2 font-semibold text-sm
+         bg-pink-50 border-pink-400 text-pink-700
+         hover:bg-pink-100 transition-colors duration-300 select-none
+         shadow-sm">
+         Estado da inscrição: <span class="capitalize">{{ form.instance.status }}</span>
+      </div>
+   </div>
+   {% endif %}
+   {% if form.errors %}
+   <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <strong class="font-bold">Erro ao enviar o formulário!</strong>
+      <ul class="mt-2 list-disc list-inside">
+         {% for field in form %}
+         {% if field.errors %}
+         {% for error in field.errors %}
+         <li>{{ field.label }}: {{ error }}</li>
+         {% endfor %}
+         {% endif %}
+         {% endfor %}
+      </ul>
+      <button onclick="document.getElementById('form-error-alert').style.display='none'" class="absolute top-0 bottom-0 right-0 px-4 py-3" aria-label="Fechar alerta de erro">
+         <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <title>Fechar</title>
+            <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652A1 1 0 105.652 7.066L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z"/>
+         </svg>
+      </button>
+   </div>
+   {% endif %}
+   <!-- Exibindo os campos como texto somente leitura -->
+   <div class="space-y-6">
+      <div>
+         <label class="readonly-label">{{ form.project.label }}</label>
+         <div class="readonly-field">{{ form.instance.project }}</div>
+      </div>
+      {% for field in form %}
+      {% if field.name != 'project' %}
+        <div>
+         <label class="readonly-label"><strong>{{ field.label }}</strong></label>
+         <div class="readonly-field">
+            {% with val=form.instance|attr:field.name %}
+              {% if val is not None and val != "" %}
+                {{ form.instance|get_display:field.name }}
+              {% else %}
+                <span class="text-gray-400 italic">Não informado</span>
+              {% endif %}
+            {% endwith %}
+         </div>
+      </div>
+      {% endif %}
+      {% endfor %}
+   </div>
+   <!-- Comentários -->
+   </form>
+   {% if form.instance.pk %}
+   <hr class="my-10 border-t-2 border-gray-300">
+   <h2 class="mt-10 mb-6 text-2xl font-bold text-gray-800 flex items-center gap-2">
+      💬 Comentários
+   </h2>
+   <!-- Container dos comentários com fundo cinza escuro -->
+   <div class="mb-8 max-h-96 overflow-y-auto rounded-xl bg-gray-300 p-6 shadow-inner space-y-6 border border-gray-700">
+      {% if comentarios %}
+      {% for comentario in comentarios %}
+      <div class="bg-gray-50 p-5 rounded-lg shadow-lg border border-gray-200 hover:border-pink-500 transition-colors">
+         <p class="whitespace-pre-line text-gray-700 leading-relaxed text-lg">{{ comentario.comentario|safe }}</p>
+         <div class="mt-3 text-sm text-gray-500 flex items-center gap-3">
+            <span class="font-semibold text-pink-400">👤 {{ comentario.usuario }}</span>
+            <span>•</span>
+            <time datetime="{{ comentario.criado_em|date:'c' }}">{{ comentario.criado_em|date:"d/m/Y H:i" }}</time>
+         </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-gray-400 italic text-lg">Nenhum comentário ainda.</p>
+      {% endif %}
+   </div>
+   <h3 class="mb-3 text-lg font-semibold text-gray-100">Adicionar comentário</h3>
+   <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div class="border border-gray-700 rounded-lg overflow-hidden shadow-sm">
+         {{ comentario_form.comentario }}
+      </div>
+      <button type="submit" class="px-6 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-lg shadow-md transition duration-300">
+      Enviar comentário
+      </button>
+   </form>
+   <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+   <script>
+      CKEDITOR.replace('{{ comentario_form.comentario.id_for_label }}', {
+        height: 130,
+        removeButtons: 'About',
+        toolbarGroups: [
+          { name: 'basicstyles', groups: ['basicstyles', 'cleanup'] },
+          { name: 'paragraph',   groups: ['list', 'indent', 'blocks', 'align'] },
+          { name: 'links' },
+          { name: 'insert' },
+          { name: 'styles' },
+          { name: 'colors' }
+        ],
+        skin: 'moono-lisa',
+      });
+   </script>
+   {% endif %}
+</div>
+{% endblock %}

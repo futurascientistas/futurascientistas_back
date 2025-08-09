@@ -10,7 +10,6 @@ urlpatterns = [
     path('professora/', inscricao_professora, name='inscricao_professora'),
     path('minhas-inscricoes/', minhas_inscricoes, name='minhas_inscricoes'),
     path('editar/<uuid:inscricao_id>/', editar_inscricao, name='editar_inscricao'),
-    path('aluna/', inscricao_aluna, name='inscricao_aluna'),
-
-    
+    path('visualizar/<uuid:inscricao_id>/', visualizar_inscricao, name='visualizar_inscricao'),
+    path('aluna/', inscricao_aluna, name='inscricao_aluna'),   
 ]

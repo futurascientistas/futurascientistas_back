@@ -62,8 +62,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_celery_beat',
     'widget_tweaks',
-
-
+    'ckeditor',
 ]
 
 MIDDLEWARE = [   

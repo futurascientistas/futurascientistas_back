@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .permissions import IsAdminOrReadOnly
 from django.db import models
+from django.shortcuts import render
 from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
 from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, CotaSerializer
