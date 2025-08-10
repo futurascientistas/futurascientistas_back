@@ -11,17 +11,5 @@ class Migration(migrations.Migration):
         ('applications', '0001_initial'),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='application',
-            name='tipo_deficiencia',
-            field=models.ForeignKey(
-                null=True,
-                blank=True,
-                on_delete=models.SET_NULL,
-                to='users.Deficiencia',
-                verbose_name='Tipo de deficiência'
-            ),
-        ),
-    ]
+    operations = []
 

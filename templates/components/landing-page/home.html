@@ -12,16 +12,26 @@
   
   <!-- Configuração do Tailwind para usar a fonte Inter e aplicar arredondamento -->
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
+     html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden; /* Evita rolagem horizontal */
+      overflow-y: scroll; 
+      scroll-behavior: smooth; /* Suaviza a rolagem */
+    }
+    .full-screen-section {
+      height: 100vh;
+      padding: 2rem 1rem; /* Padding para espaçamento interno */
+      box-sizing: border-box; /* Inclui padding e border no cálculo da largura/altura */
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    .bg-custom-pink { background-color: #fce4ec; }
-    .bg-custom-green { background-color: #e8f5e9; }
-    .bg-custom-blue { background-color: #e3f2fd; }
+    .bg-custom-pink { background-color: rgba(252, 228, 236, 0.8);}
+    .bg-custom-green { background-color: rgba(232, 245, 233, 0.8); }
+    .bg-custom-blue { background-color: rgba(227, 242, 253, 0.8); }
     .text-custom-pink { color: #d81b60; }
 
     @keyframes pulse-slow {
@@ -31,10 +41,6 @@
     }
     .animate-pulse-slow {
       animation: pulse-slow 6s infinite ease-in-out;
-    }
-
-    html {
-      scroll-behavior: smooth;
     }
 
     #background-map {
@@ -59,17 +65,25 @@
       flex-grow: 1;
     }
 
-    .content-section {
-        background-color: rgba(255, 255, 255, 0.9); 
-    }
-    .bg-custom-pink, .bg-custom-green, .bg-custom-blue {
-        background-color: #fce4ec; 
+    #content-sections article {
+      min-height: 100vh;
+      padding: 2rem 1rem; 
+      padding-top: 5rem; 
+      box-sizing: border-box;
+      display: flex; 
+      align-items: center;
+      justify-content: center;
     }
 
-    .footer {
-        position: relative; 
-        z-index: 1; 
+    .hero-section-height {
+      height: calc(100vh - 64px); /* Ajusta a altura para ocupar toda a tela menos o header */
     }
+    .footer {
+      position: relative; 
+      z-index: 1;
+      flex-shrink: 0; 
+    }
+
   </style>
 
 
@@ -78,13 +92,13 @@
   <link rel="stylesheet" href="{% static 'css/landing-page/program-modules.css' %}">
   <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
 </head>
-<body class="raleway bg-gray-50 text-gray-800">
+<body class="raleway bg-gray-50 text-gray-800 pt-16 min-h-screen">
 
   <div id="background-map"></div>
 
   {% include 'components/landing-page/header.html' %}
   
-  <section id="hero-page" class="relative flex flex-col items-center justify-center text-center py-20 px-4 bg-gradient-to-br from-purple-600 to-pink-500 text-white overflow-hidden shadow-xl" style="min-height: 100vh;">
+   <section id="hero-page" class="relative flex flex-col items-center justify-center text-center py-20 px-4 bg-gradient-to-br from-purple-600 to-pink-500 text-white overflow-hidden shadow-xl hero-section-height">
 
       <div class="absolute inset-0 z-0 opacity-20">
         <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
@@ -115,9 +129,9 @@
     <div id="content-sections">
       <section id="about-page" class="space-y-12 mt-12">
         <!-- Primeira Seção: O que é o Futuras Cientistas -->
-        <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-pink"> <!-- Removido rounded-xl e shadow-lg -->
+        <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-pink container mx-auto px-4 max-w-screen-lg full-screen-section">
           <div class="md:w-1/2">
-            <p class="text-lg leading-relaxed text-gray-900">
+            <p class="text-justify text-lg leading-relaxed text-gray-900">
               O Futura Cientistas é um programa do Centro de Tecnologias
               Estratégicas do Nordeste (Cetene) que estimula o contato de
               alunas e professoras da rede pública de ensino com as áreas de
@@ -133,9 +147,9 @@
         </article>
 
         <!-- Segunda Seção: Impacto e Resultados do Programa -->
-        <article class="flex flex-col md:flex-row-reverse items-center gap-8 p-8 bg-custom-green mt-12"> <!-- Removido rounded-xl e shadow-lg, adicionado mt-12 para espaçamento -->
+        <article class="flex flex-col md:flex-row-reverse items-center gap-8 p-8 bg-custom-green container mx-auto px-4 max-w-screen-lg full-screen-section">
           <div class="md:w-1/2">
-            <p class="text-lg leading-relaxed text-gray-900">
+            <p class="text-justify  text-lg leading-relaxed text-gray-900">
               Com o desenvolvimento do pensamento e de atividades científicas
               transdisciplinares, reduzimos barreiras para o acesso e
               permanência de meninas e mulheres nos espaços científicos. Em 10
@@ -153,9 +167,9 @@
         </article>
 
         <!-- Terceira Seção: Objetivo do Programa -->
-        <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-blue mt-12"> <!-- Removido rounded-xl e shadow-lg, adicionado mt-12 para espaçamento -->
+       <article class="flex flex-col md:flex-row items-center gap-8 p-8 bg-custom-blue container mx-auto px-4 max-w-screen-lg full-screen-section">
           <div class="md:w-1/2">
-            <p class="text-lg leading-relaxed text-gray-900">
+            <p class="text-justify text-lg leading-relaxed text-gray-900">
               <strong class="font-bold text-custom-pink">OBJETIVO:</strong> Estimular o interesse e promover a participação de
               mulheres professoras e estudantes do ensino médio, nas áreas de
               Ciência e Tecnologia, através de sua aproximação a centros
@@ -170,12 +184,11 @@
         </article>
       </section>
 
-      <section id="modules-page" class="space-y-12 mt-12">
+      <section id="modules-page" class="space-y-12  container mx-auto px-4 max-w-screen-lg">
         {% include 'components/landing-page/program-modules.html' %}
       </section>
     </div>
-    {% include 'components/landing-page/footer.html' %}
   </main>
-  
+  {% include 'components/landing-page/footer.html' %}
 </body>
 </html>

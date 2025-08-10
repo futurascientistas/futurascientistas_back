@@ -1,5 +1,5 @@
 {% load static %}
-<header class="header">
+<header class="header fixed top-0 left-0 w-full z-50">
   <!-- Logo -->
   <div class="logo">
     <div class="headerfc__logo">
@@ -7,9 +7,9 @@
     </div>
   </div>
 
-  <div class="right-section">
+  <div class="right-section flex flex-col sm:flex-row items-center gap-2">
     <!-- Social Media Icons -->
-    <div class="social-icons">
+    <div class="social-icons flex gap-2">
       <a href="#" class="social-icon">
         {% include 'components/icons/message-circle.svg' %}
       </a>
@@ -25,7 +25,7 @@
     </div>
     
     <!-- Action Buttons -->
-    <div class="headerfc__actions">
+    <div class="headerfc__actions flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
       <a href="/login" class="headerfc__btn">ENTRAR</a>
       <a href="/cadastro" class="headerfc__btn headerfc__btn_secondary">INSCREVA-SE</a>
     </div>
