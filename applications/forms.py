@@ -20,6 +20,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         queryset=Project.objects.all(),
         label="Projeto",
         empty_label="Selecione um projeto",
+        required=True,
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
@@ -90,8 +91,6 @@ class ApplicationAlunoForm(forms.ModelForm):
         
         if not cleaned_data.get('projeto'):
             self.add_error('projeto', 'O projeto é obrigatório.')
-        if not cleaned_data.get('cota_desejada'):
-            self.add_error('cota_desejada', 'A vaga que deseja concorrer é obrigatória.')
         if not cleaned_data.get('aceite_declaracao_veracidade'):
             self.add_error('aceite_declaracao_veracidade', 'É necessário aceitar a declaração de veracidade.')
         if not cleaned_data.get('aceite_requisitos_tecnicos'):
