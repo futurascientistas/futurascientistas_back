@@ -41,9 +41,12 @@ DEBUG=True
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://futurascientistas.com.br',
+    'https://www.futurascientistas.com.br'
+]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
