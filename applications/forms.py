@@ -20,6 +20,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         queryset=Project.objects.all(),
         label="Projeto",
         empty_label="Selecione um projeto",
+        required=True,
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })

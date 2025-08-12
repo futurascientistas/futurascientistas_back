@@ -1,6 +1,6 @@
-
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import render
 from core.views import *
 from users.views import *
 
@@ -21,4 +21,4 @@ urlpatterns = [
 def custom_404_view(request, exception):
     return render(request, 'components/landing-page/page_404.html', status=404)
 
-handler404 = custom_404_view
+handler404 = 'futuras_cientistas.urls.custom_404_view'
