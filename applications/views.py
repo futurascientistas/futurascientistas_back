@@ -142,7 +142,10 @@ def inscricao_aluna(request):
 
     if request.method == 'POST':
         form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
+        print(form.errors)
+        print('oi')
         if form.is_valid():
+            
             instancia = form.save(commit=False)
             projeto = form.cleaned_data.get('projeto')
 
