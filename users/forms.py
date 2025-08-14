@@ -99,18 +99,18 @@ class UserUpdateForm(forms.ModelForm):
         'comprovante_residencia',
         'autodeclaracao_racial',
         'comprovante_deficiencia',
-        'comprovante_autorizacao_responsavel'
     ]
 
     for field_name in BINARY_FILE_FIELDS:
+        field_verbose = User._meta.get_field(field_name).verbose_name
         locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
             required=False,
+            label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}",
-            required=False
+            required=False,
+            label=f"Remover arquivo atual de {field_verbose}"
         )
     del field_name  
 
@@ -183,10 +183,10 @@ class UserUpdateForm(forms.ModelForm):
             'telefone_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'telefone_responsavel_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
         }
-
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cpf'].disabled = True  
+        self.fields['cpf'].disabled = True
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:

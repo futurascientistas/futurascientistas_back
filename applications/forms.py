@@ -39,14 +39,15 @@ class ApplicationAlunoForm(forms.ModelForm):
     )
 
     for field_name in BINARY_FILE_FIELDS:
+        field_verbose = Application._meta.get_field(field_name).verbose_name
         locals()[f"{field_name}__upload"] = forms.FileField(
             required=False,
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
+            label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
             required=False,
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}"
+            label=f"Remover arquivo atual de {field_verbose}"
         )
     del field_name
 
@@ -173,14 +174,15 @@ class ApplicationProfessorForm(forms.ModelForm):
     )
 
     for field_name in BINARY_FILE_FIELDS:
+        field_verbose = Application._meta.get_field(field_name).verbose_name
         locals()[f"{field_name}__upload"] = forms.FileField(
             required=False,
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
+            label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
             required=False,
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}"
+            label=f"Remover arquivo atual de {field_verbose}"
         )
     del field_name
 
