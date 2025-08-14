@@ -34,7 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'edjango-insecure-_)@(-q1p%=*@p4^sr840xvd9j@b0$7u^$t0s2ly+6hnmfffqv9'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG=True
@@ -108,11 +108,11 @@ WSGI_APPLICATION = 'futuras_cientistas.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'd9sj8g0ko53vij',
-        'USER': 'ubrda2s1dur47b',
-        'PASSWORD': 'pe9e745eedcb8a9e9269b58a10fc6fd9fed5769dc0ee756d9ae0061f53faed055',
-        'HOST': 'c18qegamsgjut6.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
-        'PORT': 5432,
+        'NAME': env("DB_NAME"),
+        'USER': env("DB_USER"),
+        'PASSWORD': env("DB_PASSWORD"),
+        'HOST': env("DB_HOST"),
+        'PORT': env("DB_PORT"),
     }
 }
 
@@ -192,18 +192,13 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'users.User' 
 
-
-# Configuração de e-mail (exemplo usando Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'adm.cetene@futurascientistas.com.br'
-EMAIL_HOST_PASSWORD = 'Viradanaciencia@2020'
-DEFAULT_FROM_EMAIL = 'Sistema <adm.cetene@futurascientistas.com.br'
-
-
-
+EMAIL_BACKEND = env('EMAIL_BACKEND')  
+EMAIL_HOST = env('EMAIL_HOST') 
+EMAIL_PORT = env('EMAIL_PORT') 
+EMAIL_USE_TLS = env('EMAIL_USE_TLS')  
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')
 
 # CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 # CELERY_ACCEPT_CONTENT = env('CELERY_ACCEPT_CONTENT') 
