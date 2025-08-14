@@ -1,7 +1,7 @@
 # serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import Group
-from .models import TipoEnsino, User, Genero, Raca, Deficiencia, Cota
+from .models import TipoDeVaga, TipoEnsino, User, Genero, Raca, Deficiencia
 from django.contrib.auth.models import Permission
 from .services import get_valid_group
 
@@ -118,9 +118,9 @@ class DeficienciaSerializer(serializers.ModelSerializer):
         model = Deficiencia
         fields = ['id', 'nome']
 
-class CotaSerializer(serializers.ModelSerializer):
+class TipoDeVagaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cota
+        model = TipoDeVaga
         fields = ['id', 'nome']
 
 class TipoEnsinoSerializer(serializers.ModelSerializer):

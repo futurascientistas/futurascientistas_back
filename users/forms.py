@@ -2,6 +2,8 @@ import re
 from django import forms
 from django.forms import inlineformset_factory
 from django.contrib.auth.models import Group
+
+from utils.utils import get_binary_field_display_name
 from .services import validar_email, validar_cpf, validar_senha
 from .models import HistoricoEscolar, Nota, Disciplina, TipoEnsino
 
@@ -102,13 +104,16 @@ class UserUpdateForm(forms.ModelForm):
     ]
 
     for field_name in BINARY_FILE_FIELDS:
+
+        display_label = get_binary_field_display_name(field_name)
+
         locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
+            label=f"Enviar arquivo para {display_label}",
             required=False,
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}",
+            label=f"Remover arquivo atual de {display_label}",
             required=False
         )
     del field_name  
@@ -135,6 +140,7 @@ class UserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.SelectMultiple(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
+
     tipo_ensino = forms.ModelChoiceField(
         queryset=TipoEnsino.objects.all(),  
         label="Tipo de Ensino",
@@ -158,6 +164,8 @@ class UserUpdateForm(forms.ModelForm):
         labels = {
             'telefone_responsavel': 'Telefone Responsável',
             'telefone_responsavel_escola': 'Telefone Responsável da Escola',
+            'cep': 'CEP',
+            'cep_escola': 'CEP da Escola',
         }
 
         widgets = {

@@ -1,4 +1,6 @@
 from django import forms
+
+from utils.utils import get_binary_field_display_name
 from .models import *
 from projects.models import *
 from users.models import *
@@ -8,8 +10,6 @@ from django.db.models import Q
 
 
 class ApplicationAlunoForm(forms.ModelForm):
-    # Apenas os campos BinaryField para upload de documentos de identificação
-    # foram mantidos. Os outros foram removidos para simplificar.
     BINARY_FILE_FIELDS = [
         'rg_frente',
         'rg_verso',
@@ -39,22 +39,25 @@ class ApplicationAlunoForm(forms.ModelForm):
     )
 
     for field_name in BINARY_FILE_FIELDS:
+
+        display_label = display_label = get_binary_field_display_name(field_name)
+
         locals()[f"{field_name}__upload"] = forms.FileField(
+            label=f"Enviar arquivo para {display_label}",
             required=False,
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            required=False,
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}"
+            label=f"Remover arquivo atual de {display_label}",
+            required=False
         )
-    del field_name
+    del field_name 
 
     class Meta:
         model = Application
         fields = [
             'projeto',
-            'cota_desejada',
+            'tipo_de_vaga',
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
@@ -152,11 +155,11 @@ class ApplicationProfessorForm(forms.ModelForm):
         })
     )
 
-    cota_desejada = forms.ModelChoiceField(
-        queryset=Cota.objects.all(),  
-        label="Cota",
-        empty_label="Selecione uma cota",
-         required=False,
+    tipo_de_vaga = forms.ModelChoiceField(
+        queryset=TipoDeVaga.objects.all(),  
+        label="Tipo de Vaga",
+        empty_label="Selecione um tipo de vaga",
+        required=True,
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
@@ -165,34 +168,42 @@ class ApplicationProfessorForm(forms.ModelForm):
     tipo_deficiencia = forms.ModelChoiceField(
         queryset=Deficiencia.objects.all(),  
         label="Deficiencia",
-         required=False,
+        required=True,
         empty_label="Selecione uma deficiencia",
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
 
+    CUSTOM_FIELD_LABELS = {
+        'rg_frente': 'RG (frente)', 
+        'rg_verso': 'RG (verso)',   
+        'cpf_anexo': 'CPF',
+    }
+
     for field_name in BINARY_FILE_FIELDS:
+
+        display_label = CUSTOM_FIELD_LABELS.get(field_name, field_name.replace('_', ' ').capitalize())
+
         locals()[f"{field_name}__upload"] = forms.FileField(
+            label=f"Enviar arquivo para {display_label}",
             required=False,
-            label=f"Enviar arquivo para {field_name.replace('_', ' ').capitalize()}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            required=False,
-            label=f"Remover arquivo atual de {field_name.replace('_', ' ').capitalize()}"
+            label=f"Remover arquivo atual de {display_label}",
+            required=False
         )
-    del field_name
+    del field_name 
 
     class Meta:
         model = Application
         fields = [
             'projeto',
             'como_soube_programa',
-            'telefone_responsavel',
             'curriculo_lattes_url',
             'area_atuacao',
-            'cota_desejada',
+            'tipo_de_vaga',
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
@@ -223,10 +234,9 @@ class ApplicationProfessorForm(forms.ModelForm):
 
         widgets = {
             'como_soube_programa': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Como soube do programa?'}),
-            'telefone_responsavel': forms.TextInput(attrs={'placeholder': 'Telefone da responsável'}),
             'curriculo_lattes_url': forms.URLInput(attrs={'placeholder': 'URL do Currículo Lattes'}),
             'area_atuacao': forms.TextInput(attrs={'placeholder': 'Área de atuação'}),
-            'cota_desejada': forms.TextInput(attrs={'placeholder': 'Cota desejada'}),
+            'tipo_de_vaga': forms.TextInput(attrs={'placeholder': 'Tipo de Vaga'}),
             'tipo_deficiencia': forms.TextInput(attrs={'placeholder': 'Tipo de deficiência'}),
             'tipo_material_necessario': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Descreva o tipo de material necessário'}),
             'grau_formacao': forms.Select(choices=GrauFormacao.choices),

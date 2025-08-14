@@ -7,6 +7,7 @@ router = DefaultRouter()
 router.register(r'racas', RacaViewSet, basename='raca')
 router.register(r'deficiencias', DeficienciaViewSet, basename='deficiencia')
 router.register(r'tipo_ensino', TipoEnsinoViewSet, basename='tipo_ensino')
+router.register(r'tipo_de_vaga', TipoDeVagaViewSet, basename='tipo_de_vaga')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -34,7 +35,4 @@ urlpatterns = [
     path('generos/', GeneroListCreateAPIView.as_view(), name='genero-list-create'),
     path('generos/<int:pk>/', GeneroRetrieveUpdateDestroyAPIView.as_view(), name='genero-detail'),
 
-    
-    # Cota
-    path('cotas/', CotaListCreateView.as_view(), name='cota-list-create'),
 ]

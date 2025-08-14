@@ -7,8 +7,8 @@ from django.db import models
 from django.shortcuts import render
 from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
-from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, CotaSerializer, TipoEnsinoSerializer
-from users.models import Genero, Raca, Deficiencia, Cota, TipoEnsino
+from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, TipoDeVagaSerializer, TipoEnsinoSerializer
+from users.models import Genero, Raca, Deficiencia, TipoDeVaga, TipoEnsino
 from django.views.generic import TemplateView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -126,10 +126,12 @@ class DeficienciaViewSet(viewsets.ModelViewSet):
     serializer_class = DeficienciaSerializer
     permission_classes = [IsAdminOrReadOnly]
 
-class CotaListCreateView(generics.ListCreateAPIView):
-    queryset = Cota.objects.all()
-    serializer_class = CotaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class TipoDeVagaViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = TipoDeVaga.objects.all()
+    serializer_class = TipoDeVagaSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class HomePageView(TemplateView):
     template_name = "components/landing-page/home.html"
