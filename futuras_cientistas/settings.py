@@ -199,7 +199,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'adm.cetene@futurascientistas.com.br'
-EMAIL_HOST_PASSWORD = 'Viradanaciencia@2020'
+EMAIL_HOST_PASSWORD = 'qxhv yzrt dncf aafu'
 DEFAULT_FROM_EMAIL = 'Sistema <adm.cetene@futurascientistas.com.br'
 
 
