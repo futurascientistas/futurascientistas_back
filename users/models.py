@@ -29,6 +29,21 @@ class Cota(models.Model):
     nome = models.CharField(max_length=100)
     def __str__(self): return self.nome
 
+class TipoEnsino(models.Model):
+    nome = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        verbose_name="Nome")
+
+    def __str__(self):
+        return self.nome
+
+    class Meta:
+        verbose_name = "Tipo de Ensino"
+        verbose_name_plural = "Tipos de Ensino"
+        ordering = ['nome']
+
 # Modelo User
 class User(AbstractUser):
     username = None  
@@ -55,7 +70,6 @@ class User(AbstractUser):
     complemento = models.CharField(max_length=100, blank=True)
     cidade = models.CharField(max_length=100, blank=True)
     estado = models.CharField(max_length=2, blank=True)
-    comprovante_residencia = models.BinaryField(null=True, blank=True)
 
     # Diversidade
     raca = models.ForeignKey(Raca, on_delete=models.SET_NULL, null=True, blank=True)

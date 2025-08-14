@@ -141,6 +141,7 @@ def criar_itens(lista, endpoint, nome_classe):
 
         except Exception as e:
             print(f"🚫 Falha ao processar '{item}': {str(e)}")
+
 racas = [
     "Branca",
     "Preta",
@@ -148,6 +149,7 @@ racas = [
     "Amarela",
     "Indígena"
 ]
+
 deficiencias = [
     "Deficiência física",
     "Deficiência auditiva",
@@ -156,6 +158,13 @@ deficiencias = [
     "Deficiência múltipla",
     "Transtorno do espectro autista (TEA)"
 ]
+
+tipo_ensino = [
+    "REGULAR", 
+    "INTEGRAL"
+]
+
 criar_itens(racas, "racas", "Raça")
 criar_itens(deficiencias, "deficiencias", "Deficiência")
+criar_itens(tipo_ensino, "tipo_ensino", "Tipos de Ensino")
 

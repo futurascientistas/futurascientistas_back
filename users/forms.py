@@ -3,7 +3,7 @@ from django import forms
 from django.forms import inlineformset_factory
 from django.contrib.auth.models import Group
 from .services import validar_email, validar_cpf, validar_senha
-from .models import HistoricoEscolar, Nota, Disciplina
+from .models import HistoricoEscolar, Nota, Disciplina, TipoEnsino
 
 
 class CadastroForm(forms.Form):
@@ -96,7 +96,6 @@ class UserUpdateForm(forms.ModelForm):
         'documento_cpf',
         'documento_rg',
         'foto',
-        'comprovante_residencia',
         'autodeclaracao_racial',
         'comprovante_deficiencia',
         'comprovante_autorizacao_responsavel'
@@ -121,6 +120,7 @@ class UserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
+
     genero = forms.ModelChoiceField(
         queryset=Genero.objects.all(),
         label="Gênero",
@@ -128,11 +128,19 @@ class UserUpdateForm(forms.ModelForm):
         required=False,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
+    
     deficiencias = forms.ModelMultipleChoiceField(
         queryset=Deficiencia.objects.all(),
         label="Deficiências",
         required=False,
         widget=forms.SelectMultiple(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
+    )
+    tipo_ensino = forms.ModelChoiceField(
+        queryset=TipoEnsino.objects.all(),  
+        label="Tipo de Ensino",
+        required=True,
+        empty_label="--------",
+        widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
 
     class Meta:

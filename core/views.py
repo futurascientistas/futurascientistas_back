@@ -1,4 +1,4 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, mixins
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,8 +7,8 @@ from django.db import models
 from django.shortcuts import render
 from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
-from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, CotaSerializer
-from users.models import Genero, Raca, Deficiencia, Cota
+from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, CotaSerializer, TipoEnsinoSerializer
+from users.models import Genero, Raca, Deficiencia, Cota, TipoEnsino
 from django.views.generic import TemplateView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -134,6 +134,12 @@ class CotaListCreateView(generics.ListCreateAPIView):
 class HomePageView(TemplateView):
     template_name = "components/landing-page/home.html"
 
+class TipoEnsinoViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = TipoEnsino.objects.all()
+    serializer_class = TipoEnsinoSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class NaoEcontrada(TemplateView):
     template_name = "components/landing-page/page_404.html"
