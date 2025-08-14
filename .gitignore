@@ -208,3 +208,11 @@ marimo/_lsp/
 __marimo__/
 
 .env
+
+# Django migrations
+*/migrations/*.py
+*/migrations/*.pyc
+
+# Cache
+__pycache__/
+*.py[cod]
