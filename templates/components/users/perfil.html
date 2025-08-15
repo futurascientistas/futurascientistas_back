@@ -352,7 +352,7 @@
       }
 
       if (field.value.trim() !== "" && !phoneRegex.test(field.value)) {
-        errorElement.textContent = "Formato de telefone inválido. Use (XX) 9XXXX-XXXX.";
+        errorElement.textContent = "Formato de telefone inválido. Use (##) 9####-####.";
         field.classList.add("border-red-500");
         isValid = false;
       } else {

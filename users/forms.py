@@ -118,11 +118,29 @@ class UserUpdateForm(forms.ModelForm):
         )
     del field_name  
 
+    nome = forms.CharField(
+        label="Nome Completo",
+        help_text="Por favor, digite seu nome completo, sem abreviações.", 
+        required=True, 
+        widget=forms.TextInput(attrs={
+            'class': 'mt-1 block w-full',
+            'placeholder': "Por favor, digite seu nome completo, sem abreviações."})
+    )
+    
+    nome_escola = forms.CharField(
+        label="Nome da Escola",
+        help_text="Por favor, digite o nome completo da escola, sem abreviações.",
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'mt-1 block w-full', 
+            'placeholder': "Por favor, digite o nome completo da escola, sem abreviações."})
+    )
+
     raca = forms.ModelChoiceField(
         queryset=Raca.objects.all(),
         label="Raça",
         empty_label="--------",
-        required=False,
+        required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
 
@@ -130,14 +148,14 @@ class UserUpdateForm(forms.ModelForm):
         queryset=Genero.objects.all(),
         label="Gênero",
         empty_label="--------",
-        required=False,
+        required=True,
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
     
     deficiencias = forms.ModelMultipleChoiceField(
         queryset=Deficiencia.objects.all(),
         label="Deficiências",
-        required=False,
+        required=True,
         widget=forms.SelectMultiple(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
 
@@ -164,40 +182,42 @@ class UserUpdateForm(forms.ModelForm):
         labels = {
             'telefone_responsavel': 'Telefone Responsável',
             'telefone_responsavel_escola': 'Telefone Responsável da Escola',
+            'telefone_escola': 'Telefone da Escola',
             'cep': 'CEP',
             'cep_escola': 'CEP da Escola',
+            'numero': 'Número',
+            'numero_escola': 'Número da Escola',
+            'rua_escola': 'Rua da Escola',
+            'bairro_escola': 'Bairro da Escola',
+            'cidade_escola': 'Cidade da Escola',
+            'estado_escola': 'Estado da Escola',
+            'complemento_escola': 'Complemento da Escola',
         }
 
         widgets = {
-            'cpf': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full'}),
-            'nome': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'telefone': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'telefone_responsavel': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'data_nascimento': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full'}),
+            'cpf': forms.TextInput(attrs={'readonly': 'readonly','placeholder': "000.000.000-00", 'class': 'mt-1 block w-full', 'oninput': "formatCPF(this)", 'onblur': "validateCPF()"}),
+            'email': forms.EmailInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "email@exemplo.com"}),
+            'telefone': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "(XX) 9XXXX-XXXX"}),
+            'telefone_responsavel': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "(XX) 9XXXX-XXXX"}),
+            'data_nascimento': forms.DateInput(attrs={'type': 'date', 'class': 'mt-1 block w-full', 'placeholder': "DD/MM/AAAA"}),
             'pronomes': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full'}),
-            'cep': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "https://lattes.cnpq.br/XXXXXXXXXXXXXX"}),
+            'cep': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "XXXX-XXX"}),
             'rua': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'bairro': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'numero': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'complemento': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'cidade': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'estado': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            # 'raca': forms.Select(attrs={'class': 'mt-1 block w-full'}),
-            # 'genero': forms.Select(attrs={'class': 'mt-1 block w-full'}),
-            # 'deficiencias': forms.SelectMultiple(attrs={'class': 'mt-1 block w-full'}),
-            'nome_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'tipo_ensino': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'cep_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'cep_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "XXXX-XXX"}),
             'rua_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'bairro_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'numero_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'complemento_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'cidade_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'estado_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'telefone_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
-            'telefone_responsavel_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
+            'telefone_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "(XX) 9XXXX-XXXX"}),
+            'telefone_responsavel_escola': forms.TextInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "(XX) 9XXXX-XXXX"}),
         }
 
     def __init__(self, *args, **kwargs):

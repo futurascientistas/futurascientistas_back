@@ -7,6 +7,8 @@ def get_binary_field_display_name(field_name):
         'cpf_anexo': 'CPF',
         'documento_rg': 'RG ',
         'documento_cpf': 'CPF',
+        'comprovante_deficiencia' : 'Comprovante de Deficiência',
+        'comprovante_autorizacao_responsavel': 'Comprovante de Autorização do Responsável',
     }
 
     return custom_labels.get(field_name, field_name.replace('_', ' ').capitalize())
