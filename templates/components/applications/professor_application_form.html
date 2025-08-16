@@ -1,97 +1,83 @@
-{% extends 'components/dashboard/sidebar/dashboard.html' %}
-{% load widget_tweaks %}
-{% load static %}
-
-{% block title %}Inscrição para Professoras{% endblock %}
-
-{% block extra_css %}
+{% extends 'components/dashboard/sidebar/dashboard.html' %} {% load widget_tweaks %} {% load static %} {% block title %}Inscrição para Professoras{% endblock %} {% block extra_css %}
 <style>
-  .errorlist {
-    color: #dc2626;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    list-style-type: none;
-    padding-left: 0;
-  }
+    .errorlist {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        list-style-type: none;
+        padding-left: 0;
+      }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
 
-  <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
-
-{% if form.errors %}
-  <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-    <strong class="font-bold">Erro ao enviar o formulário!</strong>
-    <ul class="mt-2 list-disc list-inside">
-      {% for field in form %}
-        {% if field.errors %}
-          {% for error in field.errors %}
-            <li>{{ field.label }}: {{ error }}</li>
-          {% endfor %}
-        {% endif %}
-      {% endfor %}
-    </ul>
-    <button onclick="document.getElementById('form-error-alert').style.display='none'" class="absolute top-0 bottom-0 right-0 px-4 py-3" aria-label="Fechar alerta de erro">
-      <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-        <title>Fechar</title>
-        <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652A1 1 0 105.652 7.066L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z"/>
-      </svg>
-    </button>
-  </div>
-{% endif %}
-
-  <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
-    {% csrf_token %}
-
-    <div>
-      <label for="{{ form.projeto.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-        {{ form.projeto.label }}
-        {% if form.projeto.field.required %}
-          <span class="text-red-600" aria-hidden="true">*</span>
-        {% endif %}
-      </label>
-      {% render_field form.projeto class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=form.projeto.id_for_label %}
-      {% if form.projeto.help_text %}
-        <small class="text-gray-600">{{ form.projeto.help_text }}</small>
-      {% endif %}
-      {% if form.projeto.errors %}
-        <ul class="errorlist" role="alert" aria-live="assertive">
-          {% for error in form.projeto.errors %}
-            <li>{{ error }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
+    <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+        <span class="font-semibold">Aviso:</span> Você declara ciência sobre a necessidade de seu deslocamento até o local onde será realizado o projeto.
     </div>
 
-    {% for field in form %}
-      {% if field.name != 'projeto' %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-            {{ field.label }}
-            {% if field.field.required %}
-              <span class="text-red-600" aria-hidden="true">*</span>
-            {% endif %}
-          </label>
-          {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=field.id_for_label %}
-          {% if field.help_text %}
-            <small class="text-gray-600">{{ field.help_text }}</small>
-          {% endif %}
-          {% if field.errors %}
-            <ul class="errorlist" role="alert" aria-live="assertive">
-              {% for error in field.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
-    {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
+    {% if form.errors %}
+    <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <strong class="font-bold">Erro ao enviar o formulário!</strong>
+        <ul class="mt-2 list-disc list-inside">
+            {% for field in form %} {% if field.errors %} {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+            {% endfor %} {% endif %} {% endfor %}
+        </ul>
+        <button onclick="document.getElementById('form-error-alert').style.display='none'" class="absolute top-0 bottom-0 right-0 px-4 py-3" aria-label="Fechar alerta de erro">
+            <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <title>Fechar</title>
+                <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652A1 1 0 105.652 7.066L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z" />
+            </svg>
+        </button>
+    </div>
+    {% endif %}
 
-<div class="flex gap-4">
-  <button type="submit" name="acao" value="salvar" style="
+    <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
+        {% csrf_token %}
+
+        <div>
+            <label for="{{ form.projeto.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                {{ form.projeto.label }} {% if form.projeto.field.required %}
+                <span class="text-red-600" aria-hidden="true">*</span> {% endif %}
+            </label>
+            {% render_field form.projeto class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=form.projeto.id_for_label %} {% if form.projeto.help_text %}
+            <small class="text-gray-600">{{ form.projeto.help_text }}</small> {% endif %} {% if form.projeto.errors %}
+            <ul class="errorlist" role="alert" aria-live="assertive">
+                {% for error in form.projeto.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        {% for field in form %} {% if field.name != 'projeto' %}
+        <div class="mb-4">
+            {% if field.field.widget.input_type == "checkbox" %}
+            <div class="mb-4">
+                <label class="flex items-center cursor-pointer select-none gap-2">
+                    <span class="text-gray-800 font-semibold">{{ field.label }}</span> {% render_field field class="w-4 h-4 border-2 border-gray-400 rounded-sm focus:ring-pink-500 checked:bg-pink-500 checked:border-pink-500" %}
+                </label>
+            </div>
+            {% else %}
+            <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                {{ field.label }} {% if field.field.required %}
+                <span class="text-red-600">*</span> {% endif %}
+            </label>
+            {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" %} {% if field.help_text %}
+            <small class="text-gray-600">{{ field.help_text }}</small> {% endif %} {% endif %} {% if field.errors %}
+            <ul class="errorlist" role="alert" aria-live="assertive">
+                {% for error in field.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %} {% endfor %} {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
+
+
+        <div class="flex gap-4">
+            <button type="submit" name="acao" value="salvar" style="
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
@@ -101,13 +87,11 @@
     border: 1px solid #cbd5e1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, transform 0.2s;
-  " 
-  onmouseover="this.style.backgroundColor='#cbd5e1'; this.style.transform='scale(1.02)'"
-  onmouseout="this.style.backgroundColor='#e2e8f0'; this.style.transform='scale(1)'">
-    Salvar
-  </button>
+  " onmouseover="this.style.backgroundColor='#cbd5e1'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#e2e8f0'; this.style.transform='scale(1)'">
+                Salvar
+            </button>
 
-  <button type="submit" name="acao" value="enviar" style="
+            <button type="submit" name="acao" value="enviar" style="
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
@@ -117,14 +101,12 @@
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s, transform 0.2s;
-  " 
-  onmouseover="this.style.backgroundColor='#db2777'; this.style.transform='scale(1.02)'"
-  onmouseout="this.style.backgroundColor='#ec4899'; this.style.transform='scale(1)'">
-    Enviar
-  </button>
-</div>
+  " onmouseover="this.style.backgroundColor='#db2777'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#ec4899'; this.style.transform='scale(1)'">
+                Enviar
+            </button>
+        </div>
 
-{% endif %}
-  </form>
+        {% endif %}
+    </form>
 </div>
 {% endblock %}

@@ -90,6 +90,8 @@ class Project(models.Model):
 
     vagas = models.PositiveIntegerField(verbose_name='Vagas')
     ativo = models.BooleanField(default=True, verbose_name='Ativo')
+
+    instituicao = models.TextField(verbose_name='Instituição',null=True, blank=True)
     
     inicio_inscricoes = models.DateField(verbose_name='Início das inscrições')
     fim_inscricoes = models.DateField(verbose_name='Fim das inscrições')
