@@ -18,6 +18,8 @@ urlpatterns = [
     path('logout', logout_view, name='logout'),
     path('dashboard/', dashboard, name='dashboard'),
     path('404/', NaoEcontrada.as_view(), name='nao-encontrado'),
+    path('contatos/', ContatosView.as_view(), name='contatos'),
+    path('cronograma/', CronogramaView.as_view(), name='cronograma'),
 
     # Rotas de recuperação de senha
     path(

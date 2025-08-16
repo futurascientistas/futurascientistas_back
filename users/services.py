@@ -167,7 +167,6 @@ def menu_sidebar(request):
     if not request.user.is_authenticated:
         return {}
 
-    # Captura roles do usuário (ajuste conforme sua lógica)
     user_roles = getattr(request.user, 'roles', [])
 
     menu_items = [
@@ -234,8 +233,7 @@ def menu_sidebar(request):
             "id": "cronograma",
             "title": "Cronograma",
             "roles": [],  # visível para todos
-            # "url": "/dashboard/cronograma",
-            "url": "/404",
+            "url": "/cronograma",
             "icon_svg": """
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>

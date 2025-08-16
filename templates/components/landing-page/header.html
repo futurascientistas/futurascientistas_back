@@ -3,6 +3,7 @@
   <!-- Logo -->
   <div class="logo">
     <div class="headerfc__logo">
+      <a href="{% url 'homepage' %}">
       <img src="{% static 'public/images/futuras-cientistas-logo-horizontal-white.png' %}" alt="Futuras Cientistas" />
     </div>
   </div>
@@ -10,16 +11,16 @@
   <div class="right-section flex flex-col sm:flex-row items-center gap-2">
     <!-- Social Media Icons -->
     <div class="social-icons flex gap-2">
-      <a href="#" class="social-icon">
+      <a href="https://wa.me/5581997132685" class="social-icon">
         {% include 'components/icons/message-circle.svg' %}
       </a>
-      <a href="#" class="social-icon">
+      <a href="https://www.instagram.com/futurascientistas/" class="social-icon">
         {% include 'components/icons/instagram.svg' %}
       </a>
-      <a href="#" class="social-icon">
+      <a href="https://facebook.com/futurascientistascetene" class="social-icon">
         {% include 'components/icons/facebook.svg' %}
       </a>
-      <a href="#" class="social-icon">
+      <a href="https://www.youtube.com/@FuturasCientistas" class="social-icon">
         {% include 'components/icons/youtube.svg' %}
       </a>
     </div>
