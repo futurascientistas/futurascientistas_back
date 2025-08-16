@@ -137,3 +137,9 @@ class HomePageView(TemplateView):
 
 class NaoEcontrada(TemplateView):
     template_name = "components/landing-page/page_404.html"
+
+class ContatosView(TemplateView):
+    template_name = "components/landing-page/contact_information.html"
+
+class CronogramaView(TemplateView):
+    template_name = "components/agenda/calendar.html"
