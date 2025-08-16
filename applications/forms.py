@@ -38,6 +38,24 @@ class ApplicationAlunoForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Ex: Material impresso em braile, Material impresso ampliado'}),
         required=False
     )
+    
+    modalidade_vaga = forms.ChoiceField(
+    choices=[('', 'Selecione uma modalidade')] + list(Application.MODALIDADE_CHOICES),
+    label="Selecione uma modalidade de vaga",
+    required=True,
+    widget=forms.Select(attrs={
+        'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+    })
+    )
+
+    tamanho_jaleco = forms.ChoiceField(
+        choices=[('', 'Selecione um tamanho')] + list(Application.JALECO_CHOICES),
+        label="Selecione um tamanho para o jaleco",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
 
     for field_name in BINARY_FILE_FIELDS:
         field_verbose = Application._meta.get_field(field_name).verbose_name
@@ -57,6 +75,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         fields = [
             'projeto',
             'modalidade_vaga',
+            'tamanho_jaleco',
             'cota_desejada',
             'tipo_deficiencia',
             'necessita_material_especial',
@@ -176,7 +195,7 @@ class ApplicationProfessorForm(forms.ModelForm):
     )
 
     modalidade_vaga = forms.ChoiceField(
-        choices=[('', 'Selecione uma modalidade')] + list(GrauFormacao.choices),
+        choices=[('', 'Selecione uma modalidade')] + list(Application.MODALIDADE_CHOICES),
         label="Selecione uma modalidade de vaga",
         required=True,
         widget=forms.Select(attrs={
@@ -189,6 +208,15 @@ class ApplicationProfessorForm(forms.ModelForm):
         label="Deficiencia",
          required=False,
         empty_label="Selecione uma deficiencia",
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
+    
+    tamanho_jaleco = forms.ChoiceField(
+        choices=[('', 'Selecione um tamanho')] + list(Application.JALECO_CHOICES),
+        label="Selecione um tamanho para o jaleco",
+        required=True,
         widget=forms.Select(attrs={
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
@@ -219,6 +247,7 @@ class ApplicationProfessorForm(forms.ModelForm):
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
+            'tamanho_jaleco',
             'curriculo_lattes_url',
 
             # --- Formação e perfil ---

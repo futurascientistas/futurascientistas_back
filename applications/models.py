@@ -31,6 +31,14 @@ class Application(models.Model):
         ('indeferida', 'Indeferida'),
     ]
 
+    JALECO_CHOICES = [
+        ('P', 'P'),
+        ('M', 'M'),
+        ('G', 'G'),
+        ('GG', 'GG'),
+    ]
+    MODALIDADE_CHOICES = [('ampla', 'Ampla concorrência'), ('cota', 'Cota')]
+
     aprovado = models.BooleanField(
         default=False,
         verbose_name="Aprovada para participação",
@@ -59,7 +67,7 @@ class Application(models.Model):
     autodeclaracao_racial = models.BinaryField(null=True, blank=True, verbose_name="Autodeclaração racial")
     modalidade_vaga = models.CharField(
         max_length=10,
-        choices=[('ampla', 'Ampla concorrência'), ('cota', 'Cota')],
+        choices=MODALIDADE_CHOICES,
         null=True,
         blank=True
     )
@@ -76,6 +84,14 @@ class Application(models.Model):
         null=True,
         blank=True,
         verbose_name="Tipo de deficiência"
+    )
+    
+    tamanho_jaleco = models.CharField(
+        'Tamanho do jaleco',
+        max_length=2,
+        choices=JALECO_CHOICES,
+        null=True,
+        blank=True
     )
 
     # Documentação

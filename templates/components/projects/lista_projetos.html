@@ -43,15 +43,12 @@
             <span class="projectInstitution">{{ projeto.instituicao|default_if_none:"" }}</span>
       </div>
       <div class="cardBody">
-         <p><strong>Tutora:</strong> {{ projeto.tutora.nome }}</p>
          <p>
             <strong>Formato:</strong>
             <span class="modalityBadge {% if projeto.formato == 'Remoto' %}modalityRemote{% else %}modalityPresencial{% endif %}">
             {{ projeto.get_formato_display }}
             </span>
          </p>
-         <p><strong>Início:</strong> {{ projeto.data_inicio|date:"d/m/Y" }}</p>
-         <p><strong>Fim:</strong> {{ projeto.data_fim|date:"d/m/Y" }}</p>
          <p><strong>Regiões:</strong> 
             {% for regiao in projeto.regioes_aceitas.all %}
             {{ regiao.nome }}{% if not forloop.last %}, {% endif %}
