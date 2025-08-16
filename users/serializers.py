@@ -1,6 +1,8 @@
 # serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import Group
+
+from users.models.school_transcript_model import Disciplina
 from .models import TipoDeVaga, TipoEnsino, User, Genero, Raca, Deficiencia
 from django.contrib.auth.models import Permission
 from .services import get_valid_group
@@ -126,4 +128,9 @@ class TipoDeVagaSerializer(serializers.ModelSerializer):
 class TipoEnsinoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoEnsino
+        fields = ['id', 'nome']
+
+class DisciplinaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Disciplina
         fields = ['id', 'nome']
