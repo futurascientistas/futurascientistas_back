@@ -130,6 +130,18 @@ def editar_inscricao(request, inscricao_id):
 
 @login_required
 def inscricao_aluna(request):
+    
+    try:
+        drive_service = DriveService()
+        folder = drive_service.service.files().get(
+            fileId=settings.DRIVE_ROOT_FOLDER_ID,
+            fields='id,name',
+            supportsAllDrives=True
+        ).execute()
+        print(f"Acessando pasta: {folder.get('name')}")
+    except Exception as e:
+        print(f"Erro ao acessar pasta: {str(e)}")
+        messages.error(request, f"Erro de configuração do Drive: {str(e)}")
     ano_atual = timezone.now().year
 
     inscricoes_ano = Application.objects.filter(
