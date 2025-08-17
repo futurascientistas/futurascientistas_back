@@ -10,7 +10,7 @@ class EscolaForm(forms.ModelForm):
         required=True, 
         label="Nome da escola",
         help_text="Por favor, digite seu nome completo, sem abreviações.", 
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Escola Exemplo'})
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: Por favor, digite o nome completo da escola sem abreviações.', 'class': 'mt-1 block w-full'})
     )
     telefone_escola = forms.CharField(
         required=True, 
