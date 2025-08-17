@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
         #Disciplinas
         disciplinas = [
-            "Matemática", "Português", "Ciências", "História", "Geografia",
+            "Matemática", "Português", "História", "Geografia",
             "Física", "Química", "Biologia"
         ]
 
