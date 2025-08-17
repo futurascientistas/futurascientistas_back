@@ -213,9 +213,11 @@ class UserUpdateForm(forms.ModelForm):
             'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "https://lattes.cnpq.br/XXXXXXXXXXXXXX"}),
         }
         
-    def _init_(self, *args, **kwargs):
-        super()._init_(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  # Extrai o user dos kwargs
+        super().__init__(*args, **kwargs)
         self.fields['cpf'].disabled = True
+
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:
@@ -278,22 +280,22 @@ class UserUpdateForm(forms.ModelForm):
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
         
     def save(self, commit=True):
-        # Salva os dados do form sem commit primeiro
         instance = super().save(commit=False)
-
+        
         # Associa o usuário logado ao instance
         if self.user:
-            instance.user = self.user
+            instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
+            # Ou talvez você queira fazer:
+            # instance = self.user  # Se você está atualizando o próprio usuário
 
         try:
-            # Faz upload para o Drive usando instance.user.cpf
             self._upload_documents_to_drive(instance)
         except forms.ValidationError:
-            raise  # Re-lança erros de validação
+            raise
         except Exception as e:
             logger.error(f"Erro geral no save: {str(e)}")
             if commit:
-                instance.save()  # Salva sem os dados do Drive
+                instance.save()
             raise forms.ValidationError(
                 "Ocorreu um erro ao processar seus documentos. "
                 "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
