@@ -56,7 +56,7 @@
                             {% if field.errors %}
                                 <p class="mt-2 text-sm text-red-600" aria-live="polite">{{ field.errors }}</p>
                             {% endif %}
-                        {% elif field.name in "cpf,nome,email,telefone,telefone_responsavel,pronomes,raca,deficiencias,curriculo_lattes" %}
+                        {% elif field.name in "cpf,nome,email,telefone,telefone_responsavel,pronomes,raca,genero,deficiencias,curriculo_lattes" %}
                             {% include "components/users/form_field.html" with field=field %}
                         {% endif %}
                     {% endfor %}

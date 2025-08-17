@@ -130,13 +130,13 @@ class UserUpdateForm(forms.ModelForm):
         widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
     )
 
-    # genero = forms.ModelChoiceField(
-    #     queryset=Genero.objects.all(),
-    #     label="Gênero",
-    #     empty_label="--------",
-    #     required=True,
-    #     widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
-    # )
+    genero = forms.ModelChoiceField(
+        queryset=Genero.objects.all(),
+        label="Gênero",
+        empty_label="--------",
+        required=True,
+        widget=forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400'})
+    )
     
     deficiencias = forms.ModelMultipleChoiceField(
         queryset=Deficiencia.objects.all(),
