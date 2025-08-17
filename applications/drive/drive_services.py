@@ -25,10 +25,10 @@ class DriveService:
 
     def _initialize(self):
         SCOPES = ['https://www.googleapis.com/auth/drive']
-        SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, "credentials.json")
+        SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, "acredentials.json")
 
         if not os.path.exists(SERVICE_ACCOUNT_FILE):
-            raise Exception("Arquivo credentials.json (service account) não encontrado")
+            raise Exception("Arquivo acredentials.json (service account) não encontrado")
 
         creds = service_account.Credentials.from_service_account_file(
             SERVICE_ACCOUNT_FILE, scopes=SCOPES

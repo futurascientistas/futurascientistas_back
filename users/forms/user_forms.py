@@ -236,13 +236,14 @@ class UserUpdateForm(forms.ModelForm):
             
             # Verifica acesso antes de criar pasta
             if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
-                raise Exception("Sem acesso à pasta raiz")
+                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
             
             logger.info("Iniciando upload para o Drive")
             
             # Cria o caminho perfil/CPF (se não existir)
             perfil_folder_name = "perfil"
-            user_folder_name = instance.user.cpf
+            user_folder_name = "instance.user.cpf"
             logger.info(f"Verificando/Criando estrutura de pastas: {perfil_folder_name}/{user_folder_name}")
             
             # Primeiro verifica/cria a pasta 'perfil'
