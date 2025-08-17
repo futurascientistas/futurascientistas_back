@@ -23,7 +23,6 @@
             <option value="">Todos os Formatos</option>
             <option value="remoto" {% if request.GET.formato == "remoto" %}selected{% endif %}>Remoto</option>
             <option value="presencial" {% if request.GET.formato == "presencial" %}selected{% endif %}>Presencial</option>
-            <option value="hibrido" {% if request.GET.formato == "hibrido" %}selected{% endif %}>Híbrido</option>
          </select>
          <select name="ordenar" class="filterSelect">
          <option value="nome" {% if request.GET.ordenar == "nome" %}selected{% endif %}>Ordenar por Nome</option>
@@ -50,8 +49,6 @@
             {{ projeto.get_formato_display }}
             </span>
          </p>
-         <p><strong>Início:</strong> {{ projeto.data_inicio|date:"d/m/Y" }}</p>
-         <p><strong>Fim:</strong> {{ projeto.data_fim|date:"d/m/Y" }}</p>
          <p><strong>Regiões:</strong> 
             {% for regiao in projeto.regioes_aceitas.all %}
             {{ regiao.nome }}{% if not forloop.last %}, {% endif %}
