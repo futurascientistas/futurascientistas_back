@@ -47,6 +47,15 @@ class User(AbstractUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
+    # Documentações para o drive
+    drive_boletim_escolar = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do boletim escolar no Drive")
+    drive_termo_autorizacao = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do termo de autorização no Drive")
+    drive_rg_frente = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (frente) no Drive")
+    drive_rg_verso = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (verso) no Drive")
+    drive_cpf_anexo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do CPF no Drive")
+    drive_declaracao_vinculo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da declaração de vínculo no Drive")
+    drive_documentacao_comprobatoria_lattes = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da documentação Lattes no Drive")
+
     # Configurações do usuário
     termo_responsabilidade = models.BooleanField(default=False, verbose_name="Termo de responsabilidade")
     autodeclaracao = models.BooleanField(default=False, verbose_name="Declaração de veracidade das informações")
