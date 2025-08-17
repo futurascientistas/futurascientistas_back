@@ -11,8 +11,7 @@ class Command(BaseCommand):
         #Disciplinas
         disciplinas = [
             "Matemática", "Português", "Ciências", "História", "Geografia",
-            "Física", "Química", "Biologia", "Educação Física", "Artes",
-            "Inglês", "Espanhol"
+            "Física", "Química", "Biologia"
         ]
 
         for nome in disciplinas:
