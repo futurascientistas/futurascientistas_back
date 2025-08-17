@@ -1,5 +1,6 @@
 from django import forms
-from users.models.address_model import Endereco, Estado
+from core.models import Cidade, Estado
+from users.models.address_model import Endereco
 
 class EnderecoForm(forms.ModelForm):
     class Meta:
@@ -16,10 +17,10 @@ class EnderecoForm(forms.ModelForm):
         label="CEP",
         widget=forms.TextInput(attrs={'placeholder': 'Ex: 99999-999'})
     )
-    cidade = forms.CharField(
-        required=True, 
+    cidade = forms.ModelChoiceField(
+        queryset=Cidade.objects.all(),
         label="Cidade",
-        widget=forms.TextInput(attrs={'placeholder': 'Ex: Cidade Exemplo'})
+        required=True
     )
     bairro = forms.CharField(
         required=True, 

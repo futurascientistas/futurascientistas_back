@@ -153,27 +153,38 @@ function setupCepAutocomplete(cepInput, prefix = '') {
 
             const rua = document.querySelector(`input[name="${prefix}rua"]`);
             const bairro = document.querySelector(`input[name="${prefix}bairro"]`);
-            const cidade = document.querySelector(`input[name="${prefix}cidade"]`);
+            const cidade = document.querySelector(`select[name="${prefix}cidade"], input[name="${prefix}cidade"]` );
             const estado = document.querySelector(`select[name="${prefix}estado"], input[name="${prefix}estado"]`);
             const numero = document.querySelector(`input[name="${prefix}numero"]`);
 
             if (rua) rua.value = data.logradouro || '';
             if (bairro) bairro.value = data.bairro || '';
-            if (cidade) cidade.value = data.localidade || '';
             
-            if (estado) {
-                if (estado.tagName === 'SELECT') {
-                    const uf = data.uf;
-                    for (let i = 0; i < estado.options.length; i++) {
-                        if (estado.options[i].textContent.includes(uf)) {
-                            estado.selectedIndex = i;
-                            break;
-                        }
-                    }
+            if (estado && estado.tagName === 'SELECT') {
+                const uf = data.uf;
+                const option = Array.from(estado.options).find(opt => opt.textContent.includes(uf));
+                 
+                if (option) {
+                    estado.value = option.value;
                 } else {
-                    estado.value = data.uf || '';
+                    console.warn(`Opção para o estado "${uf}" não encontrada.`);
                 }
             }
+
+            if (cidade && cidade.tagName === 'SELECT') {
+                const localidade = data.localidade;
+                const uf = data.uf;
+                const textoCompleto = `${localidade} - ${uf}`;
+                
+                const option = Array.from(cidade.options).find(opt => opt.textContent.trim() === textoCompleto);
+                
+                if (option) {
+                    cidade.value = option.value;
+                } else {
+                    console.warn(`Opção para a cidade "${textoCompleto}" não encontrada.`);
+                }
+            }
+
             
             if (numero) numero.focus();
         } 

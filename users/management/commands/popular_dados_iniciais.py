@@ -21,26 +21,26 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(f"ℹ Tipo de Disciplina '{nome}' já existe"))
 
-        #Estados
-        estados_data = [
-            ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
-            ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'),
-            ('ES', 'Espírito Santo'), ('GO', 'Goiás'), ('MA', 'Maranhão'),
-            ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
-            ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'),
-            ('PR', 'Paraná'), ('PE', 'Pernambuco'), ('PI', 'Piauí'),
-            ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
-            ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'),
-            ('SC', 'Santa Catarina'), ('SP', 'São Paulo'), ('SE', 'Sergipe'),
-            ('TO', 'Tocantins')
-        ]
+        # #Estados
+        # estados_data = [
+        #     ('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amapá'), ('AM', 'Amazonas'),
+        #     ('BA', 'Bahia'), ('CE', 'Ceará'), ('DF', 'Distrito Federal'),
+        #     ('ES', 'Espírito Santo'), ('GO', 'Goiás'), ('MA', 'Maranhão'),
+        #     ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'),
+        #     ('MG', 'Minas Gerais'), ('PA', 'Pará'), ('PB', 'Paraíba'),
+        #     ('PR', 'Paraná'), ('PE', 'Pernambuco'), ('PI', 'Piauí'),
+        #     ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'),
+        #     ('RS', 'Rio Grande do Sul'), ('RO', 'Rondônia'), ('RR', 'Roraima'),
+        #     ('SC', 'Santa Catarina'), ('SP', 'São Paulo'), ('SE', 'Sergipe'),
+        #     ('TO', 'Tocantins')
+        # ]
 
-        for uf, nome in estados_data:
-            obj, created = Estado.objects.get_or_create(uf=uf, nome=nome)
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"✔ Tipo de Estado '{nome}' criado"))
-            else:
-                self.stdout.write(self.style.WARNING(f"ℹ Tipo de Estado '{nome}' já existe"))
+        # for uf, nome in estados_data:
+        #     obj, created = Estado.objects.get_or_create(uf=uf, nome=nome)
+        #     if created:
+        #         self.stdout.write(self.style.SUCCESS(f"✔ Tipo de Estado '{nome}' criado"))
+        #     else:
+        #         self.stdout.write(self.style.WARNING(f"ℹ Tipo de Estado '{nome}' já existe"))
 
         #Tipo de Vaga
         tipos_de_vagas = [

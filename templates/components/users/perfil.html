@@ -242,9 +242,14 @@
             </div>
             </div>
             <div class="flex justify-between mt-4">
-                <button type="button" data-navigation="5" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+                {% if user.funcao == "professora" %}
+                    <button type="button" data-navigation="4" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+                {% else %}
+                    <button type="button" data-navigation="5" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
+                {% endif %}
                 <button type="submit" name="submit_step" value="{{ step.number }}" id="submit-step-6" class="bg-green-600 text-white px-4 py-2 rounded">Atualizar</button>
             </div>
+
             {% endif %}
         </div>
         {% endfor %}
