@@ -24,6 +24,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         'rg_frente',
         'rg_verso',
         'cpf_anexo',
+        'declaracao_inclusao'
     ]
     
     DRIVE_UPLOAD_FIELDS = {
@@ -57,7 +58,7 @@ class ApplicationAlunoForm(forms.ModelForm):
     for field_name in BINARY_FILE_FIELDS:
         field_verbose = Application._meta.get_field(field_name).verbose_name
         locals()[f"{field_name}__upload"] = forms.FileField(
-            required=False,
+            required=True,
             label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
@@ -83,6 +84,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         model = Application
         fields = [
             'projeto',
+            'modalidade_vaga',
             'cota_desejada',
             'tipo_deficiencia',
             'necessita_material_especial',
@@ -237,6 +239,7 @@ class ApplicationProfessorForm(forms.ModelForm):
 
     BINARY_FILE_FIELDS = [
         'rg_frente',
+        'declaracao_inclusao',
         'rg_verso',
         'cpf_anexo',
         'declaracao_vinculo',
@@ -262,6 +265,24 @@ class ApplicationProfessorForm(forms.ModelForm):
         })
     )
 
+    grau_formacao = forms.ChoiceField(
+        choices=[('', 'Selecione um Grau de Formação')] + list(GrauFormacao.choices),
+        label="Grau de formação mais alto",
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
+
+    modalidade_vaga = forms.ChoiceField(
+        choices=[('', 'Selecione uma modalidade')] + list(GrauFormacao.choices),
+        label="Selecione uma modalidade de vaga",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
+
     tipo_deficiencia = forms.ModelChoiceField(
         queryset=Deficiencia.objects.all(),  
         label="Deficiencia",
@@ -275,7 +296,7 @@ class ApplicationProfessorForm(forms.ModelForm):
     for field_name in BINARY_FILE_FIELDS:
         field_verbose = Application._meta.get_field(field_name).verbose_name
         locals()[f"{field_name}__upload"] = forms.FileField(
-            required=False,
+            required=True,
             label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
@@ -288,39 +309,52 @@ class ApplicationProfessorForm(forms.ModelForm):
     class Meta:
         model = Application
         fields = [
+            # --- Dados gerais ---
             'projeto',
             'como_soube_programa',
-            'telefone_responsavel',
-            'curriculo_lattes_url',
-            'area_atuacao',
+            'modalidade_vaga',
             'cota_desejada',
+            'concorrer_reserva_vagas',
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
-            'concorrer_reserva_vagas',
+            'curriculo_lattes_url',
+
+            # --- Formação e perfil ---
             'grau_formacao',
             'perfil_academico',
+
+            # --- Experiência docente ---
             'docencia_superior',
             'docencia_medio',
-            'orientacao_ic',
-            'feira_ciencias',
-            'livro_publicado',
-            'capitulo_publicado',
-            'periodico_indexado',
-            'anais_congresso',
-            'curso_extensao',
-            'curso_capacitacao',
             'orientacoes_estudantes',
             'participacoes_bancas',
+
+            # --- Produção científica ---
+            'periodico_indexado',
+            'livro_publicado',
+            'capitulo_publicado',
+            'anais_congresso',
             'apresentacao_oral',
+
+            # --- Projetos, cursos e eventos ---
+            'orientacao_ic',
+            'feira_ciencias',
+            'curso_extensao',
+            'curso_capacitacao',
             'premiacoes',
             'missao_cientifica',
+
+            # --- Projeto submetido ---
             'titulo_projeto_submetido',
             'link_projeto',
             'numero_edicoes_participadas',
+
+            # --- Termos de aceite ---
             'aceite_declaracao_veracidade',
             'aceite_requisitos_tecnicos',
         ]
+
 
         widgets = {
             'como_soube_programa': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Como soube do programa?'}),
@@ -374,20 +408,20 @@ class ApplicationProfessorForm(forms.ModelForm):
         hoje = timezone.now().date()
         projetos = Project.objects.filter(
             ativo=True,
-            inicio_inscricoes__lte=hoje,
-            fim_inscricoes__gte=hoje,
+            #inicio_inscricoes__lte=hoje,
+            #fim_inscricoes__gte=hoje,
         )
 
         if user:
-            estado_usuario = getattr(user, 'estado', None)
+            estado_usuario = getattr(user, 'cidade', None)
             # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
             if estado_usuario and hasattr(estado_usuario, 'id'):
                 projetos = projetos.filter(
-                    Q(estados_aceitos__isnull=True) | Q(estados_aceitos=estado_usuario)
+                    Q(cidades_aceitas__isnull=True) | Q(cidades_aceitas=estado_usuario)
                 ).distinct()
             else:
                 # Se não tem estado válido, só mostra os que não tem estado restrito
-                projetos = projetos.filter(estados_aceitos__isnull=True)
+                projetos = projetos.filter(cidades_aceitas__isnull=True)
 
         else:
             projetos = Project.objects.none()

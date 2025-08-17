@@ -85,6 +85,7 @@ class Application(models.Model):
     rg_verso = models.BinaryField(null=True, blank=True, verbose_name="RG (verso)")
     cpf_anexo = models.BinaryField(null=True, blank=True, verbose_name="CPF")
     declaracao_vinculo = models.BinaryField(null=True, blank=True, verbose_name="Declaração de vínculo")
+    declaracao_inclusao = models.BinaryField(null=True, blank=True, verbose_name="Declaração de ciência do participante (PPI/PCD/Trans)")
     documentacao_comprobatoria_lattes = models.BinaryField(null=True, blank=True, verbose_name="Documentação Lattes")
     
     # Documentações para o drive

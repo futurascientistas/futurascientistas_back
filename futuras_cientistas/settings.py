@@ -224,8 +224,4 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-# Google Drive Configurações
-# GOOGLE_SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, 'config', 'graphical-tape-469302-g5-8e4ff83f9c98.json')
-# GOOGLE_SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, 'config', 'futuras-cientistas-469219-63b9a030ad71.json')
-# DRIVE_ROOT_FOLDER_ID = '1UT1keM1efmufViJJchTdcx5i4-33fuXI'
 DRIVE_ROOT_FOLDER_ID = '1zIgeLJI5-W_3AjeFB_T2tUxnYTEeAsdN'

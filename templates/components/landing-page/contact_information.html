@@ -1,0 +1,54 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contatos - Futuras Cientistas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
+</head>
+<body class="raleway bg-gray-50 text-gray-800 pt-16 min-h-screen">
+
+  {% include 'components/landing-page/header.html' %}
+
+  <section id="contact-page" class="bg-custom-pink container mx-auto px-4 max-w-screen-lg flex flex-col items-center justify-center text-center py-20 md:py-32 space-y-12 rounded-lg shadow-lg">
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Contato da Organização</h2>
+    <p class="text-lg md:text-xl text-gray-900 max-w-2xl">
+      Entre em contato com a equipe do programa <strong>Futuras Cientistas</strong> através dos canais abaixo:
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full justify-center items-start">
+      <!-- Whatsapp -->
+      <div class="flex flex-col items-center gap-2">
+        <span class="font-semibold text-gray-900">Whatsapp</span>
+        <a href="https://wa.me/5581997132685" target="_blank" class="text-custom-pink hover:underline text-lg">(81) 99713-2685</a>
+      </div>
+
+      <!-- Instagram -->
+      <div class="flex flex-col items-center gap-2">
+        <span class="font-semibold text-gray-900">Instagram</span>
+        <a href="https://www.instagram.com/futurascientistas/" target="_blank" class="text-custom-pink hover:underline text-lg">@futurascientistas</a>
+      </div>
+
+      <!-- Facebook -->
+      <div class="flex flex-col items-center gap-2">
+        <span class="font-semibold text-gray-900">Facebook</span>
+        <a href="https://facebook.com/futurascientistascetene" target="_blank" class="text-custom-pink hover:underline text-lg">Futuras Cientistas CETENE</a>
+      </div>
+
+      <!-- YouTube -->
+      <div class="flex flex-col items-center gap-2">
+        <span class="font-semibold text-gray-900">YouTube</span>
+        <a href="https://www.youtube.com/@FuturasCientistas" target="_blank" class="text-custom-pink hover:underline text-lg">Futuras Cientistas</a>
+      </div>
+    </div>
+  </section>
+
+  {% include 'components/landing-page/footer.html' %}
+
+</body>
+</html>
