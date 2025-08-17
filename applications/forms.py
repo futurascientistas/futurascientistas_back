@@ -12,8 +12,6 @@ from django.db.models import Q
 import os
 from .drive.drive_services import DriveService
 
-from io import BytesIO  # Para BytesIO
-from googleapiclient.http import MediaIoBaseUpload 
 
 import logging
 import traceback
