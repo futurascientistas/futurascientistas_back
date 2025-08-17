@@ -130,18 +130,6 @@ def editar_inscricao(request, inscricao_id):
 
 @login_required
 def inscricao_aluna(request):
-    
-    try:
-        drive_service = DriveService()
-        folder = drive_service.service.files().get(
-            fileId=settings.DRIVE_ROOT_FOLDER_ID,
-            fields='id,name',
-            supportsAllDrives=True
-        ).execute()
-        print(f"Acessando pasta: {folder.get('name')}")
-    except Exception as e:
-        print(f"Erro ao acessar pasta: {str(e)}")
-        messages.error(request, f"Erro de configuração do Drive: {str(e)}")
     ano_atual = timezone.now().year
 
     inscricoes_ano = Application.objects.filter(
@@ -154,6 +142,8 @@ def inscricao_aluna(request):
 
     if request.method == 'POST':
         form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
+        
+       
         print(form.errors)
         print('oi')
         if form.is_valid():
@@ -164,9 +154,9 @@ def inscricao_aluna(request):
             agora = timezone.now().date()
 
             # Validação do período de inscrição
-            if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
-                messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
-                return render(request, 'components/applications/student_application_form.html', {'form': form})
+            # if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+            #     messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
+            #     return render(request, 'components/applications/student_application_form.html', {'form': form})
 
             # Verifica se já existe inscrição para o projeto atual
             if Application.objects.filter(usuario=request.user, projeto=projeto).exists():

@@ -20,12 +20,12 @@ import traceback
 
 logger = logging.getLogger(__name__)
 class ApplicationAlunoForm(forms.ModelForm):
-    BINARY_FILE_FIELDS = [
-        'rg_frente',
-        'rg_verso',
-        'cpf_anexo',
-        'declaracao_inclusao'
-    ]
+    # BINARY_FILE_FIELDS = [
+    #     'rg_frente',
+    #     'rg_verso',
+    #     'cpf_anexo',
+    #     'declaracao_inclusao'
+    # ]
     
     DRIVE_UPLOAD_FIELDS = {
         'drive_rg_frente': "RG Frente",
@@ -42,6 +42,9 @@ class ApplicationAlunoForm(forms.ModelForm):
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
+    
+
+    
 
     necessita_material_especial = forms.BooleanField(
         label="Necessita de material especial?",
@@ -55,20 +58,20 @@ class ApplicationAlunoForm(forms.ModelForm):
         required=False
     )
 
-    for field_name in BINARY_FILE_FIELDS:
+    # for field_name in BINARY_FILE_FIELDS:
 
-        display_label = display_label = get_binary_field_display_name(field_name)
+    #     display_label = display_label = get_binary_field_display_name(field_name)
 
-        locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {display_label}",
-            required=False,
-            help_text="Deixe em branco para manter o arquivo atual."
-        )
-        locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {display_label}",
-            required=False
-        )
-    del field_name
+    #     locals()[f"{field_name}__upload"] = forms.FileField(
+    #         label=f"Enviar arquivo para {display_label}",
+    #         required=False,
+    #         help_text="Deixe em branco para manter o arquivo atual."
+    #     )
+    #     locals()[f"{field_name}__clear"] = forms.BooleanField(
+    #         label=f"Remover arquivo atual de {display_label}",
+    #         required=False
+    #     )
+    # del field_name
     
     for field_name, label in DRIVE_UPLOAD_FIELDS.items():
         locals()[f"{field_name}__upload"] = forms.FileField(
@@ -143,7 +146,7 @@ class ApplicationAlunoForm(forms.ModelForm):
             logger.info(f"Pasta do projeto ID: {projeto_folder_id}")
             
             # Depois cria a pasta do usuário (CPF) dentro da pasta do projeto
-            user_folder_name = instance.usuario.cpf  # CPF vem do modelo User
+            user_folder_name = instance.user.cpf
             logger.info(f"Criando pasta do usuário: {user_folder_name}")
             
             user_folder_id = drive_service.create_folder(
@@ -173,9 +176,15 @@ class ApplicationAlunoForm(forms.ModelForm):
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
         
     def save(self, commit=True):
+        # Salva os dados do form sem commit primeiro
         instance = super().save(commit=False)
-        
+
+        # Associa o usuário logado ao instance
+        if self.user:
+            instance.user = self.user
+
         try:
+            # Faz upload para o Drive usando instance.user.cpf
             self._upload_documents_to_drive(instance)
         except forms.ValidationError:
             raise  # Re-lança erros de validação
@@ -183,8 +192,11 @@ class ApplicationAlunoForm(forms.ModelForm):
             logger.error(f"Erro geral no save: {str(e)}")
             if commit:
                 instance.save()  # Salva sem os dados do Drive
-            raise forms.ValidationError("Ocorreu um erro ao processar seus documentos. Seu formulário foi salvo, mas você pode precisar reenviar os arquivos.")
-        
+            raise forms.ValidationError(
+                "Ocorreu um erro ao processar seus documentos. "
+                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
+            )
+
         if commit:
             instance.save()
         return instance
@@ -208,27 +220,19 @@ class ApplicationAlunoForm(forms.ModelForm):
         return cleaned_data
     
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        # Pega o usuário logado que foi passado na view
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         hoje = timezone.now().date()
-        projetos = Project.objects.filter(
-            ativo=True,
-            inicio_inscricoes__lte=hoje,
-            fim_inscricoes__gte=hoje,
-        )
+        projetos = Project.objects.all()
 
-        if user:
-            estado_usuario = getattr(user, 'estado', None)
-            # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
+        if self.user:
+            estado_usuario = getattr(self.user, 'estado', None)
             if estado_usuario and hasattr(estado_usuario, 'id'):
-                projetos = projetos.filter(
-                    Q(estados_aceitos__isnull=True) | Q(estados_aceitos=estado_usuario)
-                ).distinct()
+                projetos = projetos.all().distinct()
             else:
-                # Se não tem estado válido, só mostra os que não tem estado restrito
-                projetos = projetos.filter(estados_aceitos__isnull=True)
-
+                projetos = projetos.all()
         else:
             projetos = Project.objects.none()
 

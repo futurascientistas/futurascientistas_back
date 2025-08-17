@@ -27,6 +27,12 @@ class User(AbstractUser):
     documento_cpf = models.BinaryField(null=True, blank=True, verbose_name='Documento CPF')
     documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
     foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
+    
+    # Documentos Drive
+    curriculo_lattes = models.URLField('Currículo Lattes', blank=True)
+    documento_cpf = models.BinaryField(null=True, blank=True, verbose_name='Documento CPF')
+    documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
+    foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
 
     # Endereço
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Endereço Pessoal", related_name='usuarios') 

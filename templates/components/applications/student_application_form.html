@@ -19,7 +19,7 @@
     <div>
       <label class="block font-semibold mb-1 text-gray-800">Documentos para Upload no Drive</label>
       
-      <!-- RG Frente -->
+      {% comment %} <!-- RG Frente -->
       <div class="mb-4">
         <label for="drive_rg_frente__upload" class="block text-sm font-medium text-gray-700">RG (Frente)</label>
         <input type="file" name="drive_rg_frente__upload" id="drive_rg_frente__upload"
@@ -63,32 +63,8 @@
         </div>
         {% endif %}
       </div>
-    </div>
+    </div> {% endcomment %}
 
-    {% for field in form %}
-      {% if field.name != 'projeto' and 'drive_' not in field.name %}
-        <div>
-          <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-            {{ field.label }}
-            {% if field.field.required %}
-              <span class="text-red-600" aria-hidden="true">*</span>
-            {% endif %}
-          </label>
-          {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" id=field.id_for_label %}
-          {% if field.help_text %}
-            <small class="text-gray-600">{{ field.help_text }}</small>
-          {% endif %}
-          {% if field.errors %}
-            <ul class="errorlist" role="alert" aria-live="assertive">
-              {% for error in field.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      {% endif %}
-    {% endfor %}
-    {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
     {% if form.errors %}
     <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
         <strong class="font-bold">Erro ao enviar o formulário!</strong>
