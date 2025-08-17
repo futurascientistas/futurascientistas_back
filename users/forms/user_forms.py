@@ -243,7 +243,7 @@ class UserUpdateForm(forms.ModelForm):
             
             # Cria o caminho perfil/CPF (se não existir)
             perfil_folder_name = "perfil"
-            user_folder_name = "instance.user.cpf"
+            user_folder_name = instance.user.cpf
             logger.info(f"Verificando/Criando estrutura de pastas: {perfil_folder_name}/{user_folder_name}")
             
             # Primeiro verifica/cria a pasta 'perfil'

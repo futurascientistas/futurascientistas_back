@@ -533,7 +533,7 @@ def perfil_view(request):
         try:
             with transaction.atomic():
                 if current_step == 1:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
                         form.save()
                         messages.success(request, 'Identificação atualizada com sucesso! 🚀')
