@@ -71,7 +71,7 @@ function validatePhoneFields() {
         if (field.closest('.form-step').classList.contains('hidden')) {
             return;
         }
-        
+
         let errorElement = field.nextElementSibling;
         if (!errorElement || !errorElement.classList.contains("error-message")) {
             errorElement = document.createElement("span");
@@ -79,7 +79,11 @@ function validatePhoneFields() {
             field.parentNode.insertBefore(errorElement, field.nextElementSibling);
         }
 
-        if (field.value.trim() !== "" && !phoneRegex.test(field.value)) {
+        if (field.required && field.value.trim() === "") {
+            errorElement.textContent = "Este campo é obrigatório.";
+            field.classList.add("border-red-500");
+            isValid = false;
+        } else if (field.value.trim() !== "" && !phoneRegex.test(field.value)) {
             errorElement.textContent = "Formato de telefone inválido. Use (##) 9####-#### ou (##) ####-####.";
             field.classList.add("border-red-500");
             isValid = false;
@@ -88,8 +92,10 @@ function validatePhoneFields() {
             field.classList.remove("border-red-500");
         }
     });
+
     return isValid;
 }
+
 
 
 function setupCepAutocomplete(cepInput, prefix = '') {
