@@ -216,3 +216,4 @@ __marimo__/
 #Client Secret
 
 client_secrets.json
+token.json
