@@ -28,7 +28,7 @@ class User(AbstractUser):
     documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
     foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
 
-    # # Endereço
+    # Endereço
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Endereço Pessoal", related_name='usuarios') 
 
     # Diversidade
@@ -47,6 +47,10 @@ class User(AbstractUser):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
 
+    # Configurações do usuário
+    termo_responsabilidade = models.BooleanField(default=False, verbose_name="Termo de responsabilidade")
+    autodeclaracao = models.BooleanField(default=False, verbose_name="Declaração de veracidade das informações")
+    
     USERNAME_FIELD = 'cpf'
     REQUIRED_FIELDS = ['email']
     objects = UserManager()

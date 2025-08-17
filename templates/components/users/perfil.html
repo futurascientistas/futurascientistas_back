@@ -223,15 +223,23 @@
                         <li>Autoriza o uso dos dados fornecidos para fins do processo seletivo</li>
                     </ul>
                 </div>
-                <div class="flex items-start mt-4">
-                    <input type="checkbox" name="autodeclaracao" id="id_autodeclaracao"
-                                 class="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
-                                 {% if user_form.autodeclaracao.value %}checked{% endif %} />
-                    <label for="id_autodeclaracao" class="ml-2 block text-sm text-gray-700">
-                        Declaro que todas as informações fornecidas são verdadeiras *
-                    </label>
-                </div>
-                {% include "components/users/form_field.html" with field=user_form.termo_responsabilidade %}
+            <div class="flex items-start mt-4">
+                <input type="checkbox" name="{{ user_form.autodeclaracao.html_name }}" id="{{ user_form.autodeclaracao.id_for_label }}"
+                    class="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                    {% if user_form.autodeclaracao.value %}checked{% endif %} />
+                <label for="{{ user_form.autodeclaracao.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Declaro que todas as informações fornecidas são verdadeiras *
+                </label>
+            </div>
+
+            <div class="flex items-start mt-4">
+                <input type="checkbox" name="{{ user_form.termo_responsabilidade.html_name }}" id="{{ user_form.termo_responsabilidade.id_for_label }}"
+                    class="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                    {% if user_form.termo_responsabilidade.value %}checked{% endif %} />
+                <label for="{{ user_form.termo_responsabilidade.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                    Li e aceito o Termo de Responsabilidade *
+                </label>
+            </div>
             </div>
             <div class="flex justify-between mt-4">
                 <button type="button" data-navigation="5" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>

@@ -594,12 +594,12 @@ def perfil_view(request):
                 elif current_step == 6:
                     form = UserUpdateForm(request.POST, request.FILES, instance=user)
                     if form.is_valid():
-                        user.autodeclaracao = form.cleaned_data.get('autodeclaracao')
-                        user.termo_responsabilidade = form.cleaned_data.get('termo_responsabilidade')
-                        user.save()
+                        form.save()
                         messages.success(request, 'Perfil finalizado e salvo com sucesso! 🎉')
                         is_valid = True
                     else:
+                        print(form.errors)
+                        print(request)
                         messages.error(request, 'Erro na validação da Declaração. Por favor, tente novamente.')
                 
                 # Redirecionamento para o próximo passo se o formulário for válido

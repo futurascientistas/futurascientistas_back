@@ -172,6 +172,7 @@ class UserUpdateForm(forms.ModelForm):
             'pronomes',
             'curriculo_lattes',
             'raca', 'genero', 'deficiencias',
+            'termo_responsabilidade', 'autodeclaracao'
         ]
 
         widgets = {
