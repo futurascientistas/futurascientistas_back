@@ -576,71 +576,16 @@ def perfil_view(request):
                 elif current_step == 4:
                     form = UserUpdateForm(request.POST, request.FILES, instance=user)
                     if form.is_valid():
-                        # Primeiro salva os arquivos no Drive e obtém os IDs
-                        try:
-                            # Função auxiliar para upload (definida em outro lugar)
-                            def upload_documents_to_drive(instance, files):
-                                try:
-                                    drive_service = DriveService()
-                                    
-                                    if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
-                                        raise Exception("Sem acesso à pasta raiz")
-                                    
-                                    logger.info("Iniciando upload para o Drive")
-                                    
-                                    perfil_folder_name = "perfil"
-                                    user_folder_name = instance.user.cpf
-                                    
-                                    perfil_folder_id = drive_service.find_or_create_folder(
-                                        folder_name=perfil_folder_name,
-                                        parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
-                                    )
-                                    
-                                    user_folder_id = drive_service.find_or_create_folder(
-                                        folder_name=user_folder_name,
-                                        parent_folder_id=perfil_folder_id
-                                    )
-
-                                    for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
-                                        upload_field = f"{field_name}__upload"
-                                        if upload_field in files:
-                                            file = files[upload_field]
-                                            file_id = drive_service.upload_file(
-                                                file_name=file.name,
-                                                file_content=file.read(),
-                                                mime_type=file.content_type,
-                                                folder_id=user_folder_id
-                                            )
-                                            setattr(instance, field_name, file_id)
-                                            
-                                except Exception as e:
-                                    logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
-                                    raise
-
-                            # Criamos uma instância temporária com os arquivos
-                            temp_instance = type('Temp', (), {
-                                'user': user,
-                                'projeto': type('Projeto', (), {'nome': 'perfil'})(),  # Mock do projeto
-                            })()
-                            
-                            # Chama a função de upload para o Drive
-                            upload_documents_to_drive(temp_instance, request.FILES)
-                            
-                            # Atualiza os campos do usuário com os IDs dos arquivos no Drive
-                            user.documento_identificacao = temp_instance.drive_rg_frente
-                            user.comprovante_residencia = temp_instance.drive_rg_verso
-                            user.foto_rosto = temp_instance.drive_cpf_anexo
-                            if user.funcao != 'professora':
-                                user.comprovante_autorizacao_responsavel = getattr(temp_instance, 'drive_outro_anexo', None)
-                            
-                            user.save()
-                            messages.success(request, 'Documentos atualizados com sucesso! 📄')
-                            is_valid = True
-                        except Exception as e:
-                            logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
-                            messages.error(request, 'Erro ao enviar documentos para o Drive. Por favor, tente novamente.')
+                        user.documento_identificacao = form.cleaned_data.get('documento_identificacao')
+                        user.comprovante_residencia = form.cleaned_data.get('comprovante_residencia')
+                        user.foto_rosto = form.cleaned_data.get('foto_rosto')
+                        if user.funcao != 'professora':
+                            user.comprovante_autorizacao_responsavel = form.cleaned_data.get('comprovante_autorizacao_responsavel')
+                        user.save()
+                        messages.success(request, 'Documentos atualizados com sucesso! 📄')
+                        is_valid = True
                     else:
-                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
