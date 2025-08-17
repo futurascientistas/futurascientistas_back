@@ -20,7 +20,7 @@ class Nota(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     historico = models.ForeignKey(HistoricoEscolar, related_name='notas', on_delete=models.CASCADE)
     disciplina = models.ForeignKey(Disciplina, on_delete=models.CASCADE)
-    bimestre = models.PositiveSmallIntegerField("Bimestre", choices=[(1, '1º'), (2, '2º'), (3, '3º'), (4, '4º')])
+    bimestre = models.PositiveSmallIntegerField("Bimestre", choices=[(1, '1º'), (2, '2º')])
     valor = models.DecimalField("Valor da Nota", max_digits=4, decimal_places=2, null=True, blank=True)
     
     class Meta:
