@@ -1,0 +1,97 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<section class="container mx-auto px-4 py-5 max-w-5xl">
+  <h1 class="text-4xl md:text-5xl font-bold text-gray-900 text-center mb-12">
+    Calendário Imersão 2026
+  </h1>
+
+  <div class="relative ml-12">
+    <div class="absolute left-2 top-0 w-1 h-full bg-gray-300 rounded" id="timeline-line"></div>
+    <div class="absolute left-2 top-0 w-1 rounded" id="timeline-progress" style="height: 0;"></div>
+
+    <div class="space-y-10 relative z-10">
+      <div class="flex items-start gap-6 etapa" data-fim="2025-09-08">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Período de inscrição</p>
+          <p class="text-gray-700">18/08 a 08/09</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-09-15">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Divulgação das inscrições homologadas</p>
+          <p class="text-gray-700">15/09</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-09-18">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Período de recurso</p>
+          <p class="text-gray-700">3 dias úteis</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-09-19">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Divulgação final das inscrições homologadas</p>
+          <p class="text-gray-700">19/09</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-09-29">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Resultado preliminar</p>
+          <p class="text-gray-700">29/09</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-10-02">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Recursos</p>
+          <p class="text-gray-700">3 dias úteis</p>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-6 etapa" data-fim="2025-10-10">
+        <div class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 flex-shrink-0 mt-1"></div>
+        <div class="bg-white p-6 rounded-xl shadow-md flex-1 transition-colors duration-500">
+          <p class="font-semibold text-gray-900">Resultado final</p>
+          <p class="text-gray-700">10/10</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const hoje = new Date();
+      const etapas = document.querySelectorAll('.etapa');
+      let ultimaEtapaConcluida = 0;
+
+      etapas.forEach((etapa, index) => {
+        const dataFim = new Date(etapa.dataset.fim);
+        if (hoje > dataFim) {
+          const card = etapa.querySelector('div.bg-white');
+          card.style.backgroundColor = '#F472B6'; 
+          card.classList.add('text-white');
+          card.querySelectorAll('p').forEach(p => p.classList.replace('text-gray-700','text-white'));
+          ultimaEtapaConcluida = index + 1;
+        }
+      });
+
+      const timelineProgress = document.getElementById('timeline-progress');
+      timelineProgress.style.height = `${(etapas[0].offsetHeight + 40) * ultimaEtapaConcluida}px`; // altura aproximada do card + gap
+      timelineProgress.style.backgroundColor = '#F472B6';
+    });
+  </script>
+</section>
+
+{% endblock %}

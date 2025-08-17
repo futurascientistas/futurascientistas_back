@@ -24,9 +24,9 @@ class User(AbstractUser):
 
     # Documentos
     curriculo_lattes = models.URLField('Currículo Lattes', blank=True)
-    documento_cpf = models.BinaryField('CPF',null=True, blank=True)
-    documento_rg = models.BinaryField('RG',null=True, blank=True)
-    foto = models.BinaryField('Foto',null=True, blank=True)
+    documento_cpf = models.BinaryField(null=True, blank=True, verbose_name='Documento CPF')
+    documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
+    foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
 
     # # Endereço
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Endereço Pessoal", related_name='usuarios') 
@@ -35,8 +35,8 @@ class User(AbstractUser):
     raca = models.ForeignKey(Raca, on_delete=models.SET_NULL, null=True, blank=True)
     genero = models.ForeignKey(Genero, on_delete=models.SET_NULL, null=True, blank=True)
     deficiencias = models.ManyToManyField(Deficiencia, blank=True)
-    autodeclaracao_racial = models.BinaryField(null=True, blank=True)
-    comprovante_deficiencia = models.BinaryField(null=True, blank=True)
+    autodeclaracao_racial = models.BinaryField(null=True, blank=True, verbose_name='Autodeclaração racial')
+    comprovante_deficiencia = models.BinaryField(null=True, blank=True, verbose_name='Comprovante de deficiência')
 
     # Escola
     escola = models.ForeignKey(Escola, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Escola", related_name='usuarios')

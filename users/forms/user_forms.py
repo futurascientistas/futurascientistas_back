@@ -96,7 +96,6 @@ class UserUpdateForm(forms.ModelForm):
         'foto',
         'autodeclaracao_racial',
         'comprovante_deficiencia',
-        'comprovante_autorizacao_responsavel'
     ]
 
     for field_name in BINARY_FILE_FIELDS:
@@ -106,6 +105,7 @@ class UserUpdateForm(forms.ModelForm):
         locals()[f"{field_name}__upload"] = forms.FileField(
             label=f"Enviar arquivo para {display_label}",
             required=False,
+            label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
@@ -182,10 +182,10 @@ class UserUpdateForm(forms.ModelForm):
             'pronomes': forms.TextInput(attrs={'class': 'mt-1 block w-full'}),
             'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "https://lattes.cnpq.br/XXXXXXXXXXXXXX"}),
         }
-
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cpf'].disabled = True  
+        self.fields['cpf'].disabled = True
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:

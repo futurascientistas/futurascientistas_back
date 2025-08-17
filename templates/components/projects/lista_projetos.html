@@ -40,7 +40,7 @@
    <div class="projectCard" onclick="window.location.href='{% url 'detalhes_projeto' projeto.id %}'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='{% url 'detalhes_projeto' projeto.id %}'">
       <div class="cardHeader">
          <h2 class="projectName">{{ projeto.nome }}</h2>
-         <span class="projectInstitution">{{ projeto.instituicao }}</span>
+            <span class="projectInstitution">{{ projeto.instituicao|default_if_none:"" }}</span>
       </div>
       <div class="cardBody">
          <p><strong>Tutora:</strong> {{ projeto.tutora.nome }}</p>
