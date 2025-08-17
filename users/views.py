@@ -574,13 +574,9 @@ def perfil_view(request):
                         messages.error(request, 'Erro na validação do formulário do Endereço da Escola. Por favor, corrija os erros abaixo.')
                    
                 elif current_step == 4:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)  # Passe o user aqui
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
                         try:
-                            # Não precisamos mais da função upload_documents_to_drive aqui
-                            # pois isso já é tratado no método save() do formulário
-                            
-                            # Simplesmente salvamos o formulário
                             user = form.save()
                             messages.success(request, 'Documentos atualizados com sucesso! 📄')
                             is_valid = True
@@ -588,7 +584,17 @@ def perfil_view(request):
                             logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
                             messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
                     else:
-                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                        # Adiciona esta parte para mostrar os erros específicos
+                        error_messages = []
+                        for field, errors in form.errors.items():
+                            field_label = form.fields[field].label if field in form.fields else field
+                            for error in errors:
+                                error_messages.append(f"{field_label}: {error}")
+                        
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo:')
+                        for error_msg in error_messages:
+                            messages.error(request, error_msg)  # Mostra cada erro individualmente
+                            print(error_msg)
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")

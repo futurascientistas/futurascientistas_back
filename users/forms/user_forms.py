@@ -112,7 +112,10 @@ class UserUpdateForm(forms.ModelForm):
     DRIVE_UPLOAD_FIELDS = {
         'drive_rg_frente': "RG Frente",
         'drive_rg_verso': "RG Verso", 
-        'drive_cpf_anexo': "CPF"
+        'drive_cpf_anexo': "CPF",
+        'drive_foto': "Foto no Drive",
+        'drive_autodeclaracao_racial':"Autodeclaração racial no Drive",
+        'drive_comprovante_deficiencia': "Comprovante de deficiência no Drive"
     }
 
     # for field_name in BINARY_FILE_FIELDS:
@@ -217,6 +220,9 @@ class UserUpdateForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)  # Extrai o user dos kwargs
         super().__init__(*args, **kwargs)
         self.fields['cpf'].disabled = True
+        self.fields['deficiencias'].required = False
+        
+        
 
 
     def _apply_binary_uploads(self, instance):
@@ -305,6 +311,8 @@ class UserUpdateForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+    
+    
 
     # def save(self, commit=True):
     #     instance = super().save(commit=False)
