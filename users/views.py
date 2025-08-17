@@ -504,12 +504,7 @@ def dashboard(request):
 #     # print("-" * 20)
 
 #     return render(request, 'components/users/perfil.html', context)
-from django.conf import settings
-from applications.drive.drive_services import DriveService
-import logging
-import traceback
 
-logger = logging.getLogger(__name__)
 
 @login_required
 def perfil_view(request):

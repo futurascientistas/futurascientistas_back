@@ -5,7 +5,6 @@ from utils.utils import get_binary_field_display_name
 from users.services import validar_email, validar_cpf, validar_senha
 from users.models import TipoEnsino
 from users.models import Deficiencia, Genero, Raca, User
-from django.conf import settings
 
 class CadastroForm(forms.Form):
     nome = forms.CharField(
@@ -88,16 +87,6 @@ class CadastroForm(forms.Form):
                 raise forms.ValidationError(senha_valida)
 
         return cleaned_data
-
-
-
-from applications.drive.drive_services import DriveService
-
-
-import logging
-import traceback
-
-logger = logging.getLogger(__name__)
 
 
 class UserUpdateForm(forms.ModelForm):
