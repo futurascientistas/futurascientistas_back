@@ -105,7 +105,6 @@ class UserUpdateForm(forms.ModelForm):
         locals()[f"{field_name}__upload"] = forms.FileField(
             label=f"Enviar arquivo para {display_label}",
             required=False,
-            label=f"Enviar arquivo para {field_verbose}",
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
