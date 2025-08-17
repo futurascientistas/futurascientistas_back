@@ -1,16 +1,18 @@
 import os
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from googleapiclient.errors import HttpError
 import logging
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseUpload
+from io import BytesIO
+from django.conf import settings
+
 
 logger = logging.getLogger(__name__)
 
 class DriveService:
     _instance = None
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -22,58 +24,30 @@ class DriveService:
         return cls._instance
 
     def _initialize(self):
-        self.SCOPES = ['https://www.googleapis.com/auth/drive']
-        self.token_file = 'token.json'
-        self.creds = None
-        self.service = None
-        
-        # 1. Tentar carregar credenciais existentes
-        if os.path.exists(self.token_file):
-            try:
-                self.creds = Credentials.from_authorized_user_file(self.token_file, self.SCOPES)
-                if self.creds and self.creds.expired and self.creds.refresh_token:
-                    self.creds.refresh(Request())
-            except Exception as e:
-                logger.warning(f"Erro ao carregar token: {e}")
-                os.unlink(self.token_file)
-                self.creds = None
-        
-        # 2. Se não tem credenciais válidas, fazer nova autenticação
-        if not self.creds or not self.creds.valid:
-            if not os.path.exists('client_secrets.json'):
-                raise Exception("Arquivo client_secrets.json não encontrado")
-                
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secrets.json',
-                self.SCOPES
-            )
-            self.creds = flow.run_local_server(port=8080, open_browser=True)
-            
-            # Salvar novas credenciais
-            with open(self.token_file, 'w') as token:
-                token.write(self.creds.to_json())
-        
-        # 3. Criar serviço
-        self.service = build('drive', 'v3', credentials=self.creds)
-        logger.info("Serviço do Drive inicializado com sucesso")
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, "credentials.json")
 
-    def test_folder_access(self, folder_id):
-        if not hasattr(self, 'service') or not self.service:
-            self._initialize()
-            
+        if not os.path.exists(SERVICE_ACCOUNT_FILE):
+            raise Exception("Arquivo credentials.json (service account) não encontrado")
+
+        creds = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+
+        self.service = build('drive', 'v3', credentials=creds)
+        logger.info("Serviço do Drive inicializado com sucesso (service account).")
+
+    def test_folder_access(self, folder_id: str) -> bool:
+        """Verifica se a pasta existe (Meu Drive ou Shared Drive)."""
         try:
             result = self.service.files().get(
                 fileId=folder_id,
-                fields='id,name,capabilities'
+                fields='id,name',
+                supportsAllDrives=True
             ).execute()
-            
-            if not result.get('capabilities', {}).get('canEdit', False):
-                logger.warning("Tem acesso, mas não pode editar")
-                return False
-                
-            logger.info(f"Acesso confirmado à pasta: {result['name']}")
+
+            logger.info(f"Acesso confirmado à pasta: {result['name']} (ID: {result['id']})")
             return True
-            
         except HttpError as e:
             logger.error(f"Erro HTTP ao acessar pasta: {e}")
             return False
@@ -81,39 +55,31 @@ class DriveService:
             logger.error(f"Erro geral ao acessar pasta: {e}")
             return False
 
-    def find_or_create_folder(self, folder_name, parent_folder_id=None):
-        """Procura por uma pasta com o nome especificado e cria se não existir"""
-        if not hasattr(self, 'service') or not self.service:
-            self._initialize()
-            
+    def find_or_create_folder(self, folder_name: str, parent_folder_id: str = None) -> str:
+        """Procura por uma pasta com o nome especificado e cria se não existir."""
         try:
-            # Primeiro tenta encontrar a pasta
             query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
             if parent_folder_id:
                 query += f" and '{parent_folder_id}' in parents"
-            
+
             results = self.service.files().list(
                 q=query,
-                fields='files(id, name)'
+                fields='files(id, name)',
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True
             ).execute()
-            
+
             folders = results.get('files', [])
-            
             if folders:
-                # Pasta já existe, retorna o ID
                 return folders[0]['id']
-            
-            # Se não existe, cria a pasta
+
             return self.create_folder(folder_name, parent_folder_id)
-            
         except Exception as e:
             logger.error(f"Erro em find_or_create_folder: {str(e)}")
             raise
 
-    def create_folder(self, folder_name, parent_folder_id=None):
-        if not hasattr(self, 'service') or not self.service:
-            self._initialize()
-            
+    def create_folder(self, folder_name: str, parent_folder_id: str = None) -> str:
+        """Cria uma pasta dentro do Meu Drive ou Shared Drive."""
         file_metadata = {
             'name': folder_name,
             'mimeType': 'application/vnd.google-apps.folder'
@@ -124,20 +90,17 @@ class DriveService:
         try:
             folder = self.service.files().create(
                 body=file_metadata,
-                fields='id'
+                fields='id',
+                supportsAllDrives=True
             ).execute()
+            logger.info(f"Pasta criada: {folder_name} (ID: {folder['id']})")
             return folder.get('id')
         except Exception as e:
             logger.error(f"Erro ao criar pasta: {str(e)}")
             raise
 
-    def upload_file(self, file_name, file_content, mime_type, folder_id=None):
-        from io import BytesIO
-        from googleapiclient.http import MediaIoBaseUpload
-
-        if not hasattr(self, 'service') or not self.service:
-            self._initialize()
-
+    def upload_file(self, file_name: str, file_content: bytes, mime_type: str, folder_id: str = None) -> str:
+        """Faz upload de um arquivo para Meu Drive ou Shared Drive."""
         file_metadata = {'name': file_name}
         if folder_id:
             file_metadata['parents'] = [folder_id]
@@ -152,8 +115,10 @@ class DriveService:
             file = self.service.files().create(
                 body=file_metadata,
                 media_body=media,
-                fields='id'
+                fields='id',
+                supportsAllDrives=True
             ).execute()
+            logger.info(f"Arquivo {file_name} enviado com sucesso (ID: {file['id']})")
             return file.get('id')
         except Exception as e:
             logger.error(f"Erro ao fazer upload: {str(e)}")

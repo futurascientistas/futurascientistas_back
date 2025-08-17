@@ -213,8 +213,8 @@ class UserUpdateForm(forms.ModelForm):
             'curriculo_lattes': forms.URLInput(attrs={'class': 'mt-1 block w-full', 'placeholder': "https://lattes.cnpq.br/XXXXXXXXXXXXXX"}),
         }
         
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def _init_(self, *args, **kwargs):
+        super()._init_(*args, **kwargs)
         self.fields['cpf'].disabled = True
 
     def _apply_binary_uploads(self, instance):

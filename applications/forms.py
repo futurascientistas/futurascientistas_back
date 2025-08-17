@@ -129,7 +129,9 @@ class ApplicationAlunoForm(forms.ModelForm):
             
             # Verifica acesso antes de criar pasta
             if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
-                raise Exception("Sem acesso à pasta raiz")
+                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
+
             
             logger.info("Iniciando upload para o Drive")
             

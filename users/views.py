@@ -640,7 +640,7 @@ def perfil_view(request):
                             logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
                             messages.error(request, 'Erro ao enviar documentos para o Drive. Por favor, tente novamente.')
                     else:
-                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
