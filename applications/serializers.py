@@ -7,7 +7,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
     documento_cpf_upload = serializers.FileField(write_only=True, required=False)
     documento_rg_upload = serializers.FileField(write_only=True, required=False)
     foto_upload = serializers.FileField(write_only=True, required=False)
-    comprovante_residencia_upload = serializers.FileField(write_only=True, required=False)
     autodeclaracao_racial_upload = serializers.FileField(write_only=True, required=False)
     laudo_medico_deficiencia_upload = serializers.FileField(write_only=True, required=False)
     boletim_escolar_upload = serializers.FileField(write_only=True, required=False)
@@ -50,7 +49,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             ('documento_cpf_upload', 'documento_cpf'),
             ('documento_rg_upload', 'documento_rg'),
             ('foto_upload', 'foto'),
-            ('comprovante_residencia_upload', 'comprovante_residencia'),
             ('autodeclaracao_racial_upload', 'autodeclaracao_racial'),
             ('laudo_medico_deficiencia_upload', 'laudo_medico_deficiencia'),
             ('boletim_escolar_upload', 'boletim_escolar'),
@@ -74,7 +72,6 @@ class ApplicationSerializer(serializers.ModelSerializer):
             ('documento_cpf_upload', 'documento_cpf'),
             ('documento_rg_upload', 'documento_rg'),
             ('foto_upload', 'foto'),
-            ('comprovante_residencia_upload', 'comprovante_residencia'),
             ('autodeclaracao_racial_upload', 'autodeclaracao_racial'),
             ('laudo_medico_deficiencia_upload', 'laudo_medico_deficiencia'),
             ('boletim_escolar_upload', 'boletim_escolar'),
