@@ -1,14 +1,16 @@
-from rest_framework import generics, status, viewsets
+from rest_framework import generics, status, viewsets, mixins
 from rest_framework.exceptions import NotFound
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from users.models.school_transcript_model import Disciplina
 from .permissions import IsAdminOrReadOnly
 from django.db import models
 from django.shortcuts import render
 from .models import Regiao, Estado, Cidade, Instituicao
 from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
-from users.serializers import GeneroSerializer, RacaSerializer, DeficienciaSerializer, CotaSerializer
-from users.models import Genero, Raca, Deficiencia, Cota
+from users.serializers import DisciplinaSerializer, GeneroSerializer, RacaSerializer, DeficienciaSerializer, TipoDeVagaSerializer, TipoEnsinoSerializer
+from users.models import Genero, Raca, Deficiencia, TipoDeVaga, TipoEnsino
 from django.views.generic import TemplateView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -126,14 +128,29 @@ class DeficienciaViewSet(viewsets.ModelViewSet):
     serializer_class = DeficienciaSerializer
     permission_classes = [IsAdminOrReadOnly]
 
-class CotaListCreateView(generics.ListCreateAPIView):
-    queryset = Cota.objects.all()
-    serializer_class = CotaSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class TipoDeVagaViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = TipoDeVaga.objects.all()
+    serializer_class = TipoDeVagaSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+class DisciplinaViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = Disciplina.objects.all()
+    serializer_class = DisciplinaSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class HomePageView(TemplateView):
     template_name = "components/landing-page/home.html"
 
+class TipoEnsinoViewSet(mixins.ListModelMixin,
+                        mixins.RetrieveModelMixin,
+                        viewsets.GenericViewSet):
+    queryset = TipoEnsino.objects.all()
+    serializer_class = TipoEnsinoSerializer
+    permission_classes = [IsAdminOrReadOnly]
 
 class NaoEcontrada(TemplateView):
     template_name = "components/landing-page/page_404.html"

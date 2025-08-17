@@ -16,6 +16,10 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponse
 from django.views.generic.edit import FormView
+from django.db import transaction
+from users.models.address_model import Endereco
+from users.models.school_model import Escola
+from users.models.school_transcript_model import HistoricoEscolar
 from .forms import *
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -405,7 +409,7 @@ def login_view(request):
         user = authenticate(request, username=cpf, password=senha)
         if user is not None:
             login(request, user)
-            return redirect('dashboard')  # ou outra página interna
+            return redirect('dashboard')
         else:
             messages.error(request, 'CPF ou senha inválidos.')
 
@@ -427,26 +431,202 @@ def dashboard(request):
     }
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
+# @login_required
+# def perfil_view(request):
+#     user = request.user
+    
+#     endereco_instance, created = Endereco.objects.get_or_create(user=user)
+#     escola_instance, created = Escola.objects.get_or_create(user=user)
+#     historico, created = HistoricoEscolar.objects.get_or_create(usuario=user)
+
+#     endereco_escola_instance = escola_instance.endereco if escola_instance.endereco else Endereco()
+    
+#     user_form = UserUpdateForm(request.POST or None, request.FILES or None, instance=user)
+#     endereco_form = EnderecoForm(request.POST or None, request.FILES or None, instance=endereco_instance)
+#     escola_form = EscolaForm(request.POST or None, request.FILES or None, instance=escola_instance)
+#     escola_endereco_form = EnderecoForm(request.POST or None, request.FILES or None, instance=endereco_escola_instance, prefix='endereco_escola')
+#     formset = HistoricoNotaFormSet(request.POST or None, request.FILES or None, instance=historico)
+
+#     if request.method == 'POST':
+#         if user_form.is_valid() and endereco_form.is_valid() and escola_form.is_valid() and formset.is_valid():
+            
+#             endereco_escola_obj = escola_endereco_form.save()
+#             escola_obj = escola_form.save(commit=False)
+#             escola_obj.endereco = endereco_escola_obj
+#             escola_obj.save()
+
+#             user_form.save()
+#             endereco_form.save()
+#             escola_form.save()
+#             formset.save()
+            
+#             messages.success(request, 'Seu perfil foi atualizado com sucesso!')
+#             return redirect('dashboard')
+#         else:
+#             messages.error(request, 'Ocorreu um erro na validação do formulário. Verifique os campos.')
+
+#     if user.funcao == 'professora':
+#         steps = [
+#             {'number': 1, 'name': 'Identificação'},
+#             {'number': 2, 'name': 'Endereço'},
+#             {'number': 3, 'name': 'Escola'},
+#             {'number': 4, 'name': 'Documentos'},
+#             {'number': 6, 'name': 'Declaração'}
+#         ]
+#     else: 
+#         steps = [
+#             {'number': 1, 'name': 'Identificação'},
+#             {'number': 2, 'name': 'Endereço'},
+#             {'number': 3, 'name': 'Escola'},
+#             {'number': 4, 'name': 'Documentos'},
+#             {'number': 5, 'name': 'Histórico'},
+#             {'number': 6, 'name': 'Declaração'}
+#         ]
+
+#     if user.funcao == 'professora':
+#         campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
+#         for campo in campos_estudante:
+#             if campo in user_form.fields:
+#                 del user_form.fields[campo]
+
+#     context = {
+#         'user_form': user_form,
+#         'endereco_form': endereco_form,
+#         'escola_form': escola_form,
+#         'escola_endereco_form': escola_endereco_form,
+#         'formset': formset, 
+#         'user': user,
+#         'steps': steps,
+#     }
+
+#     # print("endereço da escola:")
+#     # print(escola_endereco_form.as_p())
+#     # print("-" * 20)
+
+#     return render(request, 'components/users/perfil.html', context)
+
+
 @login_required
 def perfil_view(request):
     user = request.user
-    
+
+    endereco_instance = user.endereco if user.endereco else Endereco()
+    escola_instance = user.escola if user.escola else Escola()
     historico, created = HistoricoEscolar.objects.get_or_create(usuario=user)
-    
+    endereco_escola_instance = escola_instance.endereco if escola_instance.endereco else Endereco()
+
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, request.FILES, instance=user)
-        formset = HistoricoNotaFormSet(request.POST, request.FILES, instance=historico)
+        current_step = int(request.POST.get('current_step', 1))
         
-        if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            messages.success(request, 'Seu perfil foi atualizado com sucesso!')
-            return redirect('dashboard')
+        if user.funcao == 'professora':
+            valid_steps = [1, 2, 3, 4, 6]
         else:
-            messages.error(request, 'Ocorreu um erro na validação do formulário. Verifique os campos.')
-    else:
-        form = UserUpdateForm(instance=user)
-        formset = HistoricoNotaFormSet(instance=historico)
+            valid_steps = [1, 2, 3, 4, 5, 6]
+
+        is_valid = False
+        
+        try:
+            with transaction.atomic():
+                if current_step == 1:
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    if form.is_valid():
+                        form.save()
+                        messages.success(request, 'Identificação atualizada com sucesso! 🚀')
+                        is_valid = True
+                    else:
+                        messages.error(request, 'Erro na validação do formulário de Identificação. Por favor, corrija os erros abaixo.')
+                        pass 
+
+                elif current_step == 2:
+                    form = EnderecoForm(request.POST, instance=endereco_instance)
+                    if form.is_valid():
+                        endereco_obj = form.save()
+                        user.endereco = endereco_obj
+                        user.save()
+                        messages.success(request, 'Endereço atualizado com sucesso! 🏠')
+                        is_valid = True
+                    else:
+                        messages.error(request, 'Erro na validação do formulário de Endereço. Por favor, corrija os erros abaixo.')
+                
+                elif current_step == 3:
+                    escola_form = EscolaForm(request.POST, instance=escola_instance)
+                    escola_endereco_form = EnderecoForm(request.POST, prefix='endereco_escola', instance=endereco_escola_instance)
+                    
+                    if escola_endereco_form.is_valid():
+                        endereco_escola_obj = escola_endereco_form.save()
+
+                        if escola_form.is_valid() and escola_endereco_form.is_valid():
+                            escola_obj = escola_form.save(commit=False)
+                            escola_obj.endereco = endereco_escola_obj
+                            escola_obj.save()
+                            user.escola = escola_obj
+                            user.save()
+                            messages.success(request, 'Escola atualizada com sucesso! 🏫')
+                            is_valid = True
+                        else:
+                            messages.error(request, 'Erro na validação do formulário de Escola. Por favor, corrija os erros abaixo.')
+                    else:
+                        messages.error(request, 'Erro na validação do formulário do Endereço da Escola. Por favor, corrija os erros abaixo.')
+                   
+                elif current_step == 4:
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    if form.is_valid():
+                        user.documento_identificacao = form.cleaned_data.get('documento_identificacao')
+                        user.comprovante_residencia = form.cleaned_data.get('comprovante_residencia')
+                        user.foto_rosto = form.cleaned_data.get('foto_rosto')
+                        if user.funcao != 'professora':
+                            user.comprovante_autorizacao_responsavel = form.cleaned_data.get('comprovante_autorizacao_responsavel')
+                        user.save()
+                        messages.success(request, 'Documentos atualizados com sucesso! 📄')
+                        is_valid = True
+                    else:
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                
+                elif current_step == 5:
+                    formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
+                    if formset.is_valid():
+                        formset.save()
+                        messages.success(request, 'Histórico escolar atualizado com sucesso! 📝')
+                        is_valid = True
+                    else:
+                        messages.error(request, 'Erro na validação do histórico escolar. Por favor, corrija os erros abaixo.')
+
+                elif current_step == 6:
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    if form.is_valid():
+                        form.save()
+                        messages.success(request, 'Perfil finalizado e salvo com sucesso! 🎉')
+                        is_valid = True
+                    else:
+                        print(form.errors)
+                        print(request)
+                        messages.error(request, 'Erro na validação da Declaração. Por favor, tente novamente.')
+                
+                # Redirecionamento para o próximo passo se o formulário for válido
+                if is_valid:
+                    try:
+                        next_step_index = valid_steps.index(current_step) + 1
+                        next_step = valid_steps[next_step_index]
+                        return redirect(f'/usuarios/dashboard/perfil/?step={next_step}')
+                    except (ValueError, IndexError):
+                        return redirect(request.path)
+
+        except Exception as e:
+            messages.error(request, f'Ocorreu um erro inesperado: {str(e)}')
+            # Em caso de erro, você pode querer manter o usuário no passo atual.
+            # return redirect(f'{request.path}?step={current_step}')
+
+    user_form = UserUpdateForm(instance=user)
+    endereco_form = EnderecoForm(instance=endereco_instance)
+    escola_form = EscolaForm(instance=escola_instance)
+    escola_endereco_form = EnderecoForm(instance=endereco_escola_instance, prefix='endereco_escola')
+    formset = HistoricoNotaFormSet(instance=historico,  prefix="notas")
+
+    if user.funcao == 'professora':
+        campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
+        for campo in campos_estudante:
+            if campo in user_form.fields:
+                del user_form.fields[campo]
 
     if user.funcao == 'professora':
         steps = [
@@ -466,17 +646,18 @@ def perfil_view(request):
             {'number': 6, 'name': 'Declaração'}
         ]
 
-    if user.funcao == 'professora':
-        campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
-        for campo in campos_estudante:
-            if campo in form.fields:
-                del form.fields[campo]
-
     context = {
-        'form': form,
+        'user_form': user_form,
+        'endereco_form': endereco_form,
+        'escola_form': escola_form,
+        'escola_endereco_form': escola_endereco_form,
         'formset': formset, 
         'user': user,
         'steps': steps,
     }
+
+    current_step_from_url = int(request.GET.get('step', 1))
+    
+    context['current_step'] = current_step_from_url
 
     return render(request, 'components/users/perfil.html', context)

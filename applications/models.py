@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from ckeditor.fields import RichTextField
 from django.utils import timezone
-from users.models import Cota, Deficiencia
+from users.models import Deficiencia, TipoDeVaga
 import uuid
 
 from projects.models import Project
@@ -57,25 +57,21 @@ class Application(models.Model):
     laudo_medico_deficiencia = models.BinaryField(null=True, blank=True, verbose_name="Laudo médico de deficiência")
     concorrer_reserva_vagas = models.BooleanField(default=False, verbose_name="Concorrer às vagas reservadas?")
     autodeclaracao_racial = models.BinaryField(null=True, blank=True, verbose_name="Autodeclaração racial")
-    modalidade_vaga = models.CharField(
-        max_length=10,
-        choices=[('ampla', 'Ampla concorrência'), ('cota', 'Cota')],
-        null=True,
-        blank=True
-    )
-    cota_desejada = models.ForeignKey(
-        Cota,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="Cota desejada"
-    )
+       
     tipo_deficiencia = models.ForeignKey(
         Deficiencia,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         verbose_name="Tipo de deficiência"
+    )
+    
+    tipo_de_vaga = models.ForeignKey(
+        TipoDeVaga,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tipo de Vaga"
     )
 
     # Documentação
