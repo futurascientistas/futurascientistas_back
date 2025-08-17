@@ -58,6 +58,27 @@ class User(AbstractUser):
     drive_cpf_anexo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do CPF no Drive")
     drive_declaracao_vinculo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da declaração de vínculo no Drive")
     drive_documentacao_comprobatoria_lattes = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da documentação Lattes no Drive")
+    drive_foto = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name='Foto no Drive'
+    )
+    drive_autodeclaracao_racial = models.CharField(
+    max_length=255,
+    null=True,
+    blank=True,
+    verbose_name='Autodeclaração racial no Drive'
+)
+
+    drive_comprovante_deficiencia = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name='Comprovante de deficiência no Drive'
+    )
+
+
 
     # Configurações do usuário
     termo_responsabilidade = models.BooleanField(default=False, verbose_name="Termo de responsabilidade")
