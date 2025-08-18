@@ -59,7 +59,6 @@ def inscricao_professora(request):
                 messages.error(request, str(e))
                 return render(request, 'components/applications/professor_application_form.html', {'form': form})
 
-            print('aq')
 
             acao = request.POST.get('acao')
             if acao == 'enviar':
@@ -142,8 +141,8 @@ def inscricao_aluna(request):
 
     if request.method == 'POST':
         form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
-        print(form.errors)
-        print('oi')
+        
+       
         if form.is_valid():
             
             instancia = form.save(commit=False)

@@ -31,6 +31,13 @@ class Application(models.Model):
         ('indeferida', 'Indeferida'),
     ]
 
+    JALECO_CHOICES = [
+        ('P', 'P'),
+        ('M', 'M'),
+        ('G', 'G'),
+        ('GG', 'GG'),
+    ]
+    
     aprovado = models.BooleanField(
         default=False,
         verbose_name="Aprovada para participação",
@@ -73,6 +80,13 @@ class Application(models.Model):
         blank=True,
         verbose_name="Tipo de Vaga"
     )
+    tamanho_jaleco = models.CharField(
+        'Tamanho do jaleco',
+        max_length=2,
+        choices=JALECO_CHOICES,
+        null=True,
+        blank=True
+    )
 
     # Documentação
     boletim_escolar = models.BinaryField(null=True, blank=True, verbose_name="Boletim escolar")
@@ -83,6 +97,15 @@ class Application(models.Model):
     declaracao_vinculo = models.BinaryField(null=True, blank=True, verbose_name="Declaração de vínculo")
     declaracao_inclusao = models.BinaryField(null=True, blank=True, verbose_name="Declaração de ciência do participante (PPI/PCD/Trans)")
     documentacao_comprobatoria_lattes = models.BinaryField(null=True, blank=True, verbose_name="Documentação Lattes")
+    
+    # Documentações para o drive
+    drive_boletim_escolar = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do boletim escolar no Drive")
+    drive_termo_autorizacao = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do termo de autorização no Drive")
+    drive_rg_frente = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (frente) no Drive")
+    drive_rg_verso = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (verso) no Drive")
+    drive_cpf_anexo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do CPF no Drive")
+    drive_declaracao_vinculo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da declaração de vínculo no Drive")
+    drive_documentacao_comprobatoria_lattes = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da documentação Lattes no Drive")
 
     # Trajetória Acadêmica e Científica
     grau_formacao = models.CharField(max_length=20,choices=GrauFormacao.choices,verbose_name="Grau de formação mais alto",null=True,blank=True,help_text="Informe o grau de formação mais alto concluído")
@@ -130,11 +153,11 @@ class Application(models.Model):
     def clean(self):
         now = timezone.now().date()  
         projeto = getattr(self, 'projeto', None)
-        if not projeto:
-            raise ValidationError({'projeto': 'O projeto deve ser selecionado.'})
+        # if not projeto:
+        #     raise ValidationError({'projeto': 'O projeto deve ser selecionado.'})
     
-        if not (self.projeto.inicio_inscricoes <= now <= self.projeto.fim_inscricoes):
-            raise ValidationError("Inscrição fora do prazo permitido do projeto.")
+        # if not (self.projeto.inicio_inscricoes <= now <= self.projeto.fim_inscricoes):
+        #     raise ValidationError("Inscrição fora do prazo permitido do projeto.")
 
     def save(self, *args, **kwargs):
         self.clean()

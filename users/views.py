@@ -1,6 +1,8 @@
 import re
 import mimetypes
 import magic
+import logging
+import traceback
 
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate
@@ -27,7 +29,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-
+from django.conf import settings
+from applications.drive.drive_services import DriveService
 
 
 from .services import *
@@ -39,6 +42,8 @@ from .permissions import (
     IsSelfOrAdminOrAvaliadora as IsOwnerOrAdminOrEvaluator,
     IsAdminRole
 )
+
+logger = logging.getLogger(__name__)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -432,6 +437,7 @@ def dashboard(request):
     }
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
+
 @login_required
 def perfil_view(request):
     user = request.user
@@ -454,7 +460,7 @@ def perfil_view(request):
         try:
             with transaction.atomic():
                 if current_step == 1:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
                         user_obj = form.save(commit=False)
                         user_obj.save()
@@ -462,6 +468,7 @@ def perfil_view(request):
                         messages.success(request, 'Identificação atualizada com sucesso! 🚀')
                         is_valid = True
                     else:
+                        logger.error(f"Erro na validação do formulário de Identificação: {form.errors}")
                         messages.error(request, 'Erro na validação do formulário de Identificação. Por favor, corrija os erros abaixo.')
                         pass 
 
@@ -474,6 +481,7 @@ def perfil_view(request):
                         messages.success(request, 'Endereço atualizado com sucesso! 🏠')
                         is_valid = True
                     else:
+                        logger.error(f"Erro na validação do formulário de Identificação: {form.errors}")
                         messages.error(request, 'Erro na validação do formulário de Endereço. Por favor, corrija os erros abaixo.')
                 
                 elif current_step == 3:
@@ -492,23 +500,33 @@ def perfil_view(request):
                             messages.success(request, 'Escola atualizada com sucesso! 🏫')
                             is_valid = True
                         else:
+                            logger.error(f"Erro na validação do formulário de Identificação: {escola_form.errors}")
                             messages.error(request, 'Erro na validação do formulário de Escola. Por favor, corrija os erros abaixo.')
                     else:
+                        logger.error(f"Erro na validação do formulário de Identificação: {escola_endereco_form.errors}")
                         messages.error(request, 'Erro na validação do formulário do Endereço da Escola. Por favor, corrija os erros abaixo.')
                    
                 elif current_step == 4:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
-                        user.documento_identificacao = form.cleaned_data.get('documento_identificacao')
-                        user.comprovante_residencia = form.cleaned_data.get('comprovante_residencia')
-                        user.foto_rosto = form.cleaned_data.get('foto_rosto')
-                        if user.funcao != 'professora':
-                            user.comprovante_autorizacao_responsavel = form.cleaned_data.get('comprovante_autorizacao_responsavel')
-                        user.save()
-                        messages.success(request, 'Documentos atualizados com sucesso! 📄')
-                        is_valid = True
+                        try:
+                            user = form.save()
+                            messages.success(request, 'Documentos atualizados com sucesso! 📄')
+                            is_valid = True
+                        except Exception as e:
+                            logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
+                            messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
                     else:
-                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                        # Adiciona esta parte para mostrar os erros específicos
+                        error_messages = []
+                        for field, errors in form.errors.items():
+                            field_label = form.fields[field].label if field in form.fields else field
+                            for error in errors:
+                                error_messages.append(f"{field_label}: {error}")
+                        
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo:')
+                        for error_msg in error_messages:
+                            messages.error(request, error_msg)  # Mostra cada erro individualmente
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
@@ -517,6 +535,7 @@ def perfil_view(request):
                         messages.success(request, 'Histórico escolar atualizado com sucesso! 📝')
                         is_valid = True
                     else:
+                        logger.error(f"Erro na validação do histórico escolar. Por favor, corrija os erros abaixo: {formset.errors}")
                         messages.error(request, 'Erro na validação do histórico escolar. Por favor, corrija os erros abaixo.')
 
                 elif current_step == 6:
@@ -526,6 +545,7 @@ def perfil_view(request):
                         messages.success(request, 'Perfil finalizado e salvo com sucesso! 🎉')
                         is_valid = True
                     else:
+                        logger.error(f"Erro na validação da Declaração. Por favor, tente novamente.{form.errors}")
                         messages.error(request, 'Erro na validação da Declaração. Por favor, tente novamente.')
                 
                 # Redirecionamento para o próximo passo se o formulário for válido
@@ -538,6 +558,7 @@ def perfil_view(request):
                         return redirect(request.path)
 
         except Exception as e:
+            logger.error(f'Ocorreu um erro inesperado: {str(e)}')
             messages.error(request, f'Ocorreu um erro inesperado: {str(e)}')
             # Em caso de erro, você pode querer manter o usuário no passo atual.
             # return redirect(f'{request.path}?step={current_step}')

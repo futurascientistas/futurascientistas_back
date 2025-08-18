@@ -16,6 +16,55 @@
         <span class="font-semibold">Aviso:</span> Você declara ciência sobre a necessidade de seu deslocamento até o local onde será realizado o projeto.
     </div>
 
+    <div>
+      <label class="block font-semibold mb-1 text-gray-800">Documentos para Upload no Drive</label>
+      
+      {% comment %} <!-- RG Frente -->
+      <div class="mb-4">
+        <label for="drive_rg_frente__upload" class="block text-sm font-medium text-gray-700">RG (Frente)</label>
+        <input type="file" name="drive_rg_frente__upload" id="drive_rg_frente__upload"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+        {% if form.instance.drive_rg_frente %}
+        <div class="mt-2 flex items-center">
+          <input type="checkbox" name="drive_rg_frente__clear" id="drive_rg_frente__clear" class="mr-2">
+          <label for="drive_rg_frente__clear" class="text-sm text-gray-600">Remover arquivo atual</label>
+          <a href="https://drive.google.com/file/d/{{ form.instance.drive_rg_frente }}/view" 
+            target="_blank" class="ml-4 text-sm text-pink-600 hover:underline">(Visualizar atual)</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- RG Verso -->
+      <div class="mb-4">
+        <label for="drive_rg_verso__upload" class="block text-sm font-medium text-gray-700">RG (Verso)</label>
+        <input type="file" name="drive_rg_verso__upload" id="drive_rg_verso__upload"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+        {% if form.instance.drive_rg_verso %}
+        <div class="mt-2 flex items-center">
+          <input type="checkbox" name="drive_rg_verso__clear" id="drive_rg_verso__clear" class="mr-2">
+          <label for="drive_rg_verso__clear" class="text-sm text-gray-600">Remover arquivo atual</label>
+          <a href="https://drive.google.com/file/d/{{ form.instance.drive_rg_verso }}/view" 
+            target="_blank" class="ml-4 text-sm text-pink-600 hover:underline">(Visualizar atual)</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- CPF -->
+      <div class="mb-6">
+        <label for="drive_cpf_anexo__upload" class="block text-sm font-medium text-gray-700">CPF</label>
+        <input type="file" name="drive_cpf_anexo__upload" id="drive_cpf_anexo__upload"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100">
+        {% if form.instance.drive_cpf_anexo %}
+        <div class="mt-2 flex items-center">
+          <input type="checkbox" name="drive_cpf_anexo__clear" id="drive_cpf_anexo__clear" class="mr-2">
+          <label for="drive_cpf_anexo__clear" class="text-sm text-gray-600">Remover arquivo atual</label>
+          <a href="https://drive.google.com/file/d/{{ form.instance.drive_cpf_anexo }}/view" 
+            target="_blank" class="ml-4 text-sm text-pink-600 hover:underline">(Visualizar atual)</a>
+        </div>
+        {% endif %}
+      </div>
+    </div> {% endcomment %}
+
     {% if form.errors %}
     <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
         <strong class="font-bold">Erro ao enviar o formulário!</strong>

@@ -212,3 +212,8 @@ __marimo__/
 # Django migrations
 **/migrations/
 !**/migrations/__init__.py
+
+#Client Secret
+
+client_secrets.json
+token.json

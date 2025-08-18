@@ -5,6 +5,7 @@ from utils.utils import get_binary_field_display_name
 from users.services import validar_email, validar_cpf, validar_senha
 from users.models import TipoEnsino
 from users.models import Deficiencia, Genero, Raca, User
+from django.conf import settings
 
 class CadastroForm(forms.Form):
     nome = forms.CharField(
@@ -89,29 +90,61 @@ class CadastroForm(forms.Form):
         return cleaned_data
 
 
+
+from applications.drive.drive_services import DriveService
+
+
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
+
+
 class UserUpdateForm(forms.ModelForm):
-    BINARY_FILE_FIELDS = [
-        'documento_cpf',
-        'documento_rg',
-        'foto',
-        'autodeclaracao_racial',
-        'comprovante_deficiencia',
-    ]
+    # BINARY_FILE_FIELDS = [
+    #     'documento_cpf',
+    #     'documento_rg',
+    #     'foto',
+    #     'autodeclaracao_racial',
+    #     'comprovante_deficiencia',
+    # ]
+    
+    DRIVE_UPLOAD_FIELDS = {
+        'drive_rg_frente': "RG Frente",
+        'drive_rg_verso': "RG Verso", 
+        'drive_cpf_anexo': "CPF",
+        'drive_foto': "Foto no Drive",
+        'drive_autodeclaracao_racial':"Autodeclaração racial no Drive",
+        'drive_comprovante_deficiencia': "Comprovante de deficiência no Drive"
+    }
 
-    for field_name in BINARY_FILE_FIELDS:
+    # for field_name in BINARY_FILE_FIELDS:
 
-        display_label = get_binary_field_display_name(field_name)
+    #     display_label = get_binary_field_display_name(field_name)
 
+    #     locals()[f"{field_name}__upload"] = forms.FileField(
+    #         label=f"Enviar arquivo para {display_label}",
+    #         required=False,
+    #         help_text="Deixe em branco para manter o arquivo atual."
+    #     )
+    #     locals()[f"{field_name}__clear"] = forms.BooleanField(
+    #         label=f"Remover arquivo atual de {display_label}",
+    #         required=False
+    #     )
+    # del field_name  
+    
+    
+    for field_name, label in DRIVE_UPLOAD_FIELDS.items():
         locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {display_label}",
             required=False,
-            help_text="Deixe em branco para manter o arquivo atual."
+            label=f"Enviar {label} para o Drive",
+            help_text="O arquivo será salvo apenas no Google Drive"
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {display_label}",
-            required=False
+            required=False,
+            label=f"Remover arquivo atual do Drive"
         )
-    del field_name  
+    del field_name, label
 
     nome = forms.CharField(
         label="Nome Completo",
@@ -184,8 +217,13 @@ class UserUpdateForm(forms.ModelForm):
         }
         
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  # Extrai o user dos kwargs
         super().__init__(*args, **kwargs)
         self.fields['cpf'].disabled = True
+        self.fields['deficiencias'].required = False
+        
+        
+
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:
@@ -197,12 +235,90 @@ class UserUpdateForm(forms.ModelForm):
             uploaded = self.files.get(upload_field)
             if uploaded:
                 setattr(instance, field_name, uploaded.read())
+                
+    def _upload_documents_to_drive(self, instance):
+        try:
+            drive_service = DriveService()
+            
+            # Verifica acesso antes de criar pasta
+            if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
+                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
+            
+            logger.info("Iniciando upload para o Drive")
+            
+            # Cria o caminho perfil/CPF (se não existir)
+            perfil_folder_name = "perfil"
+            user_folder_name = instance.user.cpf
+            logger.info(f"Verificando/Criando estrutura de pastas: {perfil_folder_name}/{user_folder_name}")
+            
+            # Primeiro verifica/cria a pasta 'perfil'
+            perfil_folder_id = drive_service.find_or_create_folder(
+                folder_name=perfil_folder_name,
+                parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
+            )
+            logger.info(f"Pasta 'perfil' ID: {perfil_folder_id}")
+            
+            # Depois cria a pasta do usuário (CPF) dentro da pasta 'perfil'
+            user_folder_id = drive_service.find_or_create_folder(
+                folder_name=user_folder_name,
+                parent_folder_id=perfil_folder_id
+            )
+            logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
 
+            # Faz upload dos arquivos para a pasta do usuário
+            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+                upload_field = f"{field_name}__upload"
+                if upload_field in self.files:
+                    file = self.files[upload_field]
+                    logger.info(f"Processando arquivo: {file.name}")
+                    
+                    file_id = drive_service.upload_file(
+                        file_name=file.name,
+                        file_content=file.read(),
+                        mime_type=file.content_type,
+                        folder_id=user_folder_id
+                    )
+                    logger.info(f"Arquivo {file.name} uploadado com ID: {file_id}")
+                    setattr(instance, field_name, file_id)
+                    
+        except Exception as e:
+            logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
+            raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
+        
     def save(self, commit=True):
         instance = super().save(commit=False)
-        self._apply_binary_uploads(instance)
+        
+        # Associa o usuário logado ao instance
+        if self.user:
+            instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
+            # Ou talvez você queira fazer:
+            # instance = self.user  # Se você está atualizando o próprio usuário
+
+        try:
+            self._upload_documents_to_drive(instance)
+        except forms.ValidationError:
+            raise
+        except Exception as e:
+            logger.error(f"Erro geral no save: {str(e)}")
+            if commit:
+                instance.save()
+            raise forms.ValidationError(
+                "Ocorreu um erro ao processar seus documentos. "
+                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
+            )
+
         if commit:
             instance.save()
-            self.save_m2m()
         return instance
     
+    
+
+    # def save(self, commit=True):
+    #     instance = super().save(commit=False)
+    #     self._apply_binary_uploads(instance)
+    #     if commit:
+    #         instance.save()
+    #         self.save_m2m()
+    #     return instance
+     
