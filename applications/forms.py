@@ -186,15 +186,6 @@ class ApplicationProfessorForm(forms.ModelForm):
         })
     )
 
-    # modalidade_vaga = forms.ChoiceField(
-    #     choices=[('', 'Selecione uma modalidade')] + list(GrauFormacao.choices),
-    #     label="Selecione uma modalidade de vaga",
-    #     required=True,
-    #     widget=forms.Select(attrs={
-    #         'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
-    #     })
-    # )
-    
     tamanho_jaleco = forms.ChoiceField(
         choices=[('', 'Selecione um tamanho')] + list(Application.JALECO_CHOICES),
         label="Selecione um tamanho para o jaleco",

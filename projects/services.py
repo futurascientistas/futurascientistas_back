@@ -99,7 +99,7 @@ def importar_planilha_projetos(importacao_obj, request):
                 # Cria o projeto já validado
                 projeto = Project.objects.create(**dados)
 
-                # Ajusta ManyToMany
+                # Ajusta ManyToMany 
                 regioes_objs = filtrar_objs(todas_regioes, regioes, ['nome', 'abreviacao'])
                 estados_objs = filtrar_objs(todos_estados, estados, ['nome', 'uf'])
                 cidades_objs = filtrar_objs(todas_cidades, cidades, ['nome', 'estado__regiao__nome', 'estado__regiao__abreviacao'])

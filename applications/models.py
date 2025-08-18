@@ -30,6 +30,7 @@ class Application(models.Model):
         ('deferida', 'Deferida'),
         ('indeferida', 'Indeferida'),
     ]
+    
     JALECO_CHOICES = [
         ('P', 'P'),
         ('M', 'M'),
