@@ -1,51 +1,97 @@
-import os
+import json
 import logging
+from io import BytesIO
+from typing import Optional, Dict, Any
+
+from django.conf import settings
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
-from io import BytesIO
-from django.conf import settings
-
 
 logger = logging.getLogger(__name__)
 
+
+class DriveServiceInitError(Exception):
+    """Erro de inicialização do DriveService (credenciais, chave, escopos, etc.)."""
+    pass
+
+
 class DriveService:
-    _instance = None
+    _instance: Optional["DriveService"] = None
+    service = None  # evita AttributeError caso a init falhe
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            inst = super().__new__(cls)
             try:
-                cls._instance._initialize()
+                inst._initialize()
             except Exception as e:
-                logger.error(f"Falha na inicialização do DriveService: {str(e)}")
+                logger.error(f"Falha na inicialização do DriveService: {e}")
+                # não mantém instância quebrada em cache
                 raise
+            cls._instance = inst
         return cls._instance
 
-    def _initialize(self):
+    def _initialize(self) -> None:
         SCOPES = ['https://www.googleapis.com/auth/drive']
-        SERVICE_ACCOUNT_FILE = os.path.join(settings.BASE_DIR, "acredentials.json")
 
-        if not os.path.exists(SERVICE_ACCOUNT_FILE):
-            raise Exception("Arquivo acredentials.json (service account) não encontrado")
+        raw = getattr(settings, "GOOGLE_CREDENTIALS_JSON", None)
+        if raw is None:
+            raise DriveServiceInitError("GOOGLE_CREDENTIALS_JSON ausente nos settings.")
 
-        creds = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=SCOPES
-        )
+        # Aceita dict (local) ou string JSON (produção via ENV)
+        if isinstance(raw, str):
+            try:
+                info = json.loads(raw)
+            except Exception as e:
+                raise DriveServiceInitError("GOOGLE_CREDENTIALS_JSON inválido (string JSON malformada).") from e
+        elif isinstance(raw, dict):
+            info = dict(raw)  # cópia defensiva
+        else:
+            raise DriveServiceInitError(f"Tipo inválido para GOOGLE_CREDENTIALS_JSON: {type(raw).__name__}")
 
-        self.service = build('drive', 'v3', credentials=creds)
-        logger.info("Serviço do Drive inicializado com sucesso (service account).")
+        # Valida chaves mínimas
+        required = {"type", "project_id", "private_key_id", "private_key", "client_email", "client_id", "token_uri"}
+        missing = required - info.keys()
+        if missing:
+            raise DriveServiceInitError(f"Credenciais faltando chaves: {', '.join(sorted(missing))}")
+
+        # Normaliza a private_key (caso venha com '\\n' ou CRLF)
+        pk = info.get("private_key")
+        if not isinstance(pk, str) or not pk:
+            raise DriveServiceInitError("private_key ausente ou vazia.")
+        # substitui literais '\\n' por quebra real e normaliza finais de linha
+        pk_norm = pk.replace("\\n", "\n").replace("\r\n", "\n").strip()
+
+        # Checagens rápidas de formato
+        if not pk_norm.startswith("-----BEGIN PRIVATE KEY-----") or not pk_norm.endswith("-----END PRIVATE KEY-----"):
+            raise DriveServiceInitError(
+                "private_key não contém cabeçalho/rodapé válidos "
+                "(esperado BEGIN/END PRIVATE KEY). Verifique as quebras de linha."
+            )
+
+        info["private_key"] = pk_norm
+
+        # Cria credenciais e client
+        try:
+            creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+            self.service = build('drive', 'v3', credentials=creds)
+            logger.info("Serviço do Drive inicializado com sucesso (GOOGLE_CREDENTIALS_JSON).")
+        except Exception as e:
+            # Erros comuns aqui: chave corrompida, newline errado, projeto/SA sem Drive API
+            raise DriveServiceInitError(
+                "Falha ao construir credenciais do Google Drive. "
+                "Geralmente é private_key inválida ou com quebras de linha incorretas."
+            ) from e
+
+    # ------------ utilitários ------------
 
     def test_folder_access(self, folder_id: str) -> bool:
-        """Verifica se a pasta existe (Meu Drive ou Shared Drive)."""
         try:
             result = self.service.files().get(
-                fileId=folder_id,
-                fields='id,name',
-                supportsAllDrives=True
+                fileId=folder_id, fields='id,name', supportsAllDrives=True
             ).execute()
-
             logger.info(f"Acesso confirmado à pasta: {result['name']} (ID: {result['id']})")
             return True
         except HttpError as e:
@@ -55,8 +101,7 @@ class DriveService:
             logger.error(f"Erro geral ao acessar pasta: {e}")
             return False
 
-    def find_or_create_folder(self, folder_name: str, parent_folder_id: str = None) -> str:
-        """Procura por uma pasta com o nome especificado e cria se não existir."""
+    def find_or_create_folder(self, folder_name: str, parent_folder_id: Optional[str] = None) -> str:
         try:
             query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
             if parent_folder_id:
@@ -75,51 +120,37 @@ class DriveService:
 
             return self.create_folder(folder_name, parent_folder_id)
         except Exception as e:
-            logger.error(f"Erro em find_or_create_folder: {str(e)}")
+            logger.error(f"Erro em find_or_create_folder: {e}")
             raise
 
-    def create_folder(self, folder_name: str, parent_folder_id: str = None) -> str:
-        """Cria uma pasta dentro do Meu Drive ou Shared Drive."""
-        file_metadata = {
-            'name': folder_name,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
+    def create_folder(self, folder_name: str, parent_folder_id: Optional[str] = None) -> str:
+        metadata: Dict[str, Any] = {'name': folder_name, 'mimeType': 'application/vnd.google-apps.folder'}
         if parent_folder_id:
-            file_metadata['parents'] = [parent_folder_id]
+            metadata['parents'] = [parent_folder_id]
 
         try:
             folder = self.service.files().create(
-                body=file_metadata,
-                fields='id',
-                supportsAllDrives=True
+                body=metadata, fields='id', supportsAllDrives=True
             ).execute()
             logger.info(f"Pasta criada: {folder_name} (ID: {folder['id']})")
-            return folder.get('id')
+            return folder['id']
         except Exception as e:
-            logger.error(f"Erro ao criar pasta: {str(e)}")
+            logger.error(f"Erro ao criar pasta: {e}")
             raise
 
-    def upload_file(self, file_name: str, file_content: bytes, mime_type: str, folder_id: str = None) -> str:
-        """Faz upload de um arquivo para Meu Drive ou Shared Drive."""
-        file_metadata = {'name': file_name}
+    def upload_file(self, file_name: str, file_content: bytes, mime_type: str, folder_id: Optional[str] = None) -> str:
+        metadata: Dict[str, Any] = {'name': file_name}
         if folder_id:
-            file_metadata['parents'] = [folder_id]
+            metadata['parents'] = [folder_id]
 
-        media = MediaIoBaseUpload(
-            BytesIO(file_content),
-            mimetype=mime_type,
-            resumable=True
-        )
+        media = MediaIoBaseUpload(BytesIO(file_content), mimetype=mime_type, resumable=True)
 
         try:
             file = self.service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id',
-                supportsAllDrives=True
+                body=metadata, media_body=media, fields='id', supportsAllDrives=True
             ).execute()
             logger.info(f"Arquivo {file_name} enviado com sucesso (ID: {file['id']})")
-            return file.get('id')
+            return file['id']
         except Exception as e:
-            logger.error(f"Erro ao fazer upload: {str(e)}")
+            logger.error(f"Erro ao fazer upload: {e}")
             raise
