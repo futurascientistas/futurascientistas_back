@@ -82,7 +82,7 @@ class ApplicationAlunoForm(forms.ModelForm):
     
     for field_name, label in DRIVE_UPLOAD_FIELDS.items():
         locals()[f"{field_name}__upload"] = forms.FileField(
-            required=False,
+            required=True,
             label=f"Enviar {label} para o Drive",
             help_text="O arquivo será salvo apenas no Google Drive"
         )
@@ -297,7 +297,7 @@ class ApplicationProfessorForm(forms.ModelForm):
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
-    
+
     tipo_deficiencia = forms.ModelChoiceField(
         queryset=Deficiencia.objects.all(),  
         label="Deficiencia",
@@ -320,7 +320,7 @@ class ApplicationProfessorForm(forms.ModelForm):
 
         locals()[f"{field_name}__upload"] = forms.FileField(
             label=f"Enviar arquivo para {display_label}",
-            required=False,
+            required=True,
             help_text="Deixe em branco para manter o arquivo atual."
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
