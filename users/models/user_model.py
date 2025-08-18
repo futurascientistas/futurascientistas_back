@@ -27,6 +27,8 @@ class User(AbstractUser):
     documento_cpf = models.BinaryField(null=True, blank=True, verbose_name='Documento CPF')
     documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
     foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
+    
+    
 
     # Endereço
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Endereço Pessoal", related_name='usuarios') 
@@ -52,6 +54,7 @@ class User(AbstractUser):
     drive_termo_autorizacao = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do termo de autorização no Drive")
     drive_rg_frente = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (frente) no Drive")
     drive_rg_verso = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (verso) no Drive")
+    
     drive_cpf_anexo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do CPF no Drive")
     drive_declaracao_vinculo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da declaração de vínculo no Drive")
     drive_documentacao_comprobatoria_lattes = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da documentação Lattes no Drive")

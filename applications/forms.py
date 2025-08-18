@@ -8,14 +8,28 @@ from ckeditor.fields import RichTextField
 from django.utils import timezone
 from django.db.models import Q
 
+#Importações para o Drive:
+import os
+from .drive.drive_services import DriveService
 
+
+import logging
+import traceback
+
+logger = logging.getLogger(__name__)
 class ApplicationAlunoForm(forms.ModelForm):
-    BINARY_FILE_FIELDS = [
-        'rg_frente',
-        'rg_verso',
-        'cpf_anexo',
-        'declaracao_inclusao'
-    ]
+    # BINARY_FILE_FIELDS = [
+    #     'rg_frente',
+    #     'rg_verso',
+    #     'cpf_anexo',
+    #     'declaracao_inclusao'
+    # ]
+    
+    DRIVE_UPLOAD_FIELDS = {
+        'drive_rg_frente': "RG Frente",
+        'drive_rg_verso': "RG Verso", 
+        'drive_cpf_anexo': "CPF"
+    }
 
     projeto = forms.ModelChoiceField(
         queryset=Project.objects.all(),
@@ -26,6 +40,9 @@ class ApplicationAlunoForm(forms.ModelForm):
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
+    
+
+    
 
     necessita_material_especial = forms.BooleanField(
         label="Necessita de material especial?",
@@ -48,20 +65,32 @@ class ApplicationAlunoForm(forms.ModelForm):
         })
     )
 
-    for field_name in BINARY_FILE_FIELDS:
+    # for field_name in BINARY_FILE_FIELDS:
 
-        display_label = display_label = get_binary_field_display_name(field_name)
+    #     display_label = display_label = get_binary_field_display_name(field_name)
 
+    #     locals()[f"{field_name}__upload"] = forms.FileField(
+    #         label=f"Enviar arquivo para {display_label}",
+    #         required=False,
+    #         help_text="Deixe em branco para manter o arquivo atual."
+    #     )
+    #     locals()[f"{field_name}__clear"] = forms.BooleanField(
+    #         label=f"Remover arquivo atual de {display_label}",
+    #         required=False
+    #     )
+    # del field_name
+    
+    for field_name, label in DRIVE_UPLOAD_FIELDS.items():
         locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {display_label}",
             required=True,
-            help_text="Deixe em branco para manter o arquivo atual."
+            label=f"Enviar {label} para o Drive",
+            help_text="O arquivo será salvo apenas no Google Drive"
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {display_label}",
-            required=False
+            required=False,
+            label=f"Remover arquivo atual do Drive"
         )
-    del field_name 
+    del field_name, label
 
     class Meta:
         model = Application
@@ -93,9 +122,91 @@ class ApplicationAlunoForm(forms.ModelForm):
             if uploaded_file:
                 setattr(instance, field_name, uploaded_file.read())
 
+    # def save(self, commit=True):
+    #     instance = super().save(commit=False)
+    #     # self._apply_binary_uploads(instance)
+    #     self._upload_to_drive(instance)
+    #     if commit:
+    #         instance.save()
+    #     return instance
+    
+    
+    
+
+    def _upload_documents_to_drive(self, instance):
+        try:
+            drive_service = DriveService()
+            
+            # Verifica acesso antes de criar pasta
+            if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
+                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
+
+            
+            logger.info("Iniciando upload para o Drive")
+            
+            # Primeiro cria a pasta do projeto (se não existir)
+            projeto_folder_name = instance.projeto.nome
+            logger.info(f"Verificando/Criando pasta do projeto: {projeto_folder_name}")
+            
+            projeto_folder_id = drive_service.find_or_create_folder(
+                folder_name=projeto_folder_name,
+                parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
+            )
+            logger.info(f"Pasta do projeto ID: {projeto_folder_id}")
+            
+            # Depois cria a pasta do usuário (CPF) dentro da pasta do projeto
+            user_folder_name = instance.user.cpf
+            logger.info(f"Criando pasta do usuário: {user_folder_name}")
+            
+            user_folder_id = drive_service.create_folder(
+                folder_name=user_folder_name,
+                parent_folder_id=projeto_folder_id
+            )
+            logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
+
+            # Faz upload dos arquivos para a pasta do usuário
+            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+                upload_field = f"{field_name}__upload"
+                if upload_field in self.files:
+                    file = self.files[upload_field]
+                    logger.info(f"Processando arquivo: {file.name}")
+                    
+                    file_id = drive_service.upload_file(
+                        file_name=file.name,
+                        file_content=file.read(),
+                        mime_type=file.content_type,
+                        folder_id=user_folder_id
+                    )
+                    logger.info(f"Arquivo {file.name} uploadado com ID: {file_id}")
+                    setattr(instance, field_name, file_id)
+                    
+        except Exception as e:
+            logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
+            raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
+        
     def save(self, commit=True):
+        # Salva os dados do form sem commit primeiro
         instance = super().save(commit=False)
-        self._apply_binary_uploads(instance)
+
+        # Associa o usuário logado ao instance
+        if self.user:
+            instance.user = self.user
+
+        try:
+            # Faz upload para o Drive usando instance.user.cpf
+            self._upload_documents_to_drive(instance)
+        except forms.ValidationError:
+            raise  # Re-lança erros de validação
+        except Exception as e:
+            logger.error(f"Erro geral no save: {str(e)}")
+            if commit:
+                instance.save()  # Salva sem os dados do Drive
+            raise forms.ValidationError(
+                "Ocorreu um erro ao processar seus documentos. "
+                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
+            )
+
         if commit:
             instance.save()
         return instance
@@ -119,27 +230,19 @@ class ApplicationAlunoForm(forms.ModelForm):
         return cleaned_data
     
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        # Pega o usuário logado que foi passado na view
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         hoje = timezone.now().date()
-        projetos = Project.objects.filter(
-            ativo=True,
-            inicio_inscricoes__lte=hoje,
-            fim_inscricoes__gte=hoje,
-        )
+        projetos = Project.objects.all()
 
-        if user:
-            estado_usuario = getattr(user, 'estado', None)
-            # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
+        if self.user:
+            estado_usuario = getattr(self.user, 'estado', None)
             if estado_usuario and hasattr(estado_usuario, 'id'):
-                projetos = projetos.filter(
-                    Q(estados_aceitos__isnull=True) | Q(estados_aceitos=estado_usuario)
-                ).distinct()
+                projetos = projetos.all().distinct()
             else:
-                # Se não tem estado válido, só mostra os que não tem estado restrito
-                projetos = projetos.filter(estados_aceitos__isnull=True)
-
+                projetos = projetos.all()
         else:
             projetos = Project.objects.none()
 

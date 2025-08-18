@@ -142,6 +142,8 @@ def inscricao_aluna(request):
 
     if request.method == 'POST':
         form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
+        
+       
         print(form.errors)
         print('oi')
         if form.is_valid():
@@ -152,9 +154,9 @@ def inscricao_aluna(request):
             agora = timezone.now().date()
 
             # Validação do período de inscrição
-            if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
-                messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
-                return render(request, 'components/applications/student_application_form.html', {'form': form})
+            # if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+            #     messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
+            #     return render(request, 'components/applications/student_application_form.html', {'form': form})
 
             # Verifica se já existe inscrição para o projeto atual
             if Application.objects.filter(usuario=request.user, projeto=projeto).exists():

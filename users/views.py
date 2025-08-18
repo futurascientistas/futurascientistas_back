@@ -504,7 +504,12 @@ def dashboard(request):
 #     # print("-" * 20)
 
 #     return render(request, 'components/users/perfil.html', context)
+from django.conf import settings
+from applications.drive.drive_services import DriveService
+import logging
+import traceback
 
+logger = logging.getLogger(__name__)
 
 @login_required
 def perfil_view(request):
@@ -528,7 +533,7 @@ def perfil_view(request):
         try:
             with transaction.atomic():
                 if current_step == 1:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
                         form.save()
                         messages.success(request, 'Identificação atualizada com sucesso! 🚀')
@@ -569,18 +574,27 @@ def perfil_view(request):
                         messages.error(request, 'Erro na validação do formulário do Endereço da Escola. Por favor, corrija os erros abaixo.')
                    
                 elif current_step == 4:
-                    form = UserUpdateForm(request.POST, request.FILES, instance=user)
+                    form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
                     if form.is_valid():
-                        user.documento_identificacao = form.cleaned_data.get('documento_identificacao')
-                        user.comprovante_residencia = form.cleaned_data.get('comprovante_residencia')
-                        user.foto_rosto = form.cleaned_data.get('foto_rosto')
-                        if user.funcao != 'professora':
-                            user.comprovante_autorizacao_responsavel = form.cleaned_data.get('comprovante_autorizacao_responsavel')
-                        user.save()
-                        messages.success(request, 'Documentos atualizados com sucesso! 📄')
-                        is_valid = True
+                        try:
+                            user = form.save()
+                            messages.success(request, 'Documentos atualizados com sucesso! 📄')
+                            is_valid = True
+                        except Exception as e:
+                            logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
+                            messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
                     else:
-                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo.')
+                        # Adiciona esta parte para mostrar os erros específicos
+                        error_messages = []
+                        for field, errors in form.errors.items():
+                            field_label = form.fields[field].label if field in form.fields else field
+                            for error in errors:
+                                error_messages.append(f"{field_label}: {error}")
+                        
+                        messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo:')
+                        for error_msg in error_messages:
+                            messages.error(request, error_msg)  # Mostra cada erro individualmente
+                            print(error_msg)
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
