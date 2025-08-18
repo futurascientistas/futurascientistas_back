@@ -30,14 +30,14 @@ class Application(models.Model):
         ('deferida', 'Deferida'),
         ('indeferida', 'Indeferida'),
     ]
-    
+
     JALECO_CHOICES = [
         ('P', 'P'),
         ('M', 'M'),
         ('G', 'G'),
         ('GG', 'GG'),
     ]
-
+    
     aprovado = models.BooleanField(
         default=False,
         verbose_name="Aprovada para participação",
