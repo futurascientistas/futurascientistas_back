@@ -166,25 +166,25 @@ function setupCepAutocomplete(cepInput, prefix = '') {
                  
                 if (option) {
                     estado.value = option.value;
+                    estado.dispatchEvent(new Event('change'));
                 } else {
                     console.warn(`Opção para o estado "${uf}" não encontrada.`);
                 }
             }
 
-            if (cidade && cidade.tagName === 'SELECT') {
-                const localidade = data.localidade;
-                const uf = data.uf;
-                const textoCompleto = `${localidade} - ${uf}`;
+            // if (cidade && cidade.tagName === 'SELECT') {
+            //     const localidade = data.localidade;
+            //     const uf = data.uf;
+            //     const textoCompleto = `${localidade} - ${uf}`;
                 
-                const option = Array.from(cidade.options).find(opt => opt.textContent.trim() === textoCompleto);
+            //     const option = Array.from(cidade.options).find(opt => opt.textContent.trim() === textoCompleto);
                 
-                if (option) {
-                    cidade.value = option.value;
-                } else {
-                    console.warn(`Opção para a cidade "${textoCompleto}" não encontrada.`);
-                }
-            }
-
+            //     if (option) {
+            //         cidade.value = option.value;
+            //     } else {
+            //         console.warn(`Opção para a cidade "${textoCompleto}" não encontrada.`);
+            //     }
+            // }
             
             if (numero) numero.focus();
         } 
@@ -193,6 +193,70 @@ function setupCepAutocomplete(cepInput, prefix = '') {
             alert('Não foi possível buscar o endereço pelo CEP.');
         }
     });
+}
+
+async function fetchCidadesPorEstado(estadoId) {
+    try {
+        const response = await fetch(`/api/cidades/?estado=${estadoId}`);
+        if (!response.ok) {
+            throw new Error('Erro ao buscar cidades da API.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+        return [];
+    }
+}
+
+function populateCidadeSelect(selectElement, cidades, selectedValue = null) {
+    selectElement.innerHTML = '';
+    
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecione uma cidade';
+    selectElement.appendChild(defaultOption);
+
+    cidades.forEach(cidade => {
+        const option = document.createElement('option');
+        option.value = cidade.id;
+        option.textContent = cidade.nome_completo; 
+        if (selectedValue !== null && String(cidade.id) === String(selectedValue)) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+}
+
+function setupCidadeAutocomplete(prefix = '') {
+    const estadoSelect = document.querySelector(`select[name="${prefix}estado"]`);
+    const cidadeSelect = document.querySelector(`select[name="${prefix}cidade"]`);
+
+    if (!estadoSelect || !cidadeSelect) {
+        return;
+    }
+
+    estadoSelect.addEventListener('change', async () => {
+        const estadoId = estadoSelect.value;
+        if (estadoId) {
+            cidadeSelect.disabled = true;
+            cidadeSelect.innerHTML = '<option>Carregando...</option>';
+
+            const cidades = await fetchCidadesPorEstado(estadoId);
+            populateCidadeSelect(cidadeSelect, cidades);
+
+            cidadeSelect.disabled = false;
+        } else {
+            cidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro</option>';
+        }
+    });
+
+    const initialEstadoId = estadoSelect.value;
+    if (initialEstadoId) {
+        const initialCidadeId = cidadeSelect.value;
+        fetchCidadesPorEstado(initialEstadoId).then(cidades => {
+            populateCidadeSelect(cidadeSelect, cidades, initialCidadeId);
+        });
+    }
 }
 
 let disciplinaOptions = [];
@@ -313,30 +377,38 @@ function setupSubmitButton() {
 }
 
 function goToStep(step) {
-    document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
-    document.getElementById('step-' + step).classList.remove('hidden');
+    showLoading();
+    setTimeout(() => {
+        document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
+        document.getElementById('step-' + step).classList.remove('hidden');
 
-    const currentStepInput = document.getElementById('current-step-input');
-    if (currentStepInput) {
-        currentStepInput.value = step;
-    }
-    
-    document.querySelectorAll('.step-item').forEach(item => {
-        item.classList.remove('active');
-        if (parseInt(item.dataset.step) === step) {
-            item.classList.add('active');
+        const currentStepInput = document.getElementById('current-step-input');
+        if (currentStepInput) {
+            currentStepInput.value = step;
         }
-    });
+        
+        document.querySelectorAll('.step-item').forEach(item => {
+            item.classList.remove('active');
+            if (parseInt(item.dataset.step) === step) {
+                item.classList.add('active');
+            }
+        });
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    if (step === 2) {
-        const cepInputUser = document.querySelector('input[name="cep"]');
-        if (cepInputUser) setupCepAutocomplete(cepInputUser);
-    } else if (step === 3) {
-        const cepInputEscola = document.querySelector('input[name="endereco_escola-cep"]');
-        if (cepInputEscola) setupCepAutocomplete(cepInputEscola, 'endereco_escola-');
-    }
+        if (step === 2) {
+            setupCidadeAutocomplete();
+            const cepInputUser = document.querySelector('input[name="cep"]');
+            if (cepInputUser) setupCepAutocomplete(cepInputUser);
+        } else if (step === 3) {
+            setupCidadeAutocomplete('endereco_escola-');
+            const cepInputEscola = document.querySelector('input[name="endereco_escola-cep"]');
+            if (cepInputEscola) setupCepAutocomplete(cepInputEscola, 'endereco_escola-');
+        }
+        
+        hideLoading();
+    },100);
+    
 }
 
 function validateAndAdvance(event) {
@@ -412,11 +484,19 @@ function validateAndAdvance(event) {
 
     if (!isStepValid) {
         event.preventDefault();
+        hideLoading();
         const firstInvalidField = document.querySelector(`#step-${currentStep} .error-message:not(:empty)`);
         if (firstInvalidField) {
             firstInvalidField.previousElementSibling?.focus();
         }
     }
+}
+
+function showLoading() {
+    document.getElementById('loading-overlay')?.classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loading-overlay')?.classList.add('hidden');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -440,6 +520,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 goToStep(step);
             });
         }
+    });
+
+    document.querySelectorAll('button[type="submit"][name="submit_step"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            showLoading();
+        });
     });
 
     document.getElementById('perfil-form').addEventListener('submit', validateAndAdvance);

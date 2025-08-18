@@ -24,7 +24,7 @@ urlpatterns = [
     path('estados/<str:filtro>/cidades/', CidadesByEstadoView.as_view(), name='cidades-por-estado'),
 
     # CIDADE
-    path('cidades/', CidadeListCreateView.as_view(), name='cidade-list-create'),
+    path('cidades/', CidadesByEstadoView.as_view(), name='cidade-list-create'),
     path('cidades/<int:pk>/', CidadeRetrieveUpdateDestroyView.as_view(), name='cidade-detail'),
     path('cidades/criar_varios/', CidadeBulkCreateView.as_view(), name='cidades-bulk-create'),
 

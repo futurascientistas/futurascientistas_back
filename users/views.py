@@ -17,6 +17,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import HttpResponse
 from django.views.generic.edit import FormView
 from django.db import transaction
+from core.models import Cidade, Estado
 from users.models.address_model import Endereco
 from users.models.school_model import Escola
 from users.models.school_transcript_model import HistoricoEscolar
@@ -431,81 +432,6 @@ def dashboard(request):
     }
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
-# @login_required
-# def perfil_view(request):
-#     user = request.user
-    
-#     endereco_instance, created = Endereco.objects.get_or_create(user=user)
-#     escola_instance, created = Escola.objects.get_or_create(user=user)
-#     historico, created = HistoricoEscolar.objects.get_or_create(usuario=user)
-
-#     endereco_escola_instance = escola_instance.endereco if escola_instance.endereco else Endereco()
-    
-#     user_form = UserUpdateForm(request.POST or None, request.FILES or None, instance=user)
-#     endereco_form = EnderecoForm(request.POST or None, request.FILES or None, instance=endereco_instance)
-#     escola_form = EscolaForm(request.POST or None, request.FILES or None, instance=escola_instance)
-#     escola_endereco_form = EnderecoForm(request.POST or None, request.FILES or None, instance=endereco_escola_instance, prefix='endereco_escola')
-#     formset = HistoricoNotaFormSet(request.POST or None, request.FILES or None, instance=historico)
-
-#     if request.method == 'POST':
-#         if user_form.is_valid() and endereco_form.is_valid() and escola_form.is_valid() and formset.is_valid():
-            
-#             endereco_escola_obj = escola_endereco_form.save()
-#             escola_obj = escola_form.save(commit=False)
-#             escola_obj.endereco = endereco_escola_obj
-#             escola_obj.save()
-
-#             user_form.save()
-#             endereco_form.save()
-#             escola_form.save()
-#             formset.save()
-            
-#             messages.success(request, 'Seu perfil foi atualizado com sucesso!')
-#             return redirect('dashboard')
-#         else:
-#             messages.error(request, 'Ocorreu um erro na validação do formulário. Verifique os campos.')
-
-#     if user.funcao == 'professora':
-#         steps = [
-#             {'number': 1, 'name': 'Identificação'},
-#             {'number': 2, 'name': 'Endereço'},
-#             {'number': 3, 'name': 'Escola'},
-#             {'number': 4, 'name': 'Documentos'},
-#             {'number': 6, 'name': 'Declaração'}
-#         ]
-#     else: 
-#         steps = [
-#             {'number': 1, 'name': 'Identificação'},
-#             {'number': 2, 'name': 'Endereço'},
-#             {'number': 3, 'name': 'Escola'},
-#             {'number': 4, 'name': 'Documentos'},
-#             {'number': 5, 'name': 'Histórico'},
-#             {'number': 6, 'name': 'Declaração'}
-#         ]
-
-#     if user.funcao == 'professora':
-#         campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
-#         for campo in campos_estudante:
-#             if campo in user_form.fields:
-#                 del user_form.fields[campo]
-
-#     context = {
-#         'user_form': user_form,
-#         'endereco_form': endereco_form,
-#         'escola_form': escola_form,
-#         'escola_endereco_form': escola_endereco_form,
-#         'formset': formset, 
-#         'user': user,
-#         'steps': steps,
-#     }
-
-#     # print("endereço da escola:")
-#     # print(escola_endereco_form.as_p())
-#     # print("-" * 20)
-
-#     return render(request, 'components/users/perfil.html', context)
-
-
 @login_required
 def perfil_view(request):
     user = request.user
@@ -530,7 +456,9 @@ def perfil_view(request):
                 if current_step == 1:
                     form = UserUpdateForm(request.POST, request.FILES, instance=user)
                     if form.is_valid():
-                        form.save()
+                        user_obj = form.save(commit=False)
+                        user_obj.save()
+                        form.save_m2m() 
                         messages.success(request, 'Identificação atualizada com sucesso! 🚀')
                         is_valid = True
                     else:
@@ -598,8 +526,6 @@ def perfil_view(request):
                         messages.success(request, 'Perfil finalizado e salvo com sucesso! 🎉')
                         is_valid = True
                     else:
-                        print(form.errors)
-                        print(request)
                         messages.error(request, 'Erro na validação da Declaração. Por favor, tente novamente.')
                 
                 # Redirecionamento para o próximo passo se o formulário for válido

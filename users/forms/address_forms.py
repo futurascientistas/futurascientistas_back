@@ -37,3 +37,26 @@ class EnderecoForm(forms.ModelForm):
         label="Número",
         widget=forms.TextInput(attrs={'placeholder': 'Ex: 123'})
     )
+
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+
+    #     estado_valor = None
+    #     if 'estado' in self.data:
+    #         try:
+    #             estado_valor = int(self.data.get('estado'))
+    #         except (ValueError, TypeError):
+    #             pass
+    #     elif self.instance.pk and self.instance.estado:
+    #         estado_valor = self.instance.estado.id
+
+    #     if estado_valor:
+    #         self.fields['cidade'].queryset = Cidade.objects.filter(estado_id=estado_valor).order_by('nome')
+    #     else:
+    #         self.fields['cidade'].queryset = Cidade.objects.none()
+        
+    #     if 'cidade' in self.data:
+    #         try:
+    #             self.fields['cidade'].initial = int(self.data.get('cidade'))
+    #         except (ValueError, TypeError):
+    #             pass

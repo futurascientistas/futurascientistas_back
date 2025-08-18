@@ -18,7 +18,7 @@ class Estado(models.Model):
     regiao = models.ForeignKey(Regiao, on_delete=models.CASCADE, related_name='estados')
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} - {self.uf}"
 
 
 class Cidade(models.Model):
