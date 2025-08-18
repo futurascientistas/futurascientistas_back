@@ -69,72 +69,65 @@ def importar_planilha_projetos(importacao_obj, request):
     campos_validos = [f.name for f in Project._meta.get_fields()]
     campos_datetime = ['data_inicio', 'data_fim', 'inicio_inscricoes', 'fim_inscricoes']
 
-    projetos = []
-    regioes_aceitas_list = []
-    estados_aceitos_list = []
-    cidades_aceitas_list = []
     ignoradas = []
     total_linhas = len(df)
+    projetos_criados = 0
 
-    for index, row in df.iterrows():
-        try:
-            dados = parse_linha_para_dados(row, campos_validos, campos_datetime)
-            regioes = dados.pop('regioes_aceitas', [])
-            estados = dados.pop('estados_aceitos', [])
-            cidades = dados.pop('cidades_aceitas', [])
+    todas_regioes = Regiao.objects.all()
+    todos_estados = Estado.objects.all()
+    todas_cidades = Cidade.objects.select_related('estado__regiao').all()
 
-            projeto = Project(**dados)
-            projeto.full_clean()
-
-            projetos.append(projeto)
-            regioes_aceitas_list.append(regioes)
-            estados_aceitos_list.append(estados)
-            cidades_aceitas_list.append(cidades)
-
-        except Exception as e:
-            ignoradas.append(
-                f"Linha {index + 2} - não processada\n"
-                f"    Conteúdo: {dados}\n"
-                f"    Motivo: {str(e)}\n"
-            )
+    def filtrar_objs(model_objs, nomes, campos_lookup):
+        if not nomes:
+            return model_objs.none()
+        queries = Q()
+        for val in nomes:
+            q = Q()
+            for campo in campos_lookup:
+                q |= Q(**{f"{campo}__iexact": val})
+            queries |= q
+        return model_objs.filter(queries).distinct()
 
     with transaction.atomic():
-        Project.objects.bulk_create(projetos)
-        projetos_criados = Project.objects.order_by('-id')[:len(projetos)][::-1]
+        for index, row in df.iterrows():
+            try:
+                dados = parse_linha_para_dados(row, campos_validos, campos_datetime)
+                regioes = dados.pop('regioes_aceitas', [])
+                estados = dados.pop('estados_aceitos', [])
+                cidades = dados.pop('cidades_aceitas', [])
 
-        todas_regioes = Regiao.objects.all()
-        todos_estados = Estado.objects.all()
-        todas_cidades = Cidade.objects.select_related('estado__regiao').all()
+                # Cria o projeto já validado
+                projeto = Project.objects.create(**dados)
 
-        def filtrar_objs(model_objs, nomes, campos_lookup):
-            if not nomes:
-                return model_objs.none()
-            queries = Q()
-            for val in nomes:
-                q = Q()
-                for campo in campos_lookup:
-                    q |= Q(**{f"{campo}__iexact": val})
-                queries |= q
-            return model_objs.filter(queries).distinct()
+                # Ajusta ManyToMany
+                regioes_objs = filtrar_objs(todas_regioes, regioes, ['nome', 'abreviacao'])
+                estados_objs = filtrar_objs(todos_estados, estados, ['nome', 'uf'])
+                cidades_objs = filtrar_objs(todas_cidades, cidades, ['nome', 'estado__regiao__nome', 'estado__regiao__abreviacao'])
 
-        for proj, reg_names, est_names, cid_names in zip(projetos_criados, regioes_aceitas_list, estados_aceitos_list, cidades_aceitas_list):
-            regioes_objs = filtrar_objs(todas_regioes, reg_names, ['nome', 'abreviacao'])
-            estados_objs = filtrar_objs(todos_estados, est_names, ['nome', 'uf'])
-            cidades_objs = filtrar_objs(todas_cidades, cid_names, ['nome', 'estado__regiao__nome', 'estado__regiao__abreviacao'])
+                projeto.regioes_aceitas.set(regioes_objs)
+                projeto.estados_aceitos.set(estados_objs)
+                projeto.cidades_aceitas.set(cidades_objs)
 
-            proj.regioes_aceitas.set(regioes_objs)
-            proj.estados_aceitos.set(estados_objs)
-            proj.cidades_aceitas.set(cidades_objs)
+                # Log de status
+                registrar_log_status(
+                    projeto=projeto,
+                    status_anterior=None,
+                    status_novo=projeto.status,
+                    usuario=request.user
+                )
 
-            registrar_log_status(
-                projeto=proj,
-                status_anterior=None,  
-                status_novo=proj.status,
-                usuario=request.user
-            )
+                projetos_criados += 1
 
+            except Exception as e:
+                ignoradas.append(
+                    f"Linha {index + 2} - não processada\n"
+                    f"    Conteúdo: {locals().get('dados', {})}\n"
+                    f"    Motivo: {str(e)}\n"
+                )
+
+        # Atualiza resumo da importação
         importacao_obj.linhas_lidas = total_linhas
-        importacao_obj.projetos_criados = len(projetos)
+        importacao_obj.projetos_criados = projetos_criados
         importacao_obj.projetos_ignorados = len(ignoradas)
         importacao_obj.linhas_ignoradas_texto = "\n".join(ignoradas)
         importacao_obj.save()

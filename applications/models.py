@@ -30,6 +30,12 @@ class Application(models.Model):
         ('deferida', 'Deferida'),
         ('indeferida', 'Indeferida'),
     ]
+    JALECO_CHOICES = [
+        ('P', 'P'),
+        ('M', 'M'),
+        ('G', 'G'),
+        ('GG', 'GG'),
+    ]
 
     aprovado = models.BooleanField(
         default=False,
@@ -72,6 +78,13 @@ class Application(models.Model):
         null=True,
         blank=True,
         verbose_name="Tipo de Vaga"
+    )
+    tamanho_jaleco = models.CharField(
+        'Tamanho do jaleco',
+        max_length=2,
+        choices=JALECO_CHOICES,
+        null=True,
+        blank=True
     )
 
     # Documentação

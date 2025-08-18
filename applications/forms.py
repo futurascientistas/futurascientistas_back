@@ -38,6 +38,15 @@ class ApplicationAlunoForm(forms.ModelForm):
         widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Ex: Material impresso em braile, Material impresso ampliado'}),
         required=False
     )
+    
+    tamanho_jaleco = forms.ChoiceField(
+        choices=[('', 'Selecione um tamanho')] + list(Application.JALECO_CHOICES),
+        label="Selecione um tamanho para o jaleco",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
 
     for field_name in BINARY_FILE_FIELDS:
 
@@ -59,6 +68,7 @@ class ApplicationAlunoForm(forms.ModelForm):
         fields = [
             'projeto',
             'tipo_de_vaga',
+            'tamanho_jaleco',
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
@@ -184,6 +194,15 @@ class ApplicationProfessorForm(forms.ModelForm):
     #         'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
     #     })
     # )
+    
+    tamanho_jaleco = forms.ChoiceField(
+        choices=[('', 'Selecione um tamanho')] + list(Application.JALECO_CHOICES),
+        label="Selecione um tamanho para o jaleco",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
+        })
+    )
 
     tipo_deficiencia = forms.ModelChoiceField(
         queryset=Deficiencia.objects.all(),  
@@ -223,6 +242,7 @@ class ApplicationProfessorForm(forms.ModelForm):
             'projeto',
             'como_soube_programa',
             'curriculo_lattes_url',
+            'tamanho_jaleco',
             'area_atuacao',
             'tipo_de_vaga',
             'tipo_deficiencia',
