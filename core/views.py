@@ -8,7 +8,7 @@ from .permissions import IsAdminOrReadOnly
 from django.db import models
 from django.shortcuts import render
 from .models import Regiao, Estado, Cidade, Instituicao
-from .serializers import RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
+from .serializers import CidadeDisplaySerializer, RegiaoSerializer, EstadoSerializer, CidadeSerializer, InstituicaoSerializer
 from users.serializers import DisciplinaSerializer, GeneroSerializer, RacaSerializer, DeficienciaSerializer, TipoDeVagaSerializer, TipoEnsinoSerializer
 from users.models import Genero, Raca, Deficiencia, TipoDeVaga, TipoEnsino
 from django.views.generic import TemplateView
@@ -67,20 +67,42 @@ class CidadeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
+# class CidadesByEstadoView(generics.ListAPIView):
+#     serializer_class = CidadeDisplaySerializer
+
+#     def get_queryset(self):
+#         filtro = self.kwargs['filtro']
+#         print(f"Filtro: {filtro}")
+#         try:
+#             if filtro.isdigit():
+#                 print(f"Estado ID recebido: {filtro}")
+#                 estado = Estado.objects.get(pk=int(filtro))
+#             else:
+#                 print(f"Filtro recebido: {filtro}")
+#                 estado = Estado.objects.get(
+#                     models.Q(uf__iexact=filtro) | models.Q(nome__iexact=filtro)
+#                 )
+#         except Estado.DoesNotExist:
+#             print(f"Erro {filtro}")
+#             raise NotFound("Estado não encontrado.")
+
+#         return Cidade.objects.filter(estado=estado).order_by("nome")
+
 class CidadesByEstadoView(generics.ListAPIView):
-    serializer_class = CidadeSerializer
+    serializer_class = CidadeDisplaySerializer
 
     def get_queryset(self):
-        filtro = self.kwargs['filtro']
+        estado_id = self.request.GET.get('estado')
+        
+        if not estado_id:
+            return Cidade.objects.none()
+            
         try:
-            query = models.Q(uf__iexact=filtro) | models.Q(nome__iexact=filtro)
-            if filtro.isdigit():
-                query |= models.Q(pk=int(filtro))
-            estado = Estado.objects.get(query)
+            estado = Estado.objects.get(pk=estado_id)
         except Estado.DoesNotExist:
             raise NotFound("Estado não encontrado.")
-        return Cidade.objects.filter(estado=estado)
-
+        
+        return Cidade.objects.filter(estado=estado).order_by("nome")
 
 class CidadeBulkCreateView(APIView):
     def post(self, request):
