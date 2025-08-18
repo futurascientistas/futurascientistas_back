@@ -431,8 +431,8 @@ class ApplicationProfessorForm(forms.ModelForm):
         hoje = timezone.now().date()
         projetos = Project.objects.filter(
             ativo=True,
-            #inicio_inscricoes__lte=hoje,
-            #fim_inscricoes__gte=hoje,
+            inicio_inscricoes__lte=hoje,
+            fim_inscricoes__gte=hoje,
         )
 
         if user:

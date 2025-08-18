@@ -59,7 +59,6 @@ def inscricao_professora(request):
                 messages.error(request, str(e))
                 return render(request, 'components/applications/professor_application_form.html', {'form': form})
 
-            print('aq')
 
             acao = request.POST.get('acao')
             if acao == 'enviar':
@@ -144,8 +143,6 @@ def inscricao_aluna(request):
         form = ApplicationAlunoForm(request.POST, request.FILES, user=request.user)
         
        
-        print(form.errors)
-        print('oi')
         if form.is_valid():
             
             instancia = form.save(commit=False)
@@ -154,9 +151,9 @@ def inscricao_aluna(request):
             agora = timezone.now().date()
 
             # Validação do período de inscrição
-            # if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
-            #     messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
-            #     return render(request, 'components/applications/student_application_form.html', {'form': form})
+            if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+                messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
+                return render(request, 'components/applications/student_application_form.html', {'form': form})
 
             # Verifica se já existe inscrição para o projeto atual
             if Application.objects.filter(usuario=request.user, projeto=projeto).exists():

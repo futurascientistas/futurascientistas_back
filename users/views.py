@@ -594,7 +594,6 @@ def perfil_view(request):
                         messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo:')
                         for error_msg in error_messages:
                             messages.error(request, error_msg)  # Mostra cada erro individualmente
-                            print(error_msg)
                 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
@@ -612,8 +611,7 @@ def perfil_view(request):
                         messages.success(request, 'Perfil finalizado e salvo com sucesso! 🎉')
                         is_valid = True
                     else:
-                        print(form.errors)
-                        print(request)
+
                         messages.error(request, 'Erro na validação da Declaração. Por favor, tente novamente.')
                 
                 # Redirecionamento para o próximo passo se o formulário for válido
