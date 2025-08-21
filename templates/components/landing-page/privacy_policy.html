@@ -1,0 +1,110 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidade - Futuras Cientistas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
+</head>
+<body class="raleway bg-gray-50 text-gray-800 pt-16 min-h-screen">
+
+  {% include 'components/landing-page/header.html' %}
+
+  <section id="privacy-page" class="bg-custom-pink container mx-auto px-6 max-w-screen-lg flex flex-col items-center justify-center text-left py-16 md:py-24 space-y-10 rounded-lg shadow-lg">
+    
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center">Política de Privacidade – Programa Futuras Cientistas</h2>
+    <p class="text-gray-700 text-center">Última atualização: <strong>18/08/2025</strong></p>
+
+    <div class="text-gray-900 space-y-6 leading-relaxed">
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">1. Compromisso com a Privacidade</h3>
+        <p>O Programa Futuras Cientistas está comprometido em proteger a privacidade das pessoas inscritas em suas ações. Esta Política de Privacidade explica como coletamos, utilizamos, compartilhamos, armazenamos e protegemos os dados pessoais informados em nosso site 
+          <a href="https://www.futurascientistas.com.br" target="_blank" class="text-blue-600 underline">www.futurascientistas.com.br</a>, em conformidade com a LGPD (Lei nº 13.709/2018).</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">2. Consentimento</h3>
+        <p>Ao realizar sua inscrição, você declara seu consentimento expresso para que o Futuras Cientistas colete, trate e armazene os dados pessoais e, quando aplicável, dados pessoais sensíveis, necessários para análise, seleção e execução das atividades do programa.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">3. Dados Coletados</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Identificação pessoal: nome completo, data de nascimento, nomes dos responsáveis;</li>
+          <li>Documentos: RG, CPF, cópias em casos específicos;</li>
+          <li>Contato: endereço, telefone, WhatsApp e e-mail;</li>
+          <li>Formação e escolaridade;</li>
+          <li>Dados sensíveis: autodeclaração de raça/cor, identidade de gênero, PCD;</li>
+          <li>Dados bancários (quando necessário);</li>
+          <li>Outros documentos exigidos em editais.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">4. Finalidade do Tratamento</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Realizar inscrição e análise de participação;</li>
+          <li>Garantir execução de atividades previstas;</li>
+          <li>Cumprir obrigações legais;</li>
+          <li>Enviar comunicações do programa (resultados, convocações, etc.).</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">5. Compartilhamento de Dados</h3>
+        <p>Os dados podem ser compartilhados apenas quando necessário para:</p>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Cumprimento de obrigações legais;</li>
+          <li>Órgãos públicos ou parceiros institucionais;</li>
+          <li>Operadores de serviços de tecnologia sob contrato.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">6. Retenção e Armazenamento</h3>
+        <p>Os dados pessoais serão mantidos apenas pelo período necessário às finalidades do programa ou conforme exigências legais, podendo ser eliminados ou anonimizados posteriormente.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">7. Segurança da Informação</h3>
+        <p>Adotamos medidas técnicas e administrativas adequadas para proteger os dados pessoais contra acessos não autorizados, perda, alteração ou divulgação indevida.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">8. Direitos dos Titulares</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Confirmação da existência de tratamento de dados;</li>
+          <li>Acesso aos dados pessoais tratados;</li>
+          <li>Correção de dados incompletos ou desatualizados;</li>
+          <li>Eliminação ou anonimização de dados desnecessários;</li>
+          <li>Informação sobre compartilhamento;</li>
+          <li>Revogação do consentimento.</li>
+        </ul>
+        <p class="mt-2">Solicitações: <a href="mailto:futurascientistas@cetene.gov.br" class="text-blue-600 underline">futurascientistas@cetene.gov.br</a></p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">9. Alterações desta Política</h3>
+        <p>Esta Política poderá ser atualizada periodicamente. A versão vigente estará sempre disponível no site oficial, com a data da última atualização.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">10. Contato</h3>
+        <p>Para dúvidas ou solicitações sobre privacidade e proteção de dados, entre em contato pelo e-mail: 
+          <a href="mailto:futurascientistas@cetene.gov.br" class="text-blue-600 underline">futurascientistas@cetene.gov.br</a>
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  {% include 'components/landing-page/footer.html' %}
+
+</body>
+</html>

@@ -20,6 +20,11 @@ urlpatterns = [
     path('404/', NaoEcontrada.as_view(), name='nao-encontrado'),
     path('contatos/', ContatosView.as_view(), name='contatos'),
     path('cronograma/', CronogramaView.as_view(), name='cronograma'),
+    path('termos/', TermoView.as_view(), name='termos-de-uso'),
+    path('politica-de-privacidade/', PoliticaPrivacidadeView.as_view(), name='politica-de-privacidade'),
+    path('requisitos-para-participacao/', RequisitosParticipacaoView.as_view(), name='requisitos-para-participacao'),
+
+
 
     # Rotas de recuperação de senha
     path(

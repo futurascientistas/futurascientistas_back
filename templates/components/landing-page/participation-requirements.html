@@ -1,0 +1,52 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Requisitos de Participação - Futuras Cientistas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
+</head>
+<body class="raleway bg-gray-50 text-gray-800 pt-16 min-h-screen">
+
+  {% include 'components/landing-page/header.html' %}
+
+  <section id="requirements-page" class="bg-custom-pink container mx-auto px-6 max-w-screen-lg flex flex-col items-center justify-center text-left py-16 md:py-24 space-y-10 rounded-lg shadow-lg">
+    
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center">Requisitos para Participar - Imersão Científica 2026</h2>
+
+    <div class="text-gray-900 space-y-8 leading-relaxed mt-6">
+
+      <div>
+        <h3 class="text-2xl font-semibold mb-4">Alunas</h3>
+        <ul class="list-disc list-inside space-y-2">
+          <li>Estar matriculada regularmente no 2º ano do ensino médio da rede pública estadual de ensino;</li>
+          <li>Estar disponível para participar de todas as atividades da imersão durante todo o mês de janeiro;</li>
+          <li>Possuir currículo Lattes (<a href="https://lattes.cnpq.br/" target="_blank" class="text-blue-600 underline">https://lattes.cnpq.br/</a>) com o preenchimento completo das informações escolares;</li>
+          <li>Realizar cadastro e inscrição pela plataforma Futuras Cientistas (<a href="https://www.futurascientistas.com.br/" target="_blank" class="text-blue-600 underline">www.futurascientistas.com.br</a>).</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-2xl font-semibold mb-4">Professoras</h3>
+        <ul class="list-disc list-inside space-y-2">
+          <li>Ser professora da rede pública estadual de ensino nas áreas de ciências da natureza, ciências exatas ou ciências humanas;</li>
+          <li>Estar em efetivo exercício em escola pública estadual no ato da inscrição;</li>
+          <li>Estar disponível para participar de todas as atividades da imersão durante todo o mês de janeiro;</li>
+          <li>Possuir currículo Lattes (<a href="https://lattes.cnpq.br/" target="_blank" class="text-blue-600 underline">https://lattes.cnpq.br/</a>) com o preenchimento completo das informações escolares;</li>
+          <li>Realizar cadastro e inscrição pela plataforma Futuras Cientistas (<a href="https://www.futurascientistas.com.br/" target="_blank" class="text-blue-600 underline">www.futurascientistas.com.br</a>).</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </section>
+
+  {% include 'components/landing-page/footer.html' %}
+
+</body>
+</html>

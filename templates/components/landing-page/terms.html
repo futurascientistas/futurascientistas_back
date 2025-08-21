@@ -1,0 +1,101 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termos de Uso - Futuras Cientistas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{% static 'css/landing-page/header.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/footer.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing-page/landingpage.css' %}">
+</head>
+<body class="raleway bg-gray-50 text-gray-800 pt-16 min-h-screen">
+
+  {% include 'components/landing-page/header.html' %}
+
+  <section id="terms-page" class="bg-custom-pink container mx-auto px-6 max-w-screen-lg flex flex-col items-center justify-center text-left py-16 md:py-24 space-y-10 rounded-lg shadow-lg">
+    
+    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 text-center">Termos de Uso – Programa Futuras Cientistas</h2>
+    <p class="text-gray-700 text-center">Última atualização: <strong>18/08/2025</strong></p>
+
+    <div class="text-gray-900 space-y-6 leading-relaxed">
+      <div>
+        <h3 class="text-xl font-semibold mb-2">1. Aceitação dos Termos</h3>
+        <p>Ao participar do Programa Futuras Cientistas ou utilizar seu site oficial 
+          (<a href="https://www.futurascientistas.com.br" target="_blank" class="text-blue-600 underline">www.futurascientistas.com.br</a>), 
+          você indica que leu e concorda com estes Termos de Uso. Caso tenha dúvidas ou não concorde com algum ponto, recomendamos entrar em contato conosco antes de utilizar o site ou participar do programa.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">2. Objeto</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>A utilização do site do programa;</li>
+          <li>O cadastro e fornecimento de dados pessoais;</li>
+          <li>A participação em processos seletivos, atividades, workshops ou eventos promovidos pelo programa;</li>
+          <li>O acesso e uso das informações disponibilizadas pelo programa.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">3. Cadastro e Consentimento</h3>
+        <p>Para participar do programa, é necessário fornecer dados pessoais e, quando aplicável, dados sensíveis, conforme nossa Política de Privacidade. Ao se cadastrar, você declara seu consentimento expresso para que seus dados sejam coletados, tratados e armazenados pelo programa, sendo obrigatório o aceite para prosseguir.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">4. Conduta do Usuário</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Fornecer informações verdadeiras, completas e atualizadas;</li>
+          <li>Não utilizar o site ou o programa para fins ilícitos, prejudiciais ou que violem direitos de terceiros;</li>
+          <li>Respeitar normas de conduta durante eventos, cursos ou atividades promovidas pelo programa.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">5. Propriedade Intelectual</h3>
+        <p>Todo o conteúdo do programa – incluindo textos, imagens, logos, materiais educativos e marcas – é protegido por direitos autorais e pertence ao Programa Futuras Cientistas ou a seus parceiros. É proibida a reprodução, distribuição ou utilização não autorizada.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">6. Responsabilidades</h3>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Interrupções temporárias ou falhas técnicas;</li>
+          <li>Perda ou divulgação involuntária de dados decorrente de fatores externos;</li>
+          <li>Resultados de processos seletivos, que seguem critérios definidos nos regulamentos e editais.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">7. Compartilhamento de Dados</h3>
+        <p>Os dados fornecidos serão tratados de acordo com a Política de Privacidade, podendo ser compartilhados somente quando necessário para:</p>
+        <ul class="list-disc list-inside space-y-1">
+          <li>Cumprimento de obrigações legais ou regulatórias;</li>
+          <li>Serviços de tecnologia ou gestão de dados contratados pelo programa;</li>
+          <li>Parceiros institucionais vinculados às atividades do programa.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">8. Alterações nos Termos</h3>
+        <p>O Programa Futuras Cientistas poderá atualizar estes Termos a qualquer momento. A versão mais recente estará disponível no site com a data de revisão, entrando em vigor imediatamente.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">9. Vigência e Rescisão</h3>
+        <p>Estes Termos permanecem válidos enquanto o programa estiver ativo. O programa pode suspender ou encerrar a participação do usuário em caso de violação destes Termos.</p>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-semibold mb-2">10. Legislação e Foro</h3>
+        <p>Estes Termos são regidos pela legislação brasileira. Qualquer disputa será resolvida no foro da comarca de Recife/PE, com renúncia a qualquer outro foro.</p>
+      </div>
+    </div>
+
+  </section>
+
+  {% include 'components/landing-page/footer.html' %}
+
+</body>
+</html>

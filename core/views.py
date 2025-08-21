@@ -182,3 +182,12 @@ class ContatosView(TemplateView):
 
 class CronogramaView(TemplateView):
     template_name = "components/agenda/calendar.html"
+
+class TermoView(TemplateView):
+    template_name = "components/landing-page/terms.html"
+
+class PoliticaPrivacidadeView(TemplateView):
+    template_name = "components/landing-page/privacy_policy.html"
+
+class RequisitosParticipacaoView(TemplateView):
+    template_name = "components/landing-page/participation-requirements.html"
