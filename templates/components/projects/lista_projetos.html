@@ -2,106 +2,124 @@
 {% load static %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/project/projectlist.css' %}">
+
 <div class="pageHeader">
-   <div>
-      <h1 class="pageTitle">Projetos Disponíveis</h1>
-      <form method="GET" class="pageSubtitle flex flex-wrap gap-4 items-center">
-         <input 
-            type="text" 
-            name="q" 
-            value="{{ request.GET.q }}" 
-            placeholder="Buscar por nome..." 
-            class="filterInput"
+    <div>
+        <h1 class="pageTitle">Projetos Disponíveis</h1>
+        <form method="GET" class="pageSubtitle flex flex-wrap gap-4 items-center">
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ filtros.q }}" 
+                placeholder="Buscar por nome..." 
+                class="filterInput"
             >
-         <select name="regiao" class="filterSelect">
-            <option value="">Todas as Regiões</option>
-            {% for regiao in regioes %}
-            <option value="{{ regiao.id }}" {% if request.GET.regiao == regiao.id|stringformat:"s" %}selected{% endif %}>{{ regiao.nome }}</option>
-            {% endfor %}
-         </select>
-         <select name="formato" class="filterSelect">
-            <option value="">Todos os Formatos</option>
-            <option value="remoto" {% if request.GET.formato == "remoto" %}selected{% endif %}>Remoto</option>
-            <option value="presencial" {% if request.GET.formato == "presencial" %}selected{% endif %}>Presencial</option>
-         </select>
-         <select name="ordenar" class="filterSelect">
-         <option value="nome" {% if request.GET.ordenar == "nome" %}selected{% endif %}>Ordenar por Nome</option>
-         <option value="data_inicio" {% if request.GET.ordenar == "data_inicio" %}selected{% endif %}>Ordenar por Data Início</option>
-         <option value="-data_inicio" {% if request.GET.ordenar == "-data_inicio" %}selected{% endif %}>Ordenar por Data Início (Desc)</option>
-         </select>
-         <button type="submit" class="filterButton">Filtrar</button>
-      </form>
-   </div>
+            <select name="regiao" class="filterSelect">
+                <option value="">Todas as Regiões</option>
+                {% for regiao in regioes %}
+                <option value="{{ regiao.id }}" {% if filtros.regiao == regiao.id|stringformat:"s" %}selected{% endif %}>{{ regiao.nome }}</option>
+                {% endfor %}
+            </select>
+            <select name="formato" class="filterSelect">
+                <option value="">Todos os Formatos</option>
+                <option value="remoto" {% if filtros.formato == "remoto" %}selected{% endif %}>Remoto</option>
+                <option value="presencial" {% if filtros.formato == "presencial" %}selected{% endif %}>Presencial</option>
+            </select>
+            <select name="ordenar" class="filterSelect">
+                <option value="nome" {% if filtros.ordenar == "nome" %}selected{% endif %}>Ordenar por Nome</option>
+                <option value="data_inicio" {% if filtros.ordenar == "data_inicio" %}selected{% endif %}>Ordenar por Data Início</option>
+                <option value="-data_inicio" {% if filtros.ordenar == "-data_inicio" %}selected{% endif %}>Ordenar por Data Início (Desc)</option>
+            </select>
+            <button type="submit" class="filterButton">Filtrar</button>
+        </form>
+    </div>
 </div>
+
 {% if projetos %}
 <div class="projectCardsContainer">
-   {% for projeto in projetos %}
-   <div class="projectCard" onclick="window.location.href='{% url 'detalhes_projeto' projeto.id %}'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='{% url 'detalhes_projeto' projeto.id %}'">
-      <div class="cardHeader">
-         <h2 class="projectName">{{ projeto.nome }}</h2>
+    {% for projeto in projetos %}
+    <div class="projectCard" onclick="window.location.href='{% url 'detalhes_projeto' projeto.id %}'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='{% url 'detalhes_projeto' projeto.id %}'">
+        <div class="cardHeader">
+            <h2 class="projectName">{{ projeto.nome }}</h2>
             <span class="projectInstitution">{{ projeto.instituicao|default_if_none:"" }}</span>
-      </div>
-      <div class="cardBody">
-         <p><strong>Tutora:</strong> {{ projeto.tutora.nome }}</p>
-         <p>
-            <strong>Formato:</strong>
-            <span class="modalityBadge {% if projeto.formato == 'Remoto' %}modalityRemote{% else %}modalityPresencial{% endif %}">
-            {{ projeto.get_formato_display }}
-            </span>
-         </p>
-         <p><strong>Regiões:</strong> 
-            {% for regiao in projeto.regioes_aceitas.all %}
-            {{ regiao.nome }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-            Nenhuma região definida
-            {% endfor %}
-         </p>
-         <p><strong>Estados:</strong> 
-            {% for estado in projeto.estados_aceitos.all %}
-            {{ estado.nome }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-            Nenhum estado definido
-            {% endfor %}
-         </p>
-         <p><strong>Cidades:</strong> 
-            {% for cidade in projeto.cidades_aceitas.all %}
-            {{ cidade.nome }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-            Nenhuma cidade definida
-            {% endfor %}
-         </p>
-         <p><strong>Vagas:</strong> {{ projeto.vagas }}</p>
-      </div>
-      <div class="cardFooter">
-         <a href="{% url 'detalhes_projeto' projeto.id %}" class="openButton" aria-label="Abrir detalhes do projeto {{ projeto.nome }}">🔍 Abrir</a>
-      </div>
-   </div>
-   {% endfor %}
+        </div>
+        <div class="cardBody">
+            <p><strong>Tutora:</strong> {{ projeto.tutora.nome }}</p>
+            <p>
+                <strong>Formato:</strong>
+                <span class="modalityBadge {% if projeto.formato == 'Remoto' %}modalityRemote{% else %}modalityPresencial{% endif %}">
+                    {{ projeto.get_formato_display }}
+                </span>
+            </p>
+            <p><strong>Regiões:</strong> 
+                {% for regiao in projeto.regioes_aceitas.all %}
+                    {{ regiao.nome }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Nenhuma região definida
+                {% endfor %}
+            </p>
+            <p><strong>Estados:</strong> 
+                {% for estado in projeto.estados_aceitos.all %}
+                    {{ estado.nome }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Nenhum estado definido
+                {% endfor %}
+            </p>
+            <p><strong>Cidades:</strong> 
+                {% for cidade in projeto.cidades_aceitas.all %}
+                    {{ cidade.nome }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Nenhuma cidade definida
+                {% endfor %}
+            </p>
+            <p><strong>Vagas:</strong> {{ projeto.vagas }}</p>
+        </div>
+        <div class="cardFooter">
+            <a href="{% url 'detalhes_projeto' projeto.id %}" class="openButton" aria-label="Abrir detalhes do projeto {{ projeto.nome }}">🔍 Abrir</a>
+        </div>
+    </div>
+    {% endfor %}
 </div>
+
 <!-- Paginação -->
 <div class="mt-8">
-   <nav class="flex justify-center">
-      <ul class="inline-flex items-center space-x-2">
-         {% if projetos.has_previous %}
-         <li><a href="?q={{ request.GET.q }}&page={{ projetos.previous_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-200">&laquo;</a></li>
-         {% endif %}
-         {% for num in projetos.paginator.page_range %}
-         {% if projetos.number == num %}
-         <li><span class="px-3 py-1 bg-blue-500 text-white rounded">{{ num }}</span></li>
-         {% elif num >= projetos.number|add:'-2' and num <= projetos.number|add:'2' %}
-         <li><a href="?q={{ request.GET.q }}&page={{ num }}" class="px-3 py-1 border rounded hover:bg-gray-200">{{ num }}</a></li>
-         {% endif %}
-         {% endfor %}
-         {% if projetos.has_next %}
-         <li><a href="?q={{ request.GET.q }}&page={{ projetos.next_page_number }}" class="px-3 py-1 border rounded hover:bg-gray-200">&raquo;</a></li>
-         {% endif %}
-      </ul>
-   </nav>
+    <nav class="flex justify-center">
+        <ul class="inline-flex items-center space-x-2">
+
+            {% if projetos.has_previous %}
+            <li>
+                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.previous_page_number }}" 
+                   class="px-3 py-1 border rounded hover:bg-gray-200">&laquo;</a>
+            </li>
+            {% endif %}
+
+            {% for num in projetos.paginator.page_range %}
+                {% if projetos.number == num %}
+                    <li><span class="px-3 py-1 bg-blue-500 text-white rounded">{{ num }}</span></li>
+                {% elif num >= projetos.number|add:'-2' and num <= projetos.number|add:'2' %}
+                    <li>
+                        <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ num }}" 
+                           class="px-3 py-1 border rounded hover:bg-gray-200">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if projetos.has_next %}
+            <li>
+                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.next_page_number }}" 
+                   class="px-3 py-1 border rounded hover:bg-gray-200">&raquo;</a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
 </div>
+
 {% else %}
 <div class="emptyState">
-   <h3>Nenhum projeto encontrado</h3>
-   <p>Tente ajustar os filtros ou remover algumas condições de busca.</p>
+    <h3>Nenhum projeto encontrado</h3>
+    <p>Tente ajustar os filtros ou remover algumas condições de busca.</p>
 </div>
 {% endif %}
+
 {% endblock %}

@@ -127,7 +127,6 @@ def detalhes_projeto(request, projeto_id):
     return render(request, 'components/projects/detalhes_projeto.html', {'projeto': projeto})
 
 
-from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.shortcuts import render
 from .models import Project, Regiao
