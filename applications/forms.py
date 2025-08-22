@@ -350,7 +350,6 @@ class ApplicationProfessorForm(forms.ModelForm):
 
             # --- Formação e perfil ---
             'grau_formacao',
-            'perfil_academico',
 
             # --- Experiência docente ---
             'docencia_superior',
