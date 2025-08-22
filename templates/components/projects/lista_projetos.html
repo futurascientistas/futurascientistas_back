@@ -20,6 +20,14 @@
                 <option value="{{ regiao.id }}" {% if filtros.regiao == regiao.id|stringformat:"s" %}selected{% endif %}>{{ regiao.nome }}</option>
                 {% endfor %}
             </select>
+            <select name="estado" class="filterSelect">
+                <option value="">Todos os Estados</option>
+                {% for estado in estados %}
+                    <option value="{{ estado.id }}" {% if filtros.estado == estado.id|stringformat:"s" %}selected{% endif %}>
+                        {{ estado.nome }}
+                    </option>
+                {% endfor %}
+            </select>
             <select name="formato" class="filterSelect">
                 <option value="">Todos os Formatos</option>
                 <option value="remoto" {% if filtros.formato == "remoto" %}selected{% endif %}>Remoto</option>
@@ -88,7 +96,7 @@
 
             {% if projetos.has_previous %}
             <li>
-                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.previous_page_number }}" 
+                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&estado={{ filtros.estado }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.previous_page_number }}" 
                    class="px-3 py-1 border rounded hover:bg-gray-200">&laquo;</a>
             </li>
             {% endif %}
@@ -98,7 +106,7 @@
                     <li><span class="px-3 py-1 bg-blue-500 text-white rounded">{{ num }}</span></li>
                 {% elif num >= projetos.number|add:'-2' and num <= projetos.number|add:'2' %}
                     <li>
-                        <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ num }}" 
+                        <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&estado={{ filtros.estado }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ num }}" 
                            class="px-3 py-1 border rounded hover:bg-gray-200">{{ num }}</a>
                     </li>
                 {% endif %}
@@ -106,7 +114,7 @@
 
             {% if projetos.has_next %}
             <li>
-                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.next_page_number }}" 
+                <a href="?q={{ filtros.q }}&regiao={{ filtros.regiao }}&estado={{ filtros.estado }}&formato={{ filtros.formato }}&ordenar={{ filtros.ordenar }}&page={{ projetos.next_page_number }}" 
                    class="px-3 py-1 border rounded hover:bg-gray-200">&raquo;</a>
             </li>
             {% endif %}

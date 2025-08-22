@@ -129,13 +129,14 @@ def detalhes_projeto(request, projeto_id):
 
 from django.shortcuts import render
 from django.shortcuts import render
-from .models import Project, Regiao
+from .models import Project, Regiao, Estado
 
 def lista_projetos(request):
     queryset = Project.objects.all()
 
     q = request.GET.get('q', '')
     regiao_id = request.GET.get('regiao', '')
+    estado_id = request.GET.get('estado', '')  
     formato = request.GET.get('formato', '')
     ordenar = request.GET.get('ordenar', 'nome')
 
@@ -145,10 +146,12 @@ def lista_projetos(request):
     if regiao_id:
         queryset = queryset.filter(regioes_aceitas__id=regiao_id)
 
+    if estado_id:
+        queryset = queryset.filter(estados_aceitos__id=estado_id) 
+
     if formato:
         queryset = queryset.filter(formato=formato)
 
-    # Ordem segura, pode validar os campos permitidos para ordenar
     allowed_order_fields = ['nome', 'data_inicio', 'data_fim', 'vagas']
     if ordenar not in allowed_order_fields:
         ordenar = 'nome'
@@ -161,14 +164,17 @@ def lista_projetos(request):
     page_number = request.GET.get('page')
     projetos_page = paginator.get_page(page_number)
 
-    regioes = Regiao.objects.all()  
+    regioes = Regiao.objects.all()
+    estados = Estado.objects.all()  
 
     return render(request, 'components/projects/lista_projetos.html', {
         'projetos': projetos_page,
         'regioes': regioes,
+        'estados': estados,  
         'filtros': {
             'q': q,
             'regiao': regiao_id,
+            'estado': estado_id, 
             'formato': formato,
             'ordenar': ordenar,
         }
