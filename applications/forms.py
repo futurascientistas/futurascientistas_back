@@ -312,11 +312,15 @@ class ApplicationProfessorForm(forms.ModelForm):
         'rg_frente': 'RG (frente)', 
         'rg_verso': 'RG (verso)',   
         'cpf_anexo': 'CPF',
+        
     }
 
     for field_name in BINARY_FILE_FIELDS:
 
-        display_label = CUSTOM_FIELD_LABELS.get(field_name, field_name.replace('_', ' ').capitalize())
+        field = Application._meta.get_field(field_name)
+    
+        # Pega o verbose_name do campo
+        display_label = field.verbose_name
 
         locals()[f"{field_name}__upload"] = forms.FileField(
             label=f"Enviar arquivo para {display_label}",
