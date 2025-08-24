@@ -142,7 +142,6 @@ def inscricao_aluna(request):
         
        
         if form.is_valid():
-            
             instancia = form.save(commit=False)
             projeto = form.cleaned_data.get('projeto')
 
