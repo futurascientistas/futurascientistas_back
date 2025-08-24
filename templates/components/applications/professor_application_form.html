@@ -32,6 +32,7 @@
         </button>
     </div>
     {% endif %}
+    {% if messages %}
     <div class="fixed top-5 right-5 space-y-4 z-50">
         {% for message in messages %}
         <div role="alert" data-autoclose="true"
@@ -52,6 +53,7 @@
         {% endfor %}
     </div>
     {% endif %}
+
 
     <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
         {% csrf_token %}
