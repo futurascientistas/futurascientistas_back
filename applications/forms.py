@@ -294,13 +294,13 @@ class ApplicationAlunoForm(forms.ModelForm):
 
 class ApplicationProfessorForm(forms.ModelForm):
 
-    BINARY_FILE_FIELDS = [
-        'rg_frente',
-        'declaracao_inclusao',
-        'rg_verso',
-        'cpf_anexo',
-        'declaracao_vinculo',
-        'documentacao_comprobatoria_lattes',
+    DRIVE_UPLOAD_FIELDS = [
+        'drive_rg_frente',
+        'drive_declaracao_inclusao',
+        'drive_rg_verso',
+        'drive_cpf_anexo',
+        'drive_declaracao_vinculo',
+        'drive_documentacao_comprobatoria_lattes',
     ]
 
     projeto = forms.ModelChoiceField(
@@ -379,23 +379,20 @@ class ApplicationProfessorForm(forms.ModelForm):
         
     }
 
-    for field_name in BINARY_FILE_FIELDS:
+    for field_name in DRIVE_UPLOAD_FIELDS:
 
-        field = Application._meta.get_field(field_name)
-    
-        # Pega o verbose_name do campo
-        display_label = field.verbose_name
-
+        verbose_name = Application._meta.get_field(field_name).verbose_name
+        
         locals()[f"{field_name}__upload"] = forms.FileField(
-            label=f"Enviar arquivo para {display_label}",
             required=True,
-            help_text="Deixe em branco para manter o arquivo atual."
+            label=f"Enviar {verbose_name}",
+            help_text="O arquivo será salvo apenas no Google Drive"
         )
         locals()[f"{field_name}__clear"] = forms.BooleanField(
-            label=f"Remover arquivo atual de {display_label}",
-            required=False
+            required=False,
+            label=f"Remover {verbose_name} atual do Drive"
         )
-    del field_name 
+
 
     class Meta:
         model = Application

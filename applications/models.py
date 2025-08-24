@@ -97,15 +97,40 @@ class Application(models.Model):
     declaracao_vinculo = models.BinaryField(null=True, blank=True, verbose_name="Declaração de vínculo")
     declaracao_inclusao = models.BinaryField(null=True, blank=True, verbose_name="Declaração de ciência do participante (PPI/PCD/Trans)")
     documentacao_comprobatoria_lattes = models.BinaryField(null=True, blank=True, verbose_name="Documentação Lattes")
-    
-    # Documentações para o drive
-    drive_boletim_escolar = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do boletim escolar no Drive")
-    drive_termo_autorizacao = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do termo de autorização no Drive")
-    drive_rg_frente = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (frente) no Drive")
-    drive_rg_verso = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do RG (verso) no Drive")
-    drive_cpf_anexo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID do CPF no Drive")
-    drive_declaracao_vinculo = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da declaração de vínculo no Drive")
-    drive_documentacao_comprobatoria_lattes = models.CharField(max_length=255, null=True, blank=True, verbose_name="ID da documentação Lattes no Drive")
+
+    # Documentações para o Drive
+    drive_boletim_escolar = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Boletim escolar"
+    )
+    drive_termo_autorizacao = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Termo de autorização"
+    )
+    drive_rg_frente = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="RG (frente)"
+    )
+    drive_rg_verso = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="RG (verso)"
+    )
+    drive_cpf_anexo = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="CPF"
+    )
+    drive_declaracao_inclusao = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Declaração de ciência do participante (PPI/PCD/Trans)"
+    )
+    drive_declaracao_vinculo = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Declaração de vínculo"
+    )
+    drive_documentacao_comprobatoria_lattes = models.CharField(
+        max_length=255, null=True, blank=True,
+        verbose_name="Documentação Lattes"
+)
 
     # Trajetória Acadêmica e Científica
     grau_formacao = models.CharField(max_length=20,choices=GrauFormacao.choices,verbose_name="Grau de formação mais alto",null=True,blank=True,help_text="Informe o grau de formação mais alto concluído")
