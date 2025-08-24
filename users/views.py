@@ -474,14 +474,15 @@ def perfil_view(request):
 
                 elif current_step == 2:
                     form = EnderecoForm(request.POST, instance=endereco_instance)
-                    if form.is_valid():
+
+                    if form.is_valid():                 
                         endereco_obj = form.save()
                         user.endereco = endereco_obj
                         user.save()
                         messages.success(request, 'Endereço atualizado com sucesso! 🏠')
                         is_valid = True
                     else:
-                        logger.error(f"Erro na validação do formulário de Identificação: {form.errors}")
+                        logger.error(f"Erro na validação do formulário de Endereço: {form.errors}")
                         messages.error(request, 'Erro na validação do formulário de Endereço. Por favor, corrija os erros abaixo.')
                 
                 elif current_step == 3:
@@ -508,14 +509,20 @@ def perfil_view(request):
                    
                 elif current_step == 4:
                     form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
+                    is_upload = request.POST.get("auto_upload") == "1"
                     if form.is_valid():
                         try:
                             user = form.save()
                             messages.success(request, 'Documentos atualizados com sucesso! 📄')
-                            is_valid = True
+                            if is_upload:
+                                return redirect(f'{request.path}?step={current_step}')
+                            else:
+                                is_valid = True
                         except Exception as e:
                             logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
                             messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
+                        else:
+                             return redirect(f'{request.path}?step={current_step}')
                     else:
                         # Adiciona esta parte para mostrar os erros específicos
                         error_messages = []
@@ -527,7 +534,8 @@ def perfil_view(request):
                         messages.error(request, 'Erro na validação do formulário de Documentos. Por favor, corrija os erros abaixo:')
                         for error_msg in error_messages:
                             messages.error(request, error_msg)  # Mostra cada erro individualmente
-                
+                    
+
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
                     if formset.is_valid():
@@ -556,6 +564,8 @@ def perfil_view(request):
                         return redirect(f'/usuarios/dashboard/perfil/?step={next_step}')
                     except (ValueError, IndexError):
                         return redirect(request.path)
+                else:
+                    return redirect(f'{request.path}?step={current_step}')
 
         except Exception as e:
             logger.error(f'Ocorreu um erro inesperado: {str(e)}')
@@ -589,7 +599,7 @@ def perfil_view(request):
             {'number': 2, 'name': 'Endereço'},
             {'number': 3, 'name': 'Escola'},
             {'number': 4, 'name': 'Documentos'},
-            {'number': 5, 'name': 'Histórico'},
+            {'number': 5, 'name': 'Boletim'},
             {'number': 6, 'name': 'Declaração'}
         ]
 

@@ -154,3 +154,25 @@ class DriveService:
         except Exception as e:
             logger.error(f"Erro ao fazer upload: {e}")
             raise
+    
+    def delete_file(self, file_id: str) -> bool:
+        try:
+            self.service.files().update(
+                fileId=file_id,
+                body={'trashed': True},
+                supportsAllDrives=True
+            ).execute()
+            logger.info(f"Arquivo {file_id} movido para lixeira com sucesso.")
+            return True
+        except HttpError as e:
+            logger.error(f"Erro ao mover arquivo {file_id} para lixeira: {e}")
+            return False
+        
+    # def delete_file_permanetly(self, file_id):
+    #     try:
+    #         self.service.files().delete(fileId=file_id).execute()
+    #         print(f"Arquivo {file_id} removido com sucesso do Drive.")
+    #         return True
+    #     except HttpError as e:
+    #         print(f"Erro ao remover arquivo {file_id}: {e}")
+    #         return False

@@ -1,16 +1,68 @@
-{% load widget_tweaks %}
+{% load widget_tweaks custom_filters %}
+
 <div>
-  <label for="{{ field.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-1">
-    {{ field.label }}
-  </label>
+    <label for="{{ field.id_for_label }}"
+           class="text-sm font-medium text-gray-700 block mb-1 {% if '__clear' in field.name or 'drive_' in field.name %}sr-only{% endif %}">
+      {{ field.label }}
+    </label>
 
-  {% if field.field.widget.input_type == "file" %}
-    {{ field|add_class:"block w-full border border-gray-300 px-3 py-2 bg-gray-50 text-sm rounded" }}
-  {% else %}
-    {{ field|add_class:"mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400" }}
-  {% endif %}
+    {% if field.field.drive_link %}
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+            <div>
+                <span class="font-semibold">✅ "{{ field.field.friendly_label|capfirst }}" salvo no Google Drive:</span>
+                <a href="{{ field.field.drive_link }}" target="_blank"
+                   class="text-green-700 underline font-bold hover:text-green-900 ml-1">
+                   Visualizar Arquivo
+                </a>
+            </div>
+            <div class="flex items-center space-x-2">
+                <label class="bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full p-2 cursor-pointer">
+                    <input type="file" name="{{ field.name }}" class="hidden file-upload-input">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0l-4 4m4-4l4 4"/>
+                    </svg>
+                </label>
 
-  {% if field.errors %}
-    <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
-  {% endif %}
+                {% if "__upload" in field.name %}
+                    {% with base_name=field.name|cut:"__upload" %}
+                        <button type="button"
+                                class="bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 js-clear-button"
+                                data-clear-target="{{ base_name }}__clear">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+
+        {% render_field field class="hidden" %}
+
+    {% elif field.field.widget.input_type == "file" %}
+        <div class="bg-purple-100 hover:bg-purple-200 text-purple-600 px-4 py-3 rounded relative flex items-center justify-between">
+            <div>
+                <span class="font-semibold">📁 {{ field.label }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <label class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full p-2 cursor-pointer">
+                    <input type="file" name="{{ field.name }}" class="hidden file-upload-input">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m0 0l-4 4m4-4l4 4"/>
+                    </svg>
+                </label>
+            </div>
+        </div>
+
+    {% else %}
+        {{ field|add_class:"mt-1 block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400" }}
+    {% endif %}
+
+    {% if field.help_text %}
+        <p class="text-xs text-gray-500 mt-1">{{ field.help_text|safe }}</p>
+    {% endif %}
+
+    {% if field.errors %}
+        <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+    {% endif %}
 </div>

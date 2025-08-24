@@ -28,7 +28,18 @@ class Cidade(models.Model):
     def __str__(self):
         return f"{self.nome} - {self.estado.uf}"
 
+class CidadesMaterializedView(models.Model):
+    nome = models.CharField(max_length=100)
+    estado_nome = models.CharField(max_length=100)
+    estado_uf = models.CharField(max_length=2)
 
+    class Meta:
+        managed = False
+        db_table = 'cidades_materialized_view'
+
+    def __str__(self):
+        return f"{self.nome} - {self.estado_nome} ({self.estado_uf})"
+    
 class Instituicao(models.Model):
     nome = models.CharField(max_length=200)
     telefone = models.CharField(max_length=20, blank=True)
