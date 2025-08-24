@@ -81,6 +81,27 @@
         </button>
     </div>
     {% endif %}
+    {% if messages %}
+    <div class="fixed top-5 right-5 space-y-4 z-50">
+        {% for message in messages %}
+        <div role="alert" data-autoclose="true"
+            class="flex items-center justify-between px-4 py-3 rounded-lg shadow-lg transition transform duration-300
+            {% if message.tags == 'success' %} bg-green-500 text-white
+            {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-500 text-white
+            {% elif message.tags == 'warning' %} bg-yellow-500 text-white
+            {% else %} bg-blue-500 text-white {% endif %}">
+            
+            <span class="font-semibold">{{ message }}</span>
+            
+            <button type="button" class="ml-4" onclick="this.closest('[role=alert]').remove()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para alunas">
         {% csrf_token %}
