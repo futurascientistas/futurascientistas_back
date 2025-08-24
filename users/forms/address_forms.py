@@ -1,5 +1,5 @@
 from django import forms
-from core.models import Cidade, Estado
+from core.models import Cidade, CidadesMaterializedView, Estado
 from users.models.address_model import Endereco
 
 class EnderecoForm(forms.ModelForm):
@@ -17,11 +17,19 @@ class EnderecoForm(forms.ModelForm):
         label="CEP",
         widget=forms.TextInput(attrs={'placeholder': 'Ex: 99999-999'})
     )
+    
+    # cidade = forms.ModelChoiceField(
+    #     queryset=Cidade.objects.all(),
+    #     label="Cidade",
+    #     required=True
+    # )
+
     cidade = forms.ModelChoiceField(
-        queryset=Cidade.objects.all(),
+        queryset=CidadesMaterializedView.objects.all().order_by('nome'),
         label="Cidade",
         required=True
     )
+    
     bairro = forms.CharField(
         required=True, 
         label="Bairro",
@@ -37,6 +45,15 @@ class EnderecoForm(forms.ModelForm):
         label="Número",
         widget=forms.TextInput(attrs={'placeholder': 'Ex: 123'})
     )
+
+    def clean_cidade(self):
+        cidade_materialized = self.cleaned_data.get('cidade')
+        if cidade_materialized:
+            try:
+                return Cidade.objects.get(pk=cidade_materialized.pk)
+            except Cidade.DoesNotExist:
+                raise forms.ValidationError("A cidade selecionada não é válida.")
+        return cidade_materialized
 
     # def __init__(self, *args, **kwargs):
     #     super().__init__(*args, **kwargs)

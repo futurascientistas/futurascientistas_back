@@ -172,20 +172,6 @@ function setupCepAutocomplete(cepInput, prefix = '') {
                 }
             }
 
-            // if (cidade && cidade.tagName === 'SELECT') {
-            //     const localidade = data.localidade;
-            //     const uf = data.uf;
-            //     const textoCompleto = `${localidade} - ${uf}`;
-                
-            //     const option = Array.from(cidade.options).find(opt => opt.textContent.trim() === textoCompleto);
-                
-            //     if (option) {
-            //         cidade.value = option.value;
-            //     } else {
-            //         console.warn(`Opção para a cidade "${textoCompleto}" não encontrada.`);
-            //     }
-            // }
-            
             if (numero) numero.focus();
         } 
         catch (error) {
@@ -417,6 +403,10 @@ function validateAndAdvance(event) {
 
     clearAllErrors(`step-${currentStep}`);
 
+    if (document.getElementById("auto-upload-flag").value === "1") {
+        return true;
+    }
+
     if (currentStep === 1) {
         if (!validateRequiredFields('step-1')) isStepValid = false;
         if (!validatePhoneFields()) isStepValid = false;
@@ -499,6 +489,15 @@ function hideLoading() {
     document.getElementById('loading-overlay')?.classList.add('hidden');
 }
 
+function submitAutoUploadForm() {
+    const form = document.getElementById("perfil-form");
+    if (form) {
+        document.getElementById("auto-upload-flag").value = "1";
+        showLoading();
+        form.submit();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchDisciplinas(); 
 
@@ -522,13 +521,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // ✅ Ajustado: reset do auto-upload flag nos submits de step
     document.querySelectorAll('button[type="submit"][name="submit_step"]').forEach(btn => {
         btn.addEventListener('click', () => {
+            const autoFlag = document.getElementById("auto-upload-flag");
+            if (autoFlag) autoFlag.value = "0";
             showLoading();
         });
     });
-
-    document.getElementById('perfil-form').addEventListener('submit', validateAndAdvance);
 
     const addButton = document.getElementById('add-nota-button'); 
     if (addButton) {
@@ -542,4 +542,44 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (removerButton) removerForm(removerButton);
         });
     }
+
+    document.querySelectorAll('.file-upload-input').forEach(input => {
+        input.addEventListener('change', submitAutoUploadForm);
+    });
+
+    document.querySelectorAll('.js-clear-button').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const targetName = this.getAttribute('data-clear-target');
+            const hiddenInput = document.querySelector(`input[name="${targetName}"]`);
+
+            if (hiddenInput) {
+                hiddenInput.disabled = false;
+                hiddenInput.checked = true;
+                hiddenInput.value = "1";
+                hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+                const autoFlag = document.getElementById("auto-upload-flag");
+                if (autoFlag) autoFlag.value = "1";
+
+                const form = this.closest('form');
+                if (form) {
+                    showLoading();
+                    form.submit();
+                }
+            } else {
+                console.warn("Input __clear não encontrado:", targetName);
+            }
+        });
+    });
+
+    document.getElementById("perfil-form").addEventListener("submit", () => {
+        const clears = Array.from(document.querySelectorAll("input[name$='__clear']"));
+        clears.forEach(c => {
+            console.log("➡️ Enviando:", c.name, "checked:", c.checked, "value:", c.value);
+        });
+    });
+
+    document.getElementById('perfil-form').addEventListener('submit', validateAndAdvance);
 });

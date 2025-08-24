@@ -67,6 +67,7 @@
     <form method="post" enctype="multipart/form-data" class="space-y-6" id="perfil-form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="current_step" id="current-step-input" value="1">
+        <input type="hidden" name="auto_upload" id="auto-upload-flag" value="0">
 
         {% for step in steps %}
         <div class="form-step hidden" id="step-{{ step.number }}">
@@ -138,13 +139,7 @@
 
             {% elif step.number == 4 %}
             <div class="space-y-4">
-                {% for field in user_form %}
-                    {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "drive_" in field.name %}
-                        {% if user.funcao != 'professora' or field.name != 'comprovante_autorizacao_responsavel' %}
-                            {% include "components/users/form_field.html" with field=field %}
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
+                {% include "components/users/docs_upload.html" %}
             </div>
             <div class="flex justify-between mt-4">
                 <button type="button" data-navigation="3" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>

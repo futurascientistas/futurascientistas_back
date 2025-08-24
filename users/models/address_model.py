@@ -5,13 +5,6 @@ from utils.utils import cep_validator
 
 # Modelo Endereço
 
-# class Estado(models.Model):
-#     uf = models.CharField(max_length=2, unique=True, verbose_name="Sigla")
-#     nome = models.CharField(max_length=100, verbose_name="Nome Completo")
-
-#     def __str__(self):
-#          return f"{self.nome} - {self.uf}"
-
 class Endereco(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     
