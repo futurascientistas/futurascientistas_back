@@ -4,6 +4,7 @@ from utils.utils import get_binary_field_display_name
 from .models import *
 from projects.models import *
 from users.models import *
+from core.models import *
 from ckeditor.fields import RichTextField
 from django.utils import timezone
 from django.db.models import Q
@@ -30,6 +31,30 @@ class ApplicationAlunoForm(forms.ModelForm):
         'drive_rg_verso': "RG Verso", 
         'drive_cpf_anexo': "CPF"
     }
+    endereco_fields = ['rua', 'cidade', 'estado', 'cep']
+
+    rua = forms.CharField(label="Rua", required=True)
+    numero = forms.CharField(label="Número", required=True)
+    estado = forms.ModelChoiceField(
+        label="Estado",
+        queryset=Estado.objects.all().order_by('nome'),
+        empty_label="Selecione um estado",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2'
+        })
+    )
+
+    cidade = forms.ModelChoiceField(
+        label="Cidade",
+        queryset=Cidade.objects.all().order_by('nome'),
+        empty_label="Selecione uma cidade",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2'
+        })
+    )
+    cep = forms.CharField(label="CEP", required=True)  
 
     projeto = forms.ModelChoiceField(
         queryset=Project.objects.all(),
@@ -41,9 +66,6 @@ class ApplicationAlunoForm(forms.ModelForm):
         })
     )
     
-
-    
-
     necessita_material_especial = forms.BooleanField(
         label="Necessita de material especial?",
         required=False,
@@ -129,9 +151,6 @@ class ApplicationAlunoForm(forms.ModelForm):
     #     if commit:
     #         instance.save()
     #     return instance
-    
-    
-    
 
     def _upload_documents_to_drive(self, instance):
         try:
@@ -192,6 +211,24 @@ class ApplicationAlunoForm(forms.ModelForm):
         # Associa o usuário logado ao instance
         if self.user:
             instance.user = self.user
+        
+        endereco = instance.user.endereco
+
+        if endereco is None:
+            endereco = Endereco.objects.create(
+                rua=self.cleaned_data.get('rua'),
+                cidade=self.cleaned_data.get('cidade'),
+                estado=self.cleaned_data.get('estado'),
+                cep=self.cleaned_data.get('cep')
+            )
+            instance.user.endereco = endereco
+            instance.user.save()
+        else:
+            endereco.rua = self.cleaned_data.get('rua')
+            endereco.cidade = self.cleaned_data.get('cidade')
+            endereco.estado = self.cleaned_data.get('estado')
+            endereco.cep = self.cleaned_data.get('cep')
+            endereco.save()
 
         try:
             # Faz upload para o Drive usando instance.user.cpf
@@ -230,24 +267,29 @@ class ApplicationAlunoForm(forms.ModelForm):
         return cleaned_data
     
     def __init__(self, *args, **kwargs):
-        # Pega o usuário logado que foi passado na view
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        hoje = timezone.now().date()
         projetos = Project.objects.all()
 
-        if self.user:
-            estado_usuario = getattr(self.user, 'estado', None)
-            if estado_usuario and hasattr(estado_usuario, 'id'):
-                projetos = projetos.all().distinct()
-            else:
-                projetos = projetos.all()
+        if self.user and hasattr(self.user, 'endereco') and self.user.endereco:
+            endereco = self.user.endereco
+
+            self.fields['rua'].initial = endereco.rua
+            self.fields['cidade'].initial = endereco.cidade
+            self.fields['estado'].initial = endereco.estado
+            self.fields['cep'].initial = endereco.cep
+            self.fields['numero'].initial = endereco.numero
+
+            projetos = projetos.filter(
+                Q(estados_aceitos=endereco.estado) |
+                Q(cidades_aceitas=endereco.cidade) |
+                Q(eh_remoto=True)
+            ).distinct()
         else:
-            projetos = Project.objects.none()
+            projetos = projetos.filter(eh_remoto=True)
 
         self.fields['projeto'].queryset = projetos
-
 
 
 class ApplicationProfessorForm(forms.ModelForm):
@@ -428,27 +470,19 @@ class ApplicationProfessorForm(forms.ModelForm):
         return num
     
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         hoje = timezone.now().date()
-        projetos = Project.objects.filter(
-            ativo=True,
-            inicio_inscricoes__lte=hoje,
-            fim_inscricoes__gte=hoje,
-        )
+        projetos = Project.objects.all()
 
-        if user:
-            estado_usuario = getattr(user, 'cidade', None)
-            # Verifica se estado_usuario é um objeto válido (não vazio, não string vazia)
+        if self.user:
+            estado_usuario = getattr(self.user, 'estado', None)
             if estado_usuario and hasattr(estado_usuario, 'id'):
-                projetos = projetos.filter(
-                    Q(cidades_aceitas__isnull=True) | Q(cidades_aceitas=estado_usuario)
-                ).distinct()
+                projetos = projetos.all().distinct()
             else:
-                # Se não tem estado válido, só mostra os que não tem estado restrito
-                projetos = projetos.filter(cidades_aceitas__isnull=True)
-
+                projetos = projetos.all()
         else:
             projetos = Project.objects.none()
 

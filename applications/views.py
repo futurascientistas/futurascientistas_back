@@ -22,8 +22,6 @@ from django.contrib.auth.decorators import login_required
 from .serializers import ApplicationSerializer
 from .services import inscrever_usuario_em_projeto
 
-
-
 @login_required
 def inscricao_professora(request):
     ano_atual = timezone.now().year
@@ -187,7 +185,7 @@ def inscricao_aluna(request):
     else:
         form = ApplicationAlunoForm(user=request.user)
 
-    return render(request, 'components/applications/student_application_form.html', {'form': form})
+    return render(request, 'components/applications/student_application_form.html', {'form': form}, )
 
 @login_required
 def visualizar_inscricao(request, inscricao_id):

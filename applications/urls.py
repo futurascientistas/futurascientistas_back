@@ -12,4 +12,5 @@ urlpatterns = [
     path('editar/<uuid:inscricao_id>/', editar_inscricao, name='editar_inscricao'),
     path('visualizar/<uuid:inscricao_id>/', visualizar_inscricao, name='visualizar_inscricao'),
     path('aluna/', inscricao_aluna, name='inscricao_aluna'),   
+    path('filtrar-cidade-estado/', filtrar_cidade_estado, name='filtrar_cidade_estado'),
 ]

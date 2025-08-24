@@ -3,7 +3,8 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from .models import *
 from django.db import transaction
 from applications.models import Application
-
+from django.http import JsonResponse
+from django.db.models import Q
 
 def validar_e_retornar_inscricao(user, pk):
     inscricao = Application.objects.get(pk=pk)
@@ -161,3 +162,35 @@ def calcular_ranking_todas_professoras(projeto):
 
     for inscricao in inscricoes_professoras:
         calcular_ranking.delay(inscricao.id)
+
+def filtrar_cidade_estado(request):
+    cidade_id = request.GET.get('cidade')
+    estado_id = request.GET.get('estado')
+    remoto = request.GET.get('remoto')
+    user = request.user  
+    projetos = Project.objects.all()
+
+    try:
+        filtros = Q(eh_remoto=True)
+        if cidade_id:
+            filtros |= Q(cidades_aceitas__id=cidade_id)
+        if estado_id:
+            filtros |= Q(estados_aceitos__id=estado_id)
+
+        projetos = projetos.filter(filtros).distinct()
+        print(projetos)
+
+        lista = []
+        for p in projetos:
+            lista.append({
+                'id': p.id,
+                'nome': p.nome,
+                'remoto': p.eh_remoto,
+                'cidade': p.cidades_aceitas.first().nome if p.cidades_aceitas.exists() else '',
+                'estado': p.estados_aceitos.first().nome if p.estados_aceitos.exists() else '',
+            })
+        
+        return JsonResponse({'dados': lista})
+
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=500)
