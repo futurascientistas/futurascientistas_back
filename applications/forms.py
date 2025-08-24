@@ -311,6 +311,28 @@ class ApplicationProfessorForm(forms.ModelForm):
             'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2',
         })
     )
+    rua = forms.CharField(label="Rua", required=True)
+    numero = forms.CharField(label="Número", required=True)
+    estado = forms.ModelChoiceField(
+        label="Estado",
+        queryset=Estado.objects.all().order_by('nome'),
+        empty_label="Selecione um estado",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2'
+        })
+    )
+
+    cidade = forms.ModelChoiceField(
+        label="Cidade",
+        queryset=Cidade.objects.all().order_by('nome'),
+        empty_label="Selecione uma cidade",
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2'
+        })
+    )
+    cep = forms.CharField(label="CEP", required=True)  
 
     tipo_de_vaga = forms.ModelChoiceField(
         queryset=TipoDeVaga.objects.all(),  
@@ -470,23 +492,29 @@ class ApplicationProfessorForm(forms.ModelForm):
         return num
     
     def __init__(self, *args, **kwargs):
+            self.user = kwargs.pop('user', None)
+            super().__init__(*args, **kwargs)
 
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
+            projetos = Project.objects.all()
 
-        hoje = timezone.now().date()
-        projetos = Project.objects.all()
+            if self.user and hasattr(self.user, 'endereco') and self.user.endereco:
+                endereco = self.user.endereco
 
-        if self.user:
-            estado_usuario = getattr(self.user, 'estado', None)
-            if estado_usuario and hasattr(estado_usuario, 'id'):
-                projetos = projetos.all().distinct()
+                self.fields['rua'].initial = endereco.rua
+                self.fields['cidade'].initial = endereco.cidade
+                self.fields['estado'].initial = endereco.estado
+                self.fields['cep'].initial = endereco.cep
+                self.fields['numero'].initial = endereco.numero
+
+                projetos = projetos.filter(
+                    Q(estados_aceitos=endereco.estado) |
+                    Q(cidades_aceitas=endereco.cidade) |
+                    Q(eh_remoto=True)
+                ).distinct()
             else:
-                projetos = projetos.all()
-        else:
-            projetos = Project.objects.none()
+                projetos = projetos.filter(eh_remoto=True)
 
-        self.fields['projeto'].queryset = projetos
+            self.fields['projeto'].queryset = projetos
 
 
 class ComentarioForm(forms.ModelForm):
