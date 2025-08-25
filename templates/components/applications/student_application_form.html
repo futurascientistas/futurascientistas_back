@@ -178,7 +178,7 @@
    </ul>
    {% endif %}
 </div>
-{% for field in form %} {% if field.name not in "projeto,rua,cidade,estado,cep" %}
+{% for field in form %} {% if field.name not in "projeto,rua,cidade,estado,cep,numero" %}
 <div class="mb-4">
    {% if field.field.widget.input_type == "checkbox" %}
    <div class="mb-4">

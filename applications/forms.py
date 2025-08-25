@@ -513,13 +513,49 @@ class ApplicationProfessorForm(forms.ModelForm):
         except Exception as e:
             logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
-
+        
     def save(self, commit=True):
+        # Salva os dados do form sem commit primeiro
         instance = super().save(commit=False)
-        self._upload_documents_to_drive(instance)
+
+        # Associa o usuário logado ao instance
+        if self.user:
+            instance.user = self.user
+        
+        endereco = instance.user.endereco
+
+        if endereco is None:
+            endereco = Endereco.objects.create(
+                rua=self.cleaned_data.get('rua'),
+                cidade=self.cleaned_data.get('cidade'),
+                estado=self.cleaned_data.get('estado'),
+                cep=self.cleaned_data.get('cep')
+            )
+            instance.user.endereco = endereco
+            instance.user.save()
+        else:
+            endereco.rua = self.cleaned_data.get('rua')
+            endereco.cidade = self.cleaned_data.get('cidade')
+            endereco.estado = self.cleaned_data.get('estado')
+            endereco.cep = self.cleaned_data.get('cep')
+            endereco.save()
+
+        try:
+            # Faz upload para o Drive usando instance.user.cpf
+            self._upload_documents_to_drive(instance)
+        except forms.ValidationError:
+            raise  # Re-lança erros de validação
+        except Exception as e:
+            logger.error(f"Erro geral no save: {str(e)}")
+            if commit:
+                instance.save()  # Salva sem os dados do Drive
+            raise forms.ValidationError(
+                "Ocorreu um erro ao processar seus documentos. "
+                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
+            )
+
         if commit:
             instance.save()
-            self.save_m2m()
         return instance
 
 
