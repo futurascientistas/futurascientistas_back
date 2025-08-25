@@ -524,8 +524,7 @@ def perfil_view(request):
                         except Exception as e:
                             logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
                             messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
-                        else:
-                             return redirect(f'{request.path}?step={current_step}')
+
                     else:
                         # Adiciona esta parte para mostrar os erros específicos
                         error_messages = []
