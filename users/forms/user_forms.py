@@ -272,7 +272,7 @@ class UserUpdateForm(forms.ModelForm):
             
             # Cria o caminho perfil/CPF (se não existir)
             perfil_folder_name = "perfil"
-            user_folder_name = instance.user.cpf
+            user_folder_name = instance.cpf
             logger.info(f"Verificando/Criando estrutura de pastas: {perfil_folder_name}/{user_folder_name}")
             
             # Primeiro verifica/cria a pasta 'perfil'
@@ -333,11 +333,11 @@ class UserUpdateForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Associa o usuário logado ao instance
-        if self.user:
-            instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
-            # Ou talvez você queira fazer:
-            # instance = self.user  # Se você está atualizando o próprio usuário
+        # # Associa o usuário logado ao instance
+        # if self.user:
+        #     instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
+        #     # Ou talvez você queira fazer:
+        #     # instance = self.user  # Se você está atualizando o próprio usuário
         
         drive_service = DriveService()
         
