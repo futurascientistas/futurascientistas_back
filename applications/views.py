@@ -142,13 +142,16 @@ def inscricao_aluna(request):
         
        
         if form.is_valid():
-            
             instancia = form.save(commit=False)
             projeto = form.cleaned_data.get('projeto')
 
             agora = timezone.now().date()
 
             # Validação do período de inscrição
+            print(projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes)
+            print(projeto.inicio_inscricoes)
+            print(projeto.fim_inscricoes)
+            print(agora)
             if not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
                 messages.error(request, "Inscrição não permitida: fora do período de inscrição.")
                 return render(request, 'components/applications/student_application_form.html', {'form': form})

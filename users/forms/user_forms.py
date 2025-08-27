@@ -110,12 +110,12 @@ class UserUpdateForm(forms.ModelForm):
     # ]
     
     DRIVE_UPLOAD_FIELDS = {
-        'drive_rg_frente': "RG Frente",
-        'drive_rg_verso': "RG Verso", 
+        'drive_rg_frente': "RG (frente)",
+        'drive_rg_verso': "RG (verso)", 
         'drive_cpf_anexo': "CPF",
-        'drive_foto': "Foto no Drive",
-        'drive_autodeclaracao_racial':"Autodeclaração racial no Drive",
-        'drive_comprovante_deficiencia': "Comprovante de deficiência no Drive"
+        'drive_foto': "Foto",
+        'drive_autodeclaracao_racial':"Autodeclaração racial",
+        'drive_comprovante_deficiencia': "Comprovante de deficiência"
     }
 
     # for field_name in BINARY_FILE_FIELDS:
@@ -140,8 +140,10 @@ class UserUpdateForm(forms.ModelForm):
             label=f"Enviar {label} para o Drive",
             help_text="O arquivo será salvo apenas no Google Drive"
         )
+        locals()[f"{field_name}__upload"].friendly_label = label 
         locals()[f"{field_name}__clear"] = forms.BooleanField(
             required=False,
+            widget=forms.HiddenInput(),
             label=f"Remover arquivo atual do Drive"
         )
     del field_name, label
@@ -221,6 +223,26 @@ class UserUpdateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['cpf'].disabled = True
         self.fields['deficiencias'].required = False
+
+        # Verifica se a instância já tem um arquivo salvo no Drive
+        if self.instance and self.instance.pk:
+            for field_name, label in self.DRIVE_UPLOAD_FIELDS.items():
+                # Obtém o ID do arquivo do modelo
+                file_id = getattr(self.instance, field_name, None)
+                
+                # Se o ID existe, adiciona o link ao campo de upload
+                if file_id:
+                    drive_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+                    
+                    upload_field_name = f"{field_name}__upload"
+                    
+                    # Adiciona o atributo drive_link ao objeto do campo
+                    self.fields[upload_field_name].drive_link = drive_link
+                    
+                    # Adiciona uma mensagem de ajuda mais clara
+                    self.fields[upload_field_name].help_text = (
+                        f"Um arquivo já foi enviado. Envie um novo para substituí-lo ou marque a caixa abaixo para remover."
+                    )
         
         
 
@@ -236,9 +258,10 @@ class UserUpdateForm(forms.ModelForm):
             if uploaded:
                 setattr(instance, field_name, uploaded.read())
                 
-    def _upload_documents_to_drive(self, instance):
+    def _upload_documents_to_drive(self, instance, drive_service=None):
         try:
-            drive_service = DriveService()
+            if not drive_service:
+                drive_service = DriveService()
             
             # Verifica acesso antes de criar pasta
             if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
@@ -249,7 +272,7 @@ class UserUpdateForm(forms.ModelForm):
             
             # Cria o caminho perfil/CPF (se não existir)
             perfil_folder_name = "perfil"
-            user_folder_name = instance.user.cpf
+            user_folder_name = instance.cpf
             logger.info(f"Verificando/Criando estrutura de pastas: {perfil_folder_name}/{user_folder_name}")
             
             # Primeiro verifica/cria a pasta 'perfil'
@@ -267,10 +290,13 @@ class UserUpdateForm(forms.ModelForm):
             logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
 
             # Faz upload dos arquivos para a pasta do usuário
-            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+            for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
                 upload_field = f"{field_name}__upload"
                 if upload_field in self.files:
                     file = self.files[upload_field]
+                    if not file:
+                        continue
+                    
                     logger.info(f"Processando arquivo: {file.name}")
                     
                     file_id = drive_service.upload_file(
@@ -285,18 +311,39 @@ class UserUpdateForm(forms.ModelForm):
         except Exception as e:
             logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
-        
+    
+    def _clear_documents_from_drive(self, instance, drive_service=None):
+
+        if not drive_service:
+            drive_service = DriveService()
+            
+        for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
+            clear_field = f"{field_name}__clear"
+            if self.cleaned_data.get(clear_field):
+                file_id = getattr(instance, field_name, None)
+                print(f"Campo {field_name} marcado para remoção. ID atual: {file_id}")
+                if file_id:
+                    try:
+                        drive_service.delete_file(file_id)
+                        logger.info(f"Arquivo {field_name} removido do Drive (ID: {file_id})")
+                    except Exception as e:
+                        logger.error(f"Falha ao remover {field_name} do Drive: {str(e)}")
+                setattr(instance, field_name, None) 
+
     def save(self, commit=True):
         instance = super().save(commit=False)
         
-        # Associa o usuário logado ao instance
-        if self.user:
-            instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
-            # Ou talvez você queira fazer:
-            # instance = self.user  # Se você está atualizando o próprio usuário
-
+        # # Associa o usuário logado ao instance
+        # if self.user:
+        #     instance.user = self.user  # Isso só é necessário se seu model User tiver um campo user (o que seria estranho)
+        #     # Ou talvez você queira fazer:
+        #     # instance = self.user  # Se você está atualizando o próprio usuário
+        
+        drive_service = DriveService()
+        
         try:
-            self._upload_documents_to_drive(instance)
+            self._clear_documents_from_drive(instance, drive_service)
+            self._upload_documents_to_drive(instance, drive_service)
         except forms.ValidationError:
             raise
         except Exception as e:

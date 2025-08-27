@@ -462,23 +462,100 @@ class ApplicationProfessorForm(forms.ModelForm):
         }
         
 
-    def _apply_binary_uploads(self, instance):
-        for field_name in self.BINARY_FILE_FIELDS:
-            upload_field = f"{field_name}__upload"
-            clear_field = f"{field_name}__clear"
-            if self.cleaned_data.get(clear_field):
-                setattr(instance, field_name, None)
-                continue
-            uploaded = self.files.get(upload_field)
-            if uploaded:
-                setattr(instance, field_name, uploaded.read())
+    def _upload_documents_to_drive(self, instance):
+        try:
+            drive_service = DriveService()
+            
+            # Verifica acesso antes de criar pasta
+            if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
+                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
 
+            
+            logger.info("Iniciando upload para o Drive")
+            
+            # Primeiro cria a pasta do projeto (se não existir)
+            projeto_folder_name = instance.projeto.nome
+            logger.info(f"Verificando/Criando pasta do projeto: {projeto_folder_name}")
+            
+            projeto_folder_id = drive_service.find_or_create_folder(
+                folder_name=projeto_folder_name,
+                parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
+            )
+            logger.info(f"Pasta do projeto ID: {projeto_folder_id}")
+            
+            # Depois cria a pasta do usuário (CPF) dentro da pasta do projeto
+            user_folder_name = instance.user.cpf
+            logger.info(f"Criando pasta do usuário: {user_folder_name}")
+            
+            user_folder_id = drive_service.create_folder(
+                folder_name=user_folder_name,
+                parent_folder_id=projeto_folder_id
+            )
+            logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
+
+            # Faz upload dos arquivos para a pasta do usuário
+            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+                upload_field = f"{field_name}__upload"
+                if upload_field in self.files:
+                    file = self.files[upload_field]
+                    logger.info(f"Processando arquivo: {file.name}")
+                    
+                    file_id = drive_service.upload_file(
+                        file_name=file.name,
+                        file_content=file.read(),
+                        mime_type=file.content_type,
+                        folder_id=user_folder_id
+                    )
+                    logger.info(f"Arquivo {file.name} uploadado com ID: {file_id}")
+                    setattr(instance, field_name, file_id)
+                    
+        except Exception as e:
+            logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
+            raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
+        
     def save(self, commit=True):
+        # Salva os dados do form sem commit primeiro
         instance = super().save(commit=False)
-        self._apply_binary_uploads(instance)
+
+        # Associa o usuário logado ao instance
+        if self.user:
+            instance.user = self.user
+        
+        endereco = instance.user.endereco
+
+        if endereco is None:
+            endereco = Endereco.objects.create(
+                rua=self.cleaned_data.get('rua'),
+                cidade=self.cleaned_data.get('cidade'),
+                estado=self.cleaned_data.get('estado'),
+                cep=self.cleaned_data.get('cep')
+            )
+            instance.user.endereco = endereco
+            instance.user.save()
+        else:
+            endereco.rua = self.cleaned_data.get('rua')
+            endereco.cidade = self.cleaned_data.get('cidade')
+            endereco.estado = self.cleaned_data.get('estado')
+            endereco.cep = self.cleaned_data.get('cep')
+            endereco.save()
+
+        try:
+            # Faz upload para o Drive usando instance.user.cpf
+            self._upload_documents_to_drive(instance)
+        except forms.ValidationError:
+            raise  # Re-lança erros de validação
+        except Exception as e:
+            logger.error(f"Erro geral no save: {str(e)}")
+            if commit:
+                instance.save()  # Salva sem os dados do Drive
+            raise forms.ValidationError(
+                "Ocorreu um erro ao processar seus documentos. "
+                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
+            )
+
         if commit:
             instance.save()
-            self.save_m2m()
         return instance
 
 

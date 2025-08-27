@@ -1,297 +1,276 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %} {% load widget_tweaks %} {% load static %} {% block title %}Inscrição para Professoras{% endblock %} {% block extra_css %}
 <style>
-    .errorlist {
-        color: #dc2626;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-        list-style-type: none;
-        padding-left: 0;
-      }
+   .errorlist {
+   color: #dc2626;
+   font-size: 0.875rem;
+   margin-top: 0.25rem;
+   list-style-type: none;
+   padding-left: 0;
+   }
 </style>
 {% endblock %} {% block content %}
 <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow-md">
-
-    <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
-        <span class="font-semibold">Aviso:</span> Você declara ciência sobre a necessidade de seu deslocamento até o local onde será realizado o projeto.
-    </div>
-
-    {% if form.errors %}
-    <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <strong class="font-bold">Erro ao enviar o formulário!</strong>
-        <ul class="mt-2 list-disc list-inside">
-            {% for field in form %} {% if field.errors %} {% for error in field.errors %}
-            <li>{{ field.label }}: {{ error }}</li>
-            {% endfor %} {% endif %} {% endfor %}
-        </ul>
-        <button onclick="document.getElementById('form-error-alert').style.display='none'" class="absolute top-0 bottom-0 right-0 px-4 py-3" aria-label="Fechar alerta de erro">
-            <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                <title>Fechar</title>
-                <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652A1 1 0 105.652 7.066L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z" />
+   <h1 class="text-2xl font-semibold mb-6 text-gray-900">Inscrição para Professoras</h1>
+   <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+      <span class="font-semibold">Aviso:</span> Você declara ciência sobre a necessidade de seu deslocamento até o local onde será realizado o projeto.
+   </div>
+   {% if form.errors %}
+   <div id="form-error-alert" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+      <strong class="font-bold">Erro ao enviar o formulário!</strong>
+      <ul class="mt-2 list-disc list-inside">
+         {% for field in form %} {% if field.errors %} {% for error in field.errors %}
+         <li>{{ field.label }}: {{ error }}</li>
+         {% endfor %} {% endif %} {% endfor %}
+      </ul>
+      <button onclick="document.getElementById('form-error-alert').style.display='none'" class="absolute top-0 bottom-0 right-0 px-4 py-3" aria-label="Fechar alerta de erro">
+         <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <title>Fechar</title>
+            <path d="M14.348 5.652a1 1 0 00-1.414 0L10 8.586 7.066 5.652A1 1 0 105.652 7.066L8.586 10l-2.934 2.934a1 1 0 101.414 1.414L10 11.414l2.934 2.934a1 1 0 001.414-1.414L11.414 10l2.934-2.934a1 1 0 000-1.414z" />
+         </svg>
+      </button>
+   </div>
+   {% endif %}
+   {% if messages %}
+   <div class="fixed top-5 right-5 space-y-4 z-50">
+      {% for message in messages %}
+      <div role="alert" data-autoclose="true"
+         class="flex items-center justify-between px-4 py-3 rounded-lg shadow-lg transition transform duration-300
+         {% if message.tags == 'success' %} bg-green-500 text-white
+         {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-500 text-white
+         {% elif message.tags == 'warning' %} bg-yellow-500 text-white
+         {% else %} bg-blue-500 text-white {% endif %}">
+         <span class="font-semibold">{{ message }}</span>
+         <button type="button" class="ml-4" onclick="this.closest('[role=alert]').remove()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-        </button>
-    </div>
-    {% endif %}
-    {% if messages %}
-    <div class="fixed top-5 right-5 space-y-4 z-50">
-        {% for message in messages %}
-        <div role="alert" data-autoclose="true"
-            class="flex items-center justify-between px-4 py-3 rounded-lg shadow-lg transition transform duration-300
-            {% if message.tags == 'success' %} bg-green-500 text-white
-            {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-500 text-white
-            {% elif message.tags == 'warning' %} bg-yellow-500 text-white
-            {% else %} bg-blue-500 text-white {% endif %}">
-            
-            <span class="font-semibold">{{ message }}</span>
-            
-            <button type="button" class="ml-4" onclick="this.closest('[role=alert]').remove()">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-
-    <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
-        {% csrf_token %}
-           <!-- Seção: Endereço Pessoal -->
-<div class="mb-6">
-    <h2 class="text-lg font-semibold text-gray-900 mb-2">Endereço Pessoal</h2>
-    <div class="grid grid-cols-1 gap-4">
-        <!-- Linha 1: CEP -->
-        <div>
-            <label for="{{ form.cep.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                {{ form.cep.label }}{% if form.cep.field.required %}<span class="text-red-600">*</span>{% endif %}
-            </label>
-            {% render_field form.cep class="block w-full rounded border border-gray-300 px-3 py-2" %}
-            {% for error in form.cep.errors %}
-                <p class="text-red-600">{{ error }}</p>
-            {% endfor %}
-        </div>
-
-        <!-- Linha 2: Rua e Número -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         </button>
+      </div>
+      {% endfor %}
+   </div>
+   {% endif %}
+   <form method="post" enctype="multipart/form-data" novalidate class="space-y-6" aria-label="Formulário de inscrição para professoras">
+      {% csrf_token %}
+      <!-- Seção: Endereço Pessoal -->
+      <div class="mb-6">
+         <h2 class="text-lg font-semibold text-gray-900 mb-2">Endereço Pessoal</h2>
+         <div class="grid grid-cols-1 gap-4">
+            <!-- Linha 1: CEP -->
             <div>
-                <label for="{{ form.rua.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                    {{ form.rua.label }}{% if form.rua.field.required %}<span class="text-red-600">*</span>{% endif %}
-                </label>
-                {% render_field form.rua class="block w-full rounded border border-gray-300 px-3 py-2" %}
-                {% for error in form.rua.errors %}
-                    <p class="text-red-600">{{ error }}</p>
-                {% endfor %}
+               <label for="{{ form.cep.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+               {{ form.cep.label }}{% if form.cep.field.required %}<span class="text-red-600">*</span>{% endif %}
+               </label>
+               {% render_field form.cep class="block w-full rounded border border-gray-300 px-3 py-2" %}
+               {% for error in form.cep.errors %}
+               <p class="text-red-600">{{ error }}</p>
+               {% endfor %}
             </div>
-
-            <div>
-                <label for="{{ form.numero.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                    {{ form.numero.label }}{% if form.numero.field.required %}<span class="text-red-600">*</span>{% endif %}
-                </label>
-                {% render_field form.numero class="block w-full rounded border border-gray-300 px-3 py-2" %}
-                {% for error in form.numero.errors %}
-                    <p class="text-red-600">{{ error }}</p>
-                {% endfor %}
+            <!-- Linha 2: Rua e Número -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                  <label for="{{ form.rua.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                  {{ form.rua.label }}{% if form.rua.field.required %}<span class="text-red-600">*</span>{% endif %}
+                  </label>
+                  {% render_field form.rua class="block w-full rounded border border-gray-300 px-3 py-2" %}
+                  {% for error in form.rua.errors %}
+                  <p class="text-red-600">{{ error }}</p>
+                  {% endfor %}
+               </div>
+               <div>
+                  <label for="{{ form.numero.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                  {{ form.numero.label }}{% if form.numero.field.required %}<span class="text-red-600">*</span>{% endif %}
+                  </label>
+                  {% render_field form.numero class="block w-full rounded border border-gray-300 px-3 py-2" %}
+                  {% for error in form.numero.errors %}
+                  <p class="text-red-600">{{ error }}</p>
+                  {% endfor %}
+               </div>
             </div>
-        </div>
-
-        <!-- Linha 3: Cidade e Estado -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="{{ form.cidade.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                    {{ form.cidade.label }}{% if form.cidade.field.required %}<span class="text-red-600">*</span>{% endif %}
-                </label>
-                {% render_field form.cidade class="block w-full rounded border border-gray-300 px-3 py-2" %}
-                {% for error in form.cidade.errors %}
-                    <p class="text-red-600">{{ error }}</p>
-                {% endfor %}
+            <!-- Linha 3: Cidade e Estado -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                  <label for="{{ form.cidade.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                  {{ form.cidade.label }}{% if form.cidade.field.required %}<span class="text-red-600">*</span>{% endif %}
+                  </label>
+                  {% render_field form.cidade class="block w-full rounded border border-gray-300 px-3 py-2" %}
+                  {% for error in form.cidade.errors %}
+                  <p class="text-red-600">{{ error }}</p>
+                  {% endfor %}
+               </div>
+               <div>
+                  <label for="{{ form.estado.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+                  {{ form.estado.label }}{% if form.estado.field.required %}<span class="text-red-600">*</span>{% endif %}
+                  </label>
+                  {% render_field form.estado class="block w-full rounded border border-gray-300 px-3 py-2" %}
+                  {% for error in form.estado.errors %}
+                  <p class="text-red-600">{{ error }}</p>
+                  {% endfor %}
+               </div>
+               <hr>
             </div>
-
-            <div>
-                <label for="{{ form.estado.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                    {{ form.estado.label }}{% if form.estado.field.required %}<span class="text-red-600">*</span>{% endif %}
-                </label>
-                {% render_field form.estado class="block w-full rounded border border-gray-300 px-3 py-2" %}
-                {% for error in form.estado.errors %}
-                    <p class="text-red-600">{{ error }}</p>
-                {% endfor %}
-            </div>
-            <hr>
-        </div>
-    </div>
-</div>
-
-        <div>
-            <label for="{{ form.projeto.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                {{ form.projeto.label }} {% if form.projeto.field.required %}
-                <span class="text-red-600" aria-hidden="true">*</span> {% endif %}
-            </label>
-            <select id="id_projeto" name="projeto" class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
-    {% for value, label in form.projeto.field.choices %}
-        <option value="{{ value }}" {% if form.projeto.value == value %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-</select>
-
-<small class="text-gray-600">{{ form.projeto.help_text }}</small>
-{% if form.projeto.errors %}
-    <ul class="errorlist" role="alert" aria-live="assertive">
-        {% for error in form.projeto.errors %}
+         </div>
+      </div>
+      <div>
+         <label for="{{ form.projeto.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+         {{ form.projeto.label }} {% if form.projeto.field.required %}
+         <span class="text-red-600" aria-hidden="true">*</span> {% endif %}
+         </label>
+         <select id="id_projeto" name="projeto" class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+         {% for value, label in form.projeto.field.choices %}
+         <option value="{{ value }}" {% if form.projeto.value == value %}selected{% endif %}>{{ label }}</option>
+         {% endfor %}
+         </select>
+         <small class="text-gray-600">{{ form.projeto.help_text }}</small>
+         {% if form.projeto.errors %}
+         <ul class="errorlist" role="alert" aria-live="assertive">
+            {% for error in form.projeto.errors %}
             <li>{{ error }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
-
-        </div>
-
-        {% for field in form %} {% if field.name != 'projeto' %}
-        <div class="mb-4">
-            {% if field.field.widget.input_type == "checkbox" %}
-            <div class="mb-4">
-                <label class="flex items-center cursor-pointer select-none gap-2">
-                    <span class="text-gray-800 font-semibold">{{ field.label }}</span> {% render_field field class="w-4 h-4 border-2 border-gray-400 rounded-sm focus:ring-pink-500 checked:bg-pink-500 checked:border-pink-500" %}
-                </label>
-            </div>
-            {% else %}
-            <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
-                {{ field.label }} {% if field.field.required %}
-                <span class="text-red-600">*</span> {% endif %}
+            {% endfor %}
+         </ul>
+         {% endif %}
+      </div>
+      {% for field in form %} {% if field.name not in "projeto,rua,cidade,estado,cep,numero" %}
+      <div class="mb-4">
+         {% if field.field.widget.input_type == "checkbox" %}
+         <div class="mb-4">
+            <label class="flex items-center cursor-pointer select-none gap-2">
+            <span class="text-gray-800 font-semibold">{{ field.label }}</span> {% render_field field class="w-4 h-4 border-2 border-gray-400 rounded-sm focus:ring-pink-500 checked:bg-pink-500 checked:border-pink-500" %}
             </label>
-            {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" %} {% if field.help_text %}
-            <small class="text-gray-600">{{ field.help_text }}</small> {% endif %} {% endif %} {% if field.errors %}
-            <ul class="errorlist" role="alert" aria-live="assertive">
-                {% for error in field.errors %}
-                <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </div>
-        {% endif %} {% endfor %} {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
-
-
-        <div class="flex gap-4">
-            <button type="submit" name="acao" value="salvar" style="
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    background-color: #e2e8f0;
-    color: #1f2937;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s, transform 0.2s;
-  " onmouseover="this.style.backgroundColor='#cbd5e1'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#e2e8f0'; this.style.transform='scale(1)'">
-                Salvar
-            </button>
-
-            <button type="submit" name="acao" value="enviar" style="
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    background-color: #ec4899;
-    color: #ffffff;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s, transform 0.2s;
-  " onmouseover="this.style.backgroundColor='#db2777'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#ec4899'; this.style.transform='scale(1)'">
-                Enviar
-            </button>
-        </div>
-
-        {% endif %}
-    </form>
+         </div>
+         {% else %}
+         <label for="{{ field.id_for_label }}" class="block font-semibold mb-1 text-gray-800">
+         {{ field.label }} {% if field.field.required %}
+         <span class="text-red-600">*</span> {% endif %}
+         </label>
+         {% render_field field class="block w-full rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500" %} {% if field.help_text %}
+         <small class="text-gray-600">{{ field.help_text }}</small> {% endif %} {% endif %} {% if field.errors %}
+         <ul class="errorlist" role="alert" aria-live="assertive">
+            {% for error in field.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+         </ul>
+         {% endif %}
+      </div>
+      {% endif %} {% endfor %} {% if not form.instance.pk or form.instance.status == 'rascunho' or form.instance.status == 'pendente' %}
+      <div class="flex gap-4">
+         <button type="submit" name="acao" value="salvar" style="
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            background-color: #e2e8f0;
+            color: #1f2937;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.2s;
+            " onmouseover="this.style.backgroundColor='#cbd5e1'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#e2e8f0'; this.style.transform='scale(1)'">
+         Salvar
+         </button>
+         <button type="submit" name="acao" value="enviar" style="
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            background-color: #ec4899;
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, transform 0.2s;
+            " onmouseover="this.style.backgroundColor='#db2777'; this.style.transform='scale(1.02)'" onmouseout="this.style.backgroundColor='#ec4899'; this.style.transform='scale(1)'">
+         Enviar
+         </button>
+      </div>
+      {% endif %}
+   </form>
 </div>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const cidadeField = document.getElementById('id_cidade');
-    const estadoField = document.getElementById('id_estado');
-    const projetoSelect = document.getElementById('id_projeto');
-    const cepField = document.getElementById('id_cep');
-    const ruaField = document.getElementById('id_rua');
-    const bairroField = document.getElementById('id_bairro');
-    const numeroField = document.getElementById('id_numero');
-
-    if (!cidadeField || !estadoField || !projetoSelect || !cepField) return;
-
-    // Filtra projetos baseado em cidade/estado
-    function filtrarProjetos() {
-        const cidade = cidadeField.value;
-        const estado = estadoField.value;
-
-        const url = "{% url 'application:filtrar_cidade_estado' %}?cidade=" + cidade + "&estado=" + estado + "&remoto=1";
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                projetoSelect.innerHTML = '<option value="">-- Selecione --</option>';
-
-                data.dados.forEach(projeto => {
-                    const option = document.createElement('option');
-                    option.value = projeto.id;
-                    option.text = projeto.remoto
-                        ? projeto.nome + ' (Remoto)'
-                        : projeto.nome + ' (' + projeto.cidade + ' - ' + projeto.estado + ')';
-                    projetoSelect.appendChild(option);
-                });
-            })
-            .catch(err => console.error('Erro ao filtrar:', err));
-    }
-
-    cidadeField.addEventListener('change', filtrarProjetos);
-    estadoField.addEventListener('change', filtrarProjetos);
-
-    // Setup CEP autocomplete
-    function setupCepAutocomplete(cepInput, prefix = '') {
-        if (!cepInput) return;
-
-        cepInput.addEventListener('blur', async () => {
-            const cep = cepInput.value.replace(/\D/g, '');
-            if (cep.length !== 8) return;
-
-            try {
-                const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                if (!response.ok) throw new Error('Erro na consulta do CEP');
-
-                const data = await response.json();
-                if (data.erro) {
-                    alert('CEP não encontrado.');
-                    return;
-                }
-
-                if (ruaField) ruaField.value = data.logradouro || '';
-                if (bairroField) bairroField.value = data.bairro || '';
-                
-                if (estadoField && estadoField.tagName === 'SELECT') {
-                    const option = Array.from(estadoField.options).find(opt => opt.textContent.includes(data.uf));
-                    if (option) {
-                        estadoField.value = option.value;
-                        estadoField.dispatchEvent(new Event('change'));
-                    }
-                }
-
-                if (cidadeField && cidadeField.tagName === 'SELECT') {
-                    const localidade = data.localidade.trim().toLowerCase();
-                    const option = Array.from(cidadeField.options).find(opt => opt.textContent.toLowerCase().includes(localidade));
-                    if (option) {
-                        cidadeField.value = option.value;
-                        cidadeField.dispatchEvent(new Event('change'));
-                    }
-                }
-
-                if (numeroField) numeroField.focus();
-
-                // Atualiza projetos automaticamente após preencher cidade/estado
-                filtrarProjetos();
-
-            } catch (error) {
-                console.error(error);
-                alert('Não foi possível buscar o endereço pelo CEP.');
-            }
-        });
-    }
-
-    setupCepAutocomplete(cepField);
-});
-
+   document.addEventListener('DOMContentLoaded', () => {
+       const cidadeField = document.getElementById('id_cidade');
+       const estadoField = document.getElementById('id_estado');
+       const projetoSelect = document.getElementById('id_projeto');
+       const cepField = document.getElementById('id_cep');
+       const ruaField = document.getElementById('id_rua');
+       const bairroField = document.getElementById('id_bairro');
+       const numeroField = document.getElementById('id_numero');
+   
+       if (!cidadeField || !estadoField || !projetoSelect || !cepField) return;
+   
+       function filtrarProjetos() {
+           const cidade = cidadeField.value;
+           const estado = estadoField.value;
+   
+           const url = "{% url 'application:filtrar_cidade_estado' %}?cidade=" + cidade + "&estado=" + estado + "&remoto=1";
+   
+           fetch(url)
+               .then(res => res.json())
+               .then(data => {
+                   projetoSelect.innerHTML = '<option value="">-- Selecione --</option>';
+   
+                   data.dados.forEach(projeto => {
+                       const option = document.createElement('option');
+                       option.value = projeto.id;
+                       option.text = projeto.remoto
+                           ? projeto.nome + ' (Remoto)'
+                           : projeto.nome + ' (' + projeto.cidade + ' - ' + projeto.estado + ')';
+                       projetoSelect.appendChild(option);
+                   });
+               })
+               .catch(err => console.error('Erro ao filtrar:', err));
+       }
+   
+       cidadeField.addEventListener('change', filtrarProjetos);
+       estadoField.addEventListener('change', filtrarProjetos);
+   
+       function setupCepAutocomplete(cepInput, prefix = '') {
+           if (!cepInput) return;
+   
+           cepInput.addEventListener('blur', async () => {
+               const cep = cepInput.value.replace(/\D/g, '');
+               if (cep.length !== 8) return;
+   
+               try {
+                   const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                   if (!response.ok) throw new Error('Erro na consulta do CEP');
+   
+                   const data = await response.json();
+                   if (data.erro) {
+                       alert('CEP não encontrado.');
+                       return;
+                   }
+   
+                   if (ruaField) ruaField.value = data.logradouro || '';
+                   if (bairroField) bairroField.value = data.bairro || '';
+                   
+                   if (estadoField && estadoField.tagName === 'SELECT') {
+                       const option = Array.from(estadoField.options).find(opt => opt.textContent.includes(data.uf));
+                       if (option) {
+                           estadoField.value = option.value;
+                           estadoField.dispatchEvent(new Event('change'));
+                       }
+                   }
+   
+                   if (cidadeField && cidadeField.tagName === 'SELECT') {
+                       const localidade = data.localidade.trim().toLowerCase();
+                       const option = Array.from(cidadeField.options).find(opt => opt.textContent.toLowerCase().includes(localidade));
+                       if (option) {
+                           cidadeField.value = option.value;
+                           cidadeField.dispatchEvent(new Event('change'));
+                       }
+                   }
+   
+                   if (numeroField) numeroField.focus();
+   
+                   filtrarProjetos();
+   
+               } catch (error) {
+                   console.error(error);
+                   alert('Não foi possível buscar o endereço pelo CEP.');
+               }
+           });
+       }
+   
+       setupCepAutocomplete(cepField);
+   });
+   
 </script>
 {% endblock %}
