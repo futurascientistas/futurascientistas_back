@@ -365,4 +365,13 @@
 </style>
 
 <script src="{% static 'js/perfil_forms.js' %}"></script>
+      <script>
+         fetch('/api/alunas-datas/')
+         .then(response => response.json())
+         .then(data => {
+            console.log(data); // aqui você vê todos os usuários
+            // você pode manipular o DOM com esses dados
+         })
+         .catch(error => console.error('Erro ao buscar dados:', error));
+      </script>
 {% endblock %}

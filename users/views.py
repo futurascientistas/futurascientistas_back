@@ -611,3 +611,39 @@ def perfil_view(request):
     context['current_step'] = current_step_from_url
 
     return render(request, 'components/users/perfil.html', context)
+
+
+
+
+from django.views import View
+from django.http import JsonResponse
+from users.models.user_model import User
+
+class ApiAlunasDatas(View):
+    def get(self, request, *args, **kwargs):
+        users = User.objects.all()
+        data = []
+
+        for user in users:
+            data.append({
+                "id": str(user.id),
+                "nome": user.nome,
+                "email": user.email,
+                "cpf": user.cpf,
+                "telefone": user.telefone,
+                "telefone_responsavel": user.telefone_responsavel,
+                "data_nascimento": user.data_nascimento.isoformat() if user.data_nascimento else None,
+                "pronomes": user.pronomes,
+                "funcao": user.funcao,
+                "roles": user.roles,
+                "endereco_id": user.endereco.id if user.endereco else None,
+                "escola_id": user.escola.id if user.escola else None,
+                "raca_id": user.raca.id if user.raca else None,
+                "genero_id": user.genero.id if user.genero else None,
+                "deficiencias_ids": list(user.deficiencias.values_list('id', flat=True)),
+                "drive_foto": user.drive_foto,
+                "drive_boletim_escolar": user.drive_boletim_escolar,
+                "drive_termo_autorizacao": user.drive_termo_autorizacao
+            })
+
+        return JsonResponse(data, safe=False)

@@ -33,5 +33,8 @@ urlpatterns = [
     path('<uuid:user_id>/anexo/<str:field_name>/', AnexoDownloadView.as_view()),
 
 
+    
+    #API VIEWS
+    path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
 
 ]
