@@ -360,13 +360,33 @@
 </style>
 
 <script src="{% static 'js/perfil_forms.js' %}"></script>
+
+
       <script>
-         fetch('/api/alunas-datas/')
-         .then(response => response.json())
-         .then(data => {
-            console.log(data); // aqui você vê todos os usuários
-            // você pode manipular o DOM com esses dados
-         })
-         .catch(error => console.error('Erro ao buscar dados:', error));
+        {% comment %} fetch('/usuarios/api/alunas-datas/', {
+            method: 'GET',
+            credentials: 'same-origin'
+        }) {% endcomment %}
+        {% comment %} fetch('/usuarios/api/professores-datas/', {
+            method: 'GET',
+            credentials: 'same-origin'
+        }) {% endcomment %}
+        fetch('/usuarios/api/deficiencia/', {
+            method: 'GET',
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Dados recebidos:', data);
+        })
+        .catch(error => console.error('Erro ao buscar dados:', error));
+
       </script>
+
+
 {% endblock %}

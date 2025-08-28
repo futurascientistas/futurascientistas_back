@@ -36,5 +36,7 @@ urlpatterns = [
     
     #API VIEWS
     path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
+    path('api/professores-datas/', ApiProfessoresDatas.as_view(), name='api-professores-datas'),
+    path("api/deficiencia/", ApiUsuariosComDeficiencia.as_view(), name="usuarios-deficiencia"),
 
 ]

@@ -627,32 +627,71 @@ def perfil_view(request):
 from django.views import View
 from django.http import JsonResponse
 from users.models.user_model import User
+from django.db.models import Q
 
-class ApiAlunasDatas(View):
+class ApiAlunasDatas(APIView):
     def get(self, request, *args, **kwargs):
-        users = User.objects.all()
-        data = []
-
-        for user in users:
-            data.append({
-                "id": str(user.id),
-                "nome": user.nome,
-                "email": user.email,
-                "cpf": user.cpf,
-                "telefone": user.telefone,
-                "telefone_responsavel": user.telefone_responsavel,
-                "data_nascimento": user.data_nascimento.isoformat() if user.data_nascimento else None,
-                "pronomes": user.pronomes,
-                "funcao": user.funcao,
-                "roles": user.roles,
-                "endereco_id": user.endereco.id if user.endereco else None,
-                "escola_id": user.escola.id if user.escola else None,
-                "raca_id": user.raca.id if user.raca else None,
-                "genero_id": user.genero.id if user.genero else None,
-                "deficiencias_ids": list(user.deficiencias.values_list('id', flat=True)),
-                "drive_foto": user.drive_foto,
-                "drive_boletim_escolar": user.drive_boletim_escolar,
-                "drive_termo_autorizacao": user.drive_termo_autorizacao
+        usuarios_qs = User.objects.all()
+        
+        # Serialização manual
+        usuarios = []
+        for u in usuarios_qs:
+            usuarios.append({
+                "id": str(u.id),
+                "nome": u.nome,
+                "email": u.email,
+                "cpf": u.cpf,
+                "telefone": u.telefone,
+                "funcao": u.funcao,
+                "data_nascimento": u.data_nascimento.isoformat() if u.data_nascimento else None,
+                "pronomes": u.pronomes,
+            })
+        
+        return Response({
+            "mensagem": "ok",
+            "usuarios": usuarios
+        })
+        
+class ApiProfessoresDatas(APIView):
+    def get(self, request, *args, **kwargs):
+        professores_qs = User.objects.filter(is_staff=True)
+       
+        # Serialização manual
+        professores = []
+        for p in professores_qs:
+            professores.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "email": p.email,
+                "cpf": p.cpf,
+                "telefone": p.telefone,
+                "funcao": p.funcao,
+                "data_nascimento": p.data_nascimento.isoformat() if p.data_nascimento else None,
+                "pronomes": p.pronomes,
             })
 
-        return JsonResponse(data, safe=False)
+        return Response({
+            "mensagem": "ok",
+            "professores": professores
+        })
+        
+class ApiUsuariosComDeficiencia(APIView):
+    def get(self, request, *args, **kwargs):
+        usuarios = (
+            User.objects.filter(deficiencias__isnull=False)
+            .exclude(deficiencias__nome="Nenhuma")
+            .distinct()
+        )
+
+        dados = []
+        for u in usuarios:
+            dados.append({
+                "id": str(u.id),
+                "nome": u.nome,
+                "deficiencias": [d.nome for d in u.deficiencias.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "usuarios_com_deficiencia": dados
+        })
