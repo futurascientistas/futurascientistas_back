@@ -114,7 +114,7 @@ class UserUpdateForm(forms.ModelForm):
         'drive_rg_verso': "RG (verso)", 
         'drive_cpf_anexo': "CPF",
         'drive_foto': "Foto do Usuário",
-        'drive_autodeclaracao_racial':"Autodeclaração de cota",
+        'drive_autodeclaracao_racial':"Autodeclaração para cotas",
         'drive_comprovante_deficiencia': "Comprovante de deficiência"
     }
 
