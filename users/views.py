@@ -806,3 +806,4 @@ class ApiContagemPorCidade(APIView):
             "mensagem": "ok",
             "contagem_por_cidade": dados
         })
+        
