@@ -31,6 +31,17 @@ urlpatterns = [
 
     # Anexos de user
     path('<uuid:user_id>/anexo/<str:field_name>/', AnexoDownloadView.as_view()),
+    
+    
+    
+    path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
+    path('api/professores-datas/', ApiProfessoresDatas.as_view(), name='api-professores-datas'),
+    path("api/deficiencia/", ApiUsuariosComDeficiencia.as_view(), name="usuarios-deficiencia"),
+    path('api/projetos-em-andamento/', ApiProjetosEmAndamento.as_view(), name='api_projetos_em_andamento'),
+    path('api/projetos-concluidos/', ApiPercentualProjetosConcluidos.as_view(), name='api_projetos_concluidos'),
+    path('api/projetos-com-regioes/', ApiProjetosComRegioes.as_view(), name='api_projetos_com_regioes'),
+    path('api/contagem-tipo-ensino/', ApiContagemPorTipoEnsino.as_view(), name='api_contagem_tipo_ensino'),
+    path('api/contagem-cidade/', ApiContagemPorCidade.as_view(), name='api_contagem_cidade'),
 
 
     
@@ -44,5 +55,7 @@ urlpatterns = [
     path('api/contagem-tipo-ensino/', ApiContagemPorTipoEnsino.as_view(), name='api_contagem_tipo_ensino'),
     path('api/contagem-cidade/', ApiContagemPorCidade.as_view(), name='api_contagem_cidade'),
 
+    path('qualquer/', Dashboard1.as_view(), name='qualquercoisa'),
+    path('qualquer2/', Dashboard2.as_view(), name='qualquercoisa2'),
 
 ]

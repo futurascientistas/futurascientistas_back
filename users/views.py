@@ -441,7 +441,6 @@ def dashboard(request):
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
 
-@login_required
 def perfil_view(request):
     user = request.user
 
@@ -624,6 +623,7 @@ def perfil_view(request):
 
 
 
+from django.views.generic import TemplateView
 from django.views import View
 from django.http import JsonResponse
 from users.models.user_model import User
@@ -806,4 +806,9 @@ class ApiContagemPorCidade(APIView):
             "mensagem": "ok",
             "contagem_por_cidade": dados
         })
-        
+
+class Dashboard1(TemplateView):
+    template_name = "qualquercoisa/teste.html"
+    
+class Dashboard2(TemplateView):
+    template_name = "qualquercoisa/teste2.html"
