@@ -26,9 +26,7 @@ class User(AbstractUser):
     curriculo_lattes = models.URLField('Currículo Lattes', blank=True)
     documento_cpf = models.BinaryField(null=True, blank=True, verbose_name='Documento CPF')
     documento_rg = models.BinaryField(null=True, blank=True, verbose_name='Documento RG')
-    foto = models.BinaryField(null=True, blank=True, verbose_name='Foto')
-    
-    
+    foto = models.BinaryField(null=True, blank=True, verbose_name='Foto do Usuário')
 
     # Endereço
     endereco = models.ForeignKey(Endereco, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Endereço Pessoal", related_name='usuarios') 
@@ -62,13 +60,13 @@ class User(AbstractUser):
         max_length=255,
         null=True,
         blank=True,
-        verbose_name='Foto no Drive'
+        verbose_name='Foto Usuário no Drive'
     )
     drive_autodeclaracao_racial = models.CharField(
     max_length=255,
     null=True,
     blank=True,
-    verbose_name='Autodeclaração racial no Drive'
+    verbose_name='Autodeclaração de cota no Drive'
 )
 
     drive_comprovante_deficiencia = models.CharField(

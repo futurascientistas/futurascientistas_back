@@ -59,8 +59,8 @@ class Application(models.Model):
     area_atuacao = models.CharField(max_length=100, blank=True, verbose_name="Área de atuação")
 
     # Vaga e Acessibilidade
-    necessita_material_especial = models.BooleanField(default=False, verbose_name="Necessita material especial?")
-    tipo_material_necessario = models.TextField(blank=True, verbose_name="Tipo de material necessário")
+    necessita_material_especial = models.BooleanField(default=False, verbose_name="Necessita de Tecnologia Assistiva?")
+    tipo_material_necessario = models.TextField(blank=True, verbose_name="Tipo de Tecnologia Assistiva necessário")
     laudo_medico_deficiencia = models.BinaryField(null=True, blank=True, verbose_name="Laudo médico de deficiência")
     concorrer_reserva_vagas = models.BooleanField(default=False, verbose_name="Concorrer às vagas reservadas?")
     autodeclaracao_racial = models.BinaryField(null=True, blank=True, verbose_name="Autodeclaração racial")
@@ -121,7 +121,7 @@ class Application(models.Model):
     )
     drive_declaracao_inclusao = models.CharField(
         max_length=255, null=True, blank=True,
-        verbose_name="Declaração de ciência do participante (PPI/PCD/Trans)"
+        verbose_name="Autodeclaração para cotas"
     )
     drive_declaracao_vinculo = models.CharField(
         max_length=255, null=True, blank=True,
@@ -152,7 +152,7 @@ class Application(models.Model):
     missao_cientifica = models.BooleanField(default=False, verbose_name="Missão científica?")
     titulo_projeto_submetido = models.CharField(max_length=255, blank=True, null=True,verbose_name="Título do projeto submetido")
     link_projeto = models.URLField(blank=True, null=True, verbose_name="Link para o projeto")
-    numero_edicoes_participadas = models.PositiveIntegerField(default=0, verbose_name="Número de edições anteriores do programa")
+    numero_edicoes_participadas = models.PositiveIntegerField(default=0, verbose_name="Número de participações anteriores no programa")
 
     # Declarações Finais
     aceite_declaracao_veracidade = models.BooleanField(default=False, verbose_name="Aceite da declaração de veracidade")

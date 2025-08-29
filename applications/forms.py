@@ -29,7 +29,8 @@ class ApplicationAlunoForm(forms.ModelForm):
     DRIVE_UPLOAD_FIELDS = {
         'drive_rg_frente': "RG Frente",
         'drive_rg_verso': "RG Verso", 
-        'drive_cpf_anexo': "CPF"
+        'drive_cpf_anexo': "CPF",
+        'drive_declaracao_inclusao': 'Autodeclaração para cotas'
     }
     endereco_fields = ['rua', 'cidade', 'estado', 'cep']
 
@@ -67,13 +68,13 @@ class ApplicationAlunoForm(forms.ModelForm):
     )
     
     necessita_material_especial = forms.BooleanField(
-        label="Necessita de material especial?",
+        label=Application._meta.get_field("necessita_material_especial").verbose_name,
         required=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'})
     )
 
     tipo_material_necessario = forms.CharField(
-        label="Indicar o tipo de material necessário",
+        label=Application._meta.get_field("tipo_material_necessario").verbose_name,
         widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Ex: Material impresso em braile, Material impresso ampliado'}),
         required=False
     )
@@ -301,6 +302,7 @@ class ApplicationProfessorForm(forms.ModelForm):
         'drive_cpf_anexo',
         'drive_declaracao_vinculo',
         'drive_documentacao_comprobatoria_lattes',
+        'drive_declaracao_inclusao'
     ]
 
     projeto = forms.ModelChoiceField(
@@ -562,7 +564,7 @@ class ApplicationProfessorForm(forms.ModelForm):
     def clean_numero_edicoes_participadas(self):
         num = self.cleaned_data.get('numero_edicoes_participadas')
         if num is not None and num < 0:
-            raise forms.ValidationError("Número de edições anteriores não pode ser negativo.")
+            raise forms.ValidationError("Número de participações anteriores não pode ser negativo.")
         return num
     
     def __init__(self, *args, **kwargs):

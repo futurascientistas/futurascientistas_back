@@ -52,8 +52,6 @@
             <span class="projectInstitution">{{ projeto.instituicao|default_if_none:"" }}</span>
         </div>
         <div class="cardBody">
-            <p><strong>Tutora:</strong> {{ projeto.tutora.nome }}</p>
-            <p>
                 <strong>Formato:</strong>
                 <span class="modalityBadge {% if projeto.formato == 'Remoto' %}modalityRemote{% else %}modalityPresencial{% endif %}">
                     {{ projeto.get_formato_display }}
