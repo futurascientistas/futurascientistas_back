@@ -441,7 +441,6 @@ def dashboard(request):
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
 
-@login_required
 def perfil_view(request):
     user = request.user
 
@@ -620,3 +619,191 @@ def perfil_view(request):
     context['current_step'] = current_step_from_url
 
     return render(request, 'components/users/perfil.html', context)
+
+from django.views.generic import TemplateView
+from django.views import View
+from django.http import JsonResponse
+from users.models.user_model import User
+from projects.models import Project
+from django.db.models import Q, Count
+
+class ApiAlunasDatas(APIView):
+    def get(self, request, *args, **kwargs):
+        usuarios_qs = User.objects.all()
+        
+        # Serialização manual
+        usuarios = []
+        for u in usuarios_qs:
+            usuarios.append({
+                "id": str(u.id),
+                "nome": u.nome,
+                "email": u.email,
+                "cpf": u.cpf,
+                "telefone": u.telefone,
+                "funcao": u.funcao,
+                "data_nascimento": u.data_nascimento.isoformat() if u.data_nascimento else None,
+                "pronomes": u.pronomes,
+            })
+        
+        return Response({
+            "mensagem": "ok",
+            "usuarios": usuarios
+        })
+        
+class ApiProfessoresDatas(APIView):
+    def get(self, request, *args, **kwargs):
+        professores_qs = User.objects.filter(is_staff=True)
+       
+        # Serialização manual
+        professores = []
+        for p in professores_qs:
+            professores.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "email": p.email,
+                "cpf": p.cpf,
+                "telefone": p.telefone,
+                "funcao": p.funcao,
+                "data_nascimento": p.data_nascimento.isoformat() if p.data_nascimento else None,
+                "pronomes": p.pronomes,
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "professores": professores
+        })
+        
+class ApiUsuariosComDeficiencia(APIView):
+    def get(self, request, *args, **kwargs):
+        usuarios = (
+            User.objects.filter(deficiencias__isnull=False)
+            .exclude(deficiencias__nome="Nenhuma")
+            .distinct()
+        )
+
+        dados = []
+        for u in usuarios:
+            dados.append({
+                "id": str(u.id),
+                "nome": u.nome,
+                "deficiencias": [d.nome for d in u.deficiencias.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "usuarios_com_deficiencia": dados
+        })
+
+class ApiProjetosEmAndamento(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.filter(status='em_andamento', ativo=True)
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "tutora": p.tutora.nome if p.tutora else None,
+                "eh_remoto": p.eh_remoto,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()],
+                "estados_aceitos": [e.nome for e in p.estados_aceitos.all()],
+                "cidades_aceitas": [c.nome for c in p.cidades_aceitas.all()],
+                "formato": p.formato,
+                "status": p.status,
+                "vagas": p.vagas,
+                "instituicao": p.instituicao,
+                "inicio_inscricoes": p.inicio_inscricoes,
+                "fim_inscricoes": p.fim_inscricoes,
+                "data_inicio": p.data_inicio,
+                "data_fim": p.data_fim
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_em_andamento": dados
+        })
+        
+class ApiPercentualProjetosConcluidos(APIView):
+    def get(self, request, *args, **kwargs):
+        total_projetos = Project.objects.count()
+        concluidos = Project.objects.filter(status='concluido').count()
+
+        percentual = 0
+        if total_projetos > 0:
+            percentual = (concluidos / total_projetos) * 100
+
+        # Opcional: arredondar para 2 casas decimais
+        percentual = round(percentual, 2)
+
+        return Response({
+            "mensagem": "ok",
+            "total_projetos": total_projetos,
+            "projetos_concluidos": concluidos,
+            "percentual_concluidos": percentual
+        })
+        
+class ApiProjetosComRegioes(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.prefetch_related('regioes_aceitas').all()
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_com_regioes": dados
+        })
+        
+class ApiContagemPorTipoEnsino(APIView):
+    def get(self, request, *args, **kwargs):
+        # Faz o join via ForeignKey e agrupa pelo nome do tipo de ensino
+        contagem = (
+            User.objects
+            .values('escola_tipo_ensino_nome')  # pega o nome do tipo de ensino
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "tipo_ensino": item['escola_tipo_ensino_nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_tipo_ensino": dados
+        })
+        
+class ApiContagemPorCidade(APIView):
+    def get(self, request, *args, **kwargs):
+        contagem = (
+            User.objects
+            .values('endereco__cidade__nome')  # corrigido
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "cidade": item['endereco__cidade__nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_cidade": dados
+        })
+
+class Dashboard1(TemplateView):
+    template_name = "qualquercoisa/teste.html"
+    
+class Dashboard2(TemplateView):
+    template_name = "qualquercoisa/teste2.html"
