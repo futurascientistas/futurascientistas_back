@@ -361,32 +361,29 @@
 
 <script src="{% static 'js/perfil_forms.js' %}"></script>
 
+<script>
+    const urls = [
+        '/usuarios/api/alunas-datas/',
+        '/usuarios/api/professores-datas/',
+        '/usuarios/api/deficiencia/',
+        '/usuarios/api/projetos-em-andamento/',
+        '/usuarios/api/projetos-concluidos/',
+        '/usuarios/api/projetos-com-regioes/',
+        '/usuarios/api/contagem-tipo-ensino/',
+        '/usuarios/api/contagem-cidade/'
+    ];
 
-      <script>
-        {% comment %} fetch('/usuarios/api/alunas-datas/', {
-            method: 'GET',
-            credentials: 'same-origin'
-        }) {% endcomment %}
-        {% comment %} fetch('/usuarios/api/professores-datas/', {
-            method: 'GET',
-            credentials: 'same-origin'
-        }) {% endcomment %}
-        fetch('/usuarios/api/deficiencia/', {
-            method: 'GET',
-            credentials: 'same-origin'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Dados recebidos:', data);
-        })
-        .catch(error => console.error('Erro ao buscar dados:', error));
+    urls.forEach(url => {
+        fetch(url, { method: 'GET', credentials: 'same-origin' })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => console.log(`Dados de ${url}:`, data))
+            .catch(error => console.error(`Erro ao buscar ${url}:`, error));
+    });
+</script>
 
-      </script>
 
 
 {% endblock %}

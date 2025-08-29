@@ -627,7 +627,9 @@ def perfil_view(request):
 from django.views import View
 from django.http import JsonResponse
 from users.models.user_model import User
-from django.db.models import Q
+from projects.models import Project
+from django.db.models import Q, Count
+
 
 class ApiAlunasDatas(APIView):
     def get(self, request, *args, **kwargs):
@@ -694,4 +696,113 @@ class ApiUsuariosComDeficiencia(APIView):
         return Response({
             "mensagem": "ok",
             "usuarios_com_deficiencia": dados
+        })
+
+class ApiProjetosEmAndamento(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.filter(status='em_andamento', ativo=True)
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "tutora": p.tutora.nome if p.tutora else None,
+                "eh_remoto": p.eh_remoto,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()],
+                "estados_aceitos": [e.nome for e in p.estados_aceitos.all()],
+                "cidades_aceitas": [c.nome for c in p.cidades_aceitas.all()],
+                "formato": p.formato,
+                "status": p.status,
+                "vagas": p.vagas,
+                "instituicao": p.instituicao,
+                "inicio_inscricoes": p.inicio_inscricoes,
+                "fim_inscricoes": p.fim_inscricoes,
+                "data_inicio": p.data_inicio,
+                "data_fim": p.data_fim
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_em_andamento": dados
+        })
+        
+class ApiPercentualProjetosConcluidos(APIView):
+    def get(self, request, *args, **kwargs):
+        total_projetos = Project.objects.count()
+        concluidos = Project.objects.filter(status='concluido').count()
+
+        percentual = 0
+        if total_projetos > 0:
+            percentual = (concluidos / total_projetos) * 100
+
+        # Opcional: arredondar para 2 casas decimais
+        percentual = round(percentual, 2)
+
+        return Response({
+            "mensagem": "ok",
+            "total_projetos": total_projetos,
+            "projetos_concluidos": concluidos,
+            "percentual_concluidos": percentual
+        })
+        
+class ApiProjetosComRegioes(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.prefetch_related('regioes_aceitas').all()
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_com_regioes": dados
+        })
+        
+class ApiContagemPorTipoEnsino(APIView):
+    def get(self, request, *args, **kwargs):
+        # Faz o join via ForeignKey e agrupa pelo nome do tipo de ensino
+        contagem = (
+            User.objects
+            .values('escola__tipo_ensino__nome')  # pega o nome do tipo de ensino
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "tipo_ensino": item['escola__tipo_ensino__nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_tipo_ensino": dados
+        })
+        
+class ApiContagemPorCidade(APIView):
+    def get(self, request, *args, **kwargs):
+        # Faz o join via ForeignKey: User → Endereco → Cidade
+        contagem = (
+            User.objects
+            .values('endereco__cidade__nome')  # pega o nome da cidade
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "cidade": item['endereco__cidade__nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_cidade": dados
         })
