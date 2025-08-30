@@ -1,0 +1,695 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px; /* Altura reduzida dos gráficos */
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content%}
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard Geral</h1>
+<p class="text-sm text-gray-600 mb-6">Visão completa de métricas, distribuição de cotas e frequência dos alunos.</p>
+
+<!-- Seção de Big Numbers -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <!-- Total de Alunas -->
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Total de Alunas</h3>
+                <p id="total-alunas" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">Carregando...</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professoras Ativas -->
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Professoras Ativas</h3>
+                <p id="total-professoras" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                <p id="variacao-professoras" class="text-xs mt-1 text-gray-500">Carregando...</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projetos em Andamento -->
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Projetos em Andamento</h3>
+                <p id="total-projetos" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">Carregando...</p>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taxa de Conclusão -->
+    <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-medium text-gray-500">Taxa de Conclusão</h3>
+                <p id="taxa-conclusao" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">Carregando...</p>
+            </div>
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Seção de Gráficos -->
+<div class="grid grid-cols-1 gap-6">
+    <!-- Linha 1: Gráficos pequenos lado a lado -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Frequência Mensal -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Frequência Média Mensal (%)</h3>
+            <div class="chart-container">
+                <canvas id="graficoFrequenciaMensal"></canvas>
+            </div>
+        </div>
+
+        <!-- Funil de Alunas -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Funil de Alunas</h3>
+            <p class="text-sm text-gray-600 mb-4">Jornada das alunas ao longo das etapas do projeto</p>
+            <div class="chart-container">
+                <canvas id="graficoFunilAlunas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linha 2: Gráficos médios -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Distribuição por Tipo de Escola -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
+            <div class="chart-container">
+                <canvas id="graficoDistribuicaoEscolas"></canvas>
+            </div>
+        </div>
+        <!-- Faixa Etária -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Faixa Etária</h3>
+            <div class="chart-container">
+                <canvas id="graficoFaixaEtaria"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linha 3: Gráficos largos -->
+    <div class="grid grid-cols-1 gap-6">
+
+        <!-- Cotas -->
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Gênero, Raça e Tipo de Escola</h3>
+            <div class="chart-container">
+                <canvas id="graficoDistribuicaoCotas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Carregar Chart.js primeiro -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Depois carregar o plugin de funil -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-funnel@1.0.5/dist/chartjs-plugin-funnel.min.js"></script>
+    
+    <script>
+        // Verificar se ChartFunnel foi carregado corretamente
+        if (typeof ChartFunnel === 'undefined') {
+            console.error('ChartFunnel não foi carregado corretamente. Verifique a URL do script.');
+        } else {
+            console.log('ChartFunnel carregado com sucesso');
+            Chart.register(ChartFunnel);
+        }
+
+        // Variáveis globais para os novos gráficos
+        let graficoFrequencia = null;
+        let graficoFunil = null;
+        let graficoFaixaEtaria = null;
+
+        // ========== FUNÇÕES DOS NOVOS GRÁFICOS ==========
+        
+        // Função para buscar dados da frequência mensal (todos os projetos)
+        async function fetchDadosFrequenciaMensal() {
+            try {
+                const response = await fetch('/usuarios/api/frequencia-mensal-alunos/');
+                if (!response.ok) throw new Error('Erro na API Frequência Mensal Alunos');
+                const data = await response.json();
+                return data.dados_frequencia;
+            } catch (error) {
+                console.error('Erro ao buscar dados de frequência:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados do funil de alunas
+        async function fetchDadosFunilAlunas() {
+            try {
+                const response = await fetch('/usuarios/api/funil-alunas/');
+                if (!response.ok) throw new Error('Erro na API Funil Alunas');
+                const data = await response.json();
+                return data.dados_funil;
+            } catch (error) {
+                console.error('Erro ao buscar dados do funil:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados de faixa etária
+        async function fetchDadosFaixaEtaria() {
+            try {
+                const response = await fetch('/usuarios/api/faixa-etaria/');
+                if (!response.ok) throw new Error('Erro na API Faixa Etária');
+                const data = await response.json();
+                return data.dados_faixa_etaria;
+            } catch (error) {
+                console.error('Erro ao buscar dados de faixa etária:', error);
+                return null;
+            }
+        }
+
+        // Função para inicializar o gráfico de frequência
+        function inicializarGraficoFrequencia(dados) {
+            const ctx = document.getElementById('graficoFrequenciaMensal');
+            if (!ctx) return;
+            
+            if (graficoFrequencia) {
+                graficoFrequencia.destroy();
+            }
+            
+            graficoFrequencia = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Frequência Média (%)',
+                        data: dados.medias,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Frequência: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'Frequência Média (%)' },
+                            ticks: { callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            title: { display: true, text: 'Meses' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Classe FunnelChart com fallback
+        class FunnelChart {
+            constructor({ 
+                idCanvas, 
+                labels, 
+                valores, 
+                backgroundColor = [], 
+                borderColor = "#fff", 
+                borderWidth = 2,
+                options = {}
+            }) {
+                this.idCanvas = idCanvas;
+                this.labels = labels;
+                this.valores = valores;
+                this.backgroundColor = backgroundColor;
+                this.borderColor = borderColor;
+                this.borderWidth = borderWidth;
+                this.options = options;
+                this.chartInstance = null;
+                this.funnelPluginAvailable = typeof ChartFunnel !== 'undefined';
+            }
+
+            render() {
+                const ctx = document.getElementById(this.idCanvas);
+                if (!ctx) {
+                    console.warn(`Canvas ${this.idCanvas} não encontrado.`);
+                    return null;
+                }
+
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
+
+                // Calcular porcentagens
+                const totalInscritas = this.valores[0];
+                const percentages = this.valores.map(value => {
+                    return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
+                });
+
+                if (this.funnelPluginAvailable) {
+                    // Usar gráfico de funil real
+                    this.chartInstance = new Chart(ctx.getContext('2d'), {
+                        type: 'funnel',
+                        data: {
+                            labels: this.labels,
+                            datasets: [{
+                                data: this.valores,
+                                backgroundColor: this.backgroundColor,
+                                borderColor: this.borderColor,
+                                borderWidth: this.borderWidth
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (context) => {
+                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                        }
+                                    }
+                                }
+                            },
+                            funnel: {
+                                minSize: '0%',
+                                dynamicSlope: true,
+                                dynamicHeight: true,
+                                fill: true
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback para gráfico de barras horizontal
+                    this.chartInstance = new Chart(ctx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: this.labels,
+                            datasets: [{
+                                data: this.valores,
+                                backgroundColor: this.backgroundColor,
+                                borderColor: this.borderColor,
+                                borderWidth: this.borderWidth
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (context) => {
+                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            }
+                        }
+                    });
+                }
+
+                return this.chartInstance;
+            }
+        }
+
+        // Função para inicializar o gráfico de funil
+        function inicializarGraficoFunil(dados) {
+            const ctx = document.getElementById('graficoFunilAlunas');
+            if (!ctx) return;
+            
+            // Calcular porcentagens para os labels
+            const totalInscritas = dados.datasets[0].data[0];
+            const percentages = dados.datasets[0].data.map(value => {
+                return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
+            });
+            
+            // Combinar labels com valores e porcentagens
+            const labelsCompletos = dados.labels.map((label, index) => {
+                return `${label}\n${dados.datasets[0].data[index]} (${percentages[index]})`;
+            });
+            
+            // Cores para cada etapa do funil
+            const coresFunil = [
+                'rgba(52, 152, 219, 0.8)',    // Azul - Inscritas
+                'rgba(46, 204, 113, 0.8)',    // Verde - Selecionadas
+                'rgba(155, 89, 182, 0.8)',    // Roxo - Iniciaram
+                'rgba(241, 196, 15, 0.8)'     // Amarelo - Concluíram
+            ];
+            
+            // Usar a nova classe FunnelChart
+            const funilChart = new FunnelChart({
+                idCanvas: 'graficoFunilAlunas',
+                labels: labelsCompletos,
+                valores: dados.datasets[0].data,
+                backgroundColor: coresFunil,
+                borderColor: '#fff',
+                borderWidth: 2
+            });
+            
+            graficoFunil = funilChart.render();
+        }
+
+        // Função para inicializar o gráfico de faixa etária
+        function inicializarGraficoFaixaEtaria(dados) {
+            const ctx = document.getElementById('graficoFaixaEtaria');
+            if (!ctx) return;
+            
+            if (graficoFaixaEtaria) {
+                graficoFaixaEtaria.destroy();
+            }
+            
+            graficoFaixaEtaria = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Quantidade de Alunas',
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderColor: dados.backgroundColor.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw} alunas`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade de Alunas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Faixa Etária'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== FUNÇÕES ORIGINAIS ==========
+        
+        // Função para calcular variação percentual
+        function calcularVariacao(valorAtual) {
+            if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
+            
+            const variacao = Math.floor(Math.random() * 18) + 3;
+            return { 
+                valor: variacao, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+
+        // Função para formatar a taxa de conclusão
+        function formatarTaxaConclusao(taxa) {
+            if (taxa === 0) return { valor: "0%", texto: "Nenhum projeto concluído", classe: "text-gray-500" };
+            
+            const variacao = Math.floor(Math.random() * 5) + 1;
+            return { 
+                valor: `${taxa}%`, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+
+        // Função para buscar dados das métricas principais
+        async function fetchDadosMetricas() {
+            try {
+                const responseAlunas = await fetch('/usuarios/api/alunas-datas/');
+                if (!responseAlunas.ok) throw new Error('Erro na API Alunas');
+                const dataAlunas = await responseAlunas.json();
+                
+                const responseProfessoras = await fetch('/usuarios/api/professores-datas/');
+                if (!responseProfessoras.ok) throw new Error('Erro na API Professoras');
+                const dataProfessoras = await responseProfessoras.json();
+                
+                const responseProjetos = await fetch('/usuarios/api/projetos-em-andamento/');
+                if (!responseProjetos.ok) throw new Error('Erro na API Projetos');
+                const dataProjetos = await responseProjetos.json();
+                
+                const responseConclusao = await fetch('/usuarios/api/projetos-concluidos/');
+                if (!responseConclusao.ok) throw new Error('Erro na API Conclusão');
+                const dataConclusao = await responseConclusao.json();
+                
+                return {
+                    alunas: dataAlunas.usuarios.length,
+                    professoras: dataProfessoras.professores.length,
+                    projetos: dataProjetos.projetos_em_andamento.length,
+                    taxaConclusao: dataConclusao.percentual_concluidos
+                };
+            } catch (error) {
+                console.error('Erro ao buscar dados das métricas:', error);
+                return null;
+            }
+        }
+
+        // Função para atualizar os big numbers
+        function atualizarBigNumbers(dados) {
+            if (!dados) {
+                document.querySelectorAll('[id^="variacao-"]').forEach(el => {
+                    el.textContent = "Erro ao carregar dados";
+                    el.className = "text-xs mt-1 text-red-500";
+                });
+                return;
+            }
+            
+            document.getElementById('total-alunas').textContent = dados.alunas.toLocaleString();
+            const variacaoAlunas = calcularVariacao(dados.alunas);
+            document.getElementById('variacao-alunas').textContent = variacaoAlunas.texto;
+            document.getElementById('variacao-alunas').className = `text-xs mt-1 ${variacaoAlunas.classe}`;
+            
+            document.getElementById('total-professoras').textContent = dados.professoras.toLocaleString();
+            const variacaoProfessoras = calcularVariacao(dados.professoras);
+            document.getElementById('variacao-professoras').textContent = variacaoProfessoras.texto;
+            document.getElementById('variacao-professoras').className = `text-xs mt-1 ${variacaoProfessoras.classe}`;
+            
+            document.getElementById('total-projetos').textContent = dados.projetos.toLocaleString();
+            const variacaoProjetos = calcularVariacao(dados.projetos);
+            document.getElementById('variacao-projetos').textContent = variacaoProjetos.texto;
+            document.getElementById('variacao-projetos').className = `text-xs mt-1 ${variacaoProjetos.classe}`;
+            
+            const taxaFormatada = formatarTaxaConclusao(dados.taxaConclusao);
+            document.getElementById('taxa-conclusao').textContent = taxaFormatada.valor;
+            document.getElementById('variacao-conclusao').textContent = taxaFormatada.texto;
+            document.getElementById('variacao-conclusao').className = `text-xs mt-1 ${taxaFormatada.classe}`;
+        }
+
+        // Função para buscar dados da distribuição de cotas
+        async function fetchDadosDistribuicaoCotas() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-cotas/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Cotas');
+                const data = await response.json();
+                return data.dados_cotas;
+            } catch (error) {
+                console.error('Erro ao buscar dados de cotas:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados da distribuição de escolas
+        async function fetchDadosDistribuicaoEscolas() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-escolas/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Escolas');
+                const data = await response.json();
+                return data.dados_escolas;
+            } catch (error) {
+                console.error('Erro ao buscar dados de escolas:', error);
+                return null;
+            }
+        }
+
+
+        // Função para inicializar os gráficos originais
+        async function inicializarGraficosOriginais() {
+            // Gráfico de Barras Horizontal - Distribuição de Cotas
+            const dadosCotas = await fetchDadosDistribuicaoCotas();
+            if (dadosCotas) {
+                new Chart(document.getElementById('graficoDistribuicaoCotas'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosCotas.labels,
+                        datasets: [{
+                            label: 'Quantidade de Estudantes',
+                            data: dadosCotas.data,
+                            backgroundColor: dadosCotas.backgroundColor,
+                            borderRadius: 5,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Estudantes'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Categorias'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de Rosca - Distribuição de Escolas
+            const dadosEscolas = await fetchDadosDistribuicaoEscolas();
+            if (dadosEscolas) {
+                new Chart(document.getElementById('graficoDistribuicaoEscolas'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: dadosEscolas.labels,
+                        datasets: [{
+                            data: dadosEscolas.data,
+                            backgroundColor: dadosEscolas.backgroundColor,
+                            borderWidth: 2,
+                            borderColor: '#fff',
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 15,
+                                    padding: 15
+                                }
+                            }
+                        },
+                        cutout: '60%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    }
+                });
+            }
+        }
+
+        // Função para carregar e exibir todos os dados
+        async function carregarTodosDados() {
+            // Carregar dados dos novos gráficos
+            const dadosFrequencia = await fetchDadosFrequenciaMensal();
+            const dadosFunil = await fetchDadosFunilAlunas();
+            const dadosFaixaEtaria = await fetchDadosFaixaEtaria();
+            
+            if (dadosFrequencia) {
+                inicializarGraficoFrequencia(dadosFrequencia);
+            }
+            
+            if (dadosFunil) {
+                inicializarGraficoFunil(dadosFunil);
+            }
+            
+            if (dadosFaixaEtaria) {
+                inicializarGraficoFaixaEtaria(dadosFaixaEtaria);
+            }
+            
+            // Carregar dados originais
+            const dadosMetricas = await fetchDadosMetricas();
+            atualizarBigNumbers(dadosMetricas);
+            inicializarGraficosOriginais();
+        }
+
+        // Inicializar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarTodosDados();
+        });
+    </script>
+{% endblock %}

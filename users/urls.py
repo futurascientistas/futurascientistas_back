@@ -59,9 +59,8 @@ urlpatterns = [
     path('api/funil-alunas/', ApiFunilAlunasApplicationLog.as_view(), name='api-funil-alunas'),
     path('api/faixa-etaria/', ApiFaixaEtaria.as_view(), name='api-faixa-etaria'),
 
-    path('qualquer/', Dashboard1.as_view(), name='qualquercoisa'),
-    path('qualquer2/', Dashboard2.as_view(), name='qualquercoisa2'),
-    path('qualquer3/', Dashboard3.as_view(), name='qualquercoisa3'),
-    path('qualquer4/', Dashboard4.as_view(), name='qualquercoisa4'),
+    path('dashboardgeral/', Dashboard1.as_view(), name='dashboardgeral'),
+    path('dashboardprofessoras/', DashboardProfessoras.as_view(), name='dashboardprofessoras'),
+    path('dashalunas/', DashboardAlunas.as_view(), name='dashalunas'),
 
 ]

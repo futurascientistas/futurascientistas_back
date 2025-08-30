@@ -1715,13 +1715,12 @@ class ApiFaixaEtaria(APIView):
             })
 
 class Dashboard1(TemplateView):
-    template_name = "qualquercoisa/teste.html"
+    template_name = "dashboard/dashboardgeral.html"
     
-class Dashboard2(TemplateView):
-    template_name = "qualquercoisa/teste2.html"
+class DashboardProfessoras(TemplateView):
+    template_name = "dashboard/dashprofessoras.html"
     
-class Dashboard3(TemplateView):
-    template_name = "qualquercoisa/teste3.html"
+class DashboardAlunas(TemplateView):
+    template_name = "dashboard/dashalunas.html"
     
-class Dashboard4(TemplateView):
-    template_name = "qualquercoisa/teste4.html"
+

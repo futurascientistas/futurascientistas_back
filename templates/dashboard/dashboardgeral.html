@@ -8,21 +8,21 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
     <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
 
-    <div class="w-full min-h-[100vh]">
+    <div class="w-full">
         <div class="flex flex-col -mx-2">
             <div class="w-full px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-1">Evolução Temporal</h2>
             </div>
 
             <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 100%;">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-white shadow-md rounded-lg h-80 relative">
                       <canvas id="graficoEvolucaoInscricoesProjeto"></canvas>
                     </div>
                 </div>
                   
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 100%;">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-white shadow-md rounded-lg h-80 relative">
                       <canvas id="graficoFunilPerformanceAlunas"></canvas>
                     </div>
                 </div>
@@ -34,9 +34,9 @@
                 <h2 class="text-xl font-bold text-gray-800 mb-1">Distribuição por Tipo de Escola e PCD</h2>
             </div>
 
-            <div class="w-full px-2 h-100">
-              <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 80%;">
-                <canvas id="graficoBarra" height="70%"></canvas>
+            <div class="w-full px-2">
+              <div class="bg-white shadow-md rounded-lg h-80 relative">
+                <canvas id="graficoBarra"></canvas>
               </div>
             </div>
         </div>
@@ -45,15 +45,15 @@
         <div class="flex flex-col md:flex-row gap-5 -mx-2 mt-8">
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição Regional de Projetos</h2>
-                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                <div class="bg-white shadow-md rounded-lg h-80 relative">
                     <canvas id="graficoDistribuicaoRegional"></canvas>
                 </div>
             </div>
 
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Tempo de Formação</h2>
-                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
-                    <canvas id="graficoDistribuicaoFormacao" style="max-width: 400px; max-height: 400px;"></canvas>
+                <div class="bg-white shadow-md rounded-lg h-80 relative flex items-center justify-center">
+                    <canvas id="graficoDistribuicaoFormacao"></canvas>
                 </div>
             </div>
         </div>
@@ -136,6 +136,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             title: { display: true, text: 'Distribuição por Tipos de Cota' },
                             legend: { position: 'bottom' }
@@ -159,6 +160,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             title: { display: true, text: 'Evolução de Inscrições e Projetos' },
                             legend: { position: 'bottom' }
@@ -183,6 +185,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             title: { display: true, text: 'Funil de Performance das Alunas' },
                             legend: { display: false },
@@ -222,6 +225,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false }
                         },
@@ -249,6 +253,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { 
                                 position: 'right',
