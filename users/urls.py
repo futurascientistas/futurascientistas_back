@@ -33,29 +33,28 @@ urlpatterns = [
     path('<uuid:user_id>/anexo/<str:field_name>/', AnexoDownloadView.as_view()),
     
     
-    
-    path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
-    path('api/professores-datas/', ApiProfessoresDatas.as_view(), name='api-professores-datas'),
-    path("api/deficiencia/", ApiUsuariosComDeficiencia.as_view(), name="usuarios-deficiencia"),
-    path('api/projetos-em-andamento/', ApiProjetosEmAndamento.as_view(), name='api_projetos_em_andamento'),
-    path('api/projetos-concluidos/', ApiPercentualProjetosConcluidos.as_view(), name='api_projetos_concluidos'),
-    path('api/projetos-com-regioes/', ApiProjetosComRegioes.as_view(), name='api_projetos_com_regioes'),
-    path('api/contagem-tipo-ensino/', ApiContagemPorTipoEnsino.as_view(), name='api_contagem_tipo_ensino'),
-    path('api/contagem-cidade/', ApiContagemPorCidade.as_view(), name='api_contagem_cidade'),
-
 
     
     #API VIEWS
     path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
-    path('api/professores-datas/', ApiProfessoresDatas.as_view(), name='api-professores-datas'),
-    path("api/deficiencia/", ApiUsuariosComDeficiencia.as_view(), name="usuarios-deficiencia"),
-    path('api/projetos-em-andamento/', ApiProjetosEmAndamento.as_view(), name='api_projetos_em_andamento'),
-    path('api/projetos-concluidos/', ApiPercentualProjetosConcluidos.as_view(), name='api_projetos_concluidos'),
-    path('api/projetos-com-regioes/', ApiProjetosComRegioes.as_view(), name='api_projetos_com_regioes'),
-    path('api/contagem-tipo-ensino/', ApiContagemPorTipoEnsino.as_view(), name='api_contagem_tipo_ensino'),
-    path('api/contagem-cidade/', ApiContagemPorCidade.as_view(), name='api_contagem_cidade'),
+    
+    
+    path('api/dashboard-diversidade/', ApiDashboardDiversidade.as_view(), name='api-dashboard-diversidade'),
+    path('api/evolucao-temporal/', ApiEvolucaoTemporal.as_view(), name='api-evolucao-temporal'),
+    path('api/funil-performance/', ApiFunilPerformance.as_view(), name='api-funil-performance'),
+    path('api/distribuicao-regional/', ApiDistribuicaoRegional.as_view(), name='api-distribuicao-regional'),
+    path('api/distribuicao-formacao/', ApiDistribuicaoFormacao.as_view(), name='api-distribuicao-formacao'),
+    path('api/professoras-distribuicao-regional/', ApiProfessorasDistribuicaoRegional.as_view(), name='professoras-distribuicao-regional'),
+    path('api/professoras-distribuicao-tipo-ensino/', ApiProfessorasDistribuicaoTipoEnsino.as_view(), name='professoras-distribuicao-tipo-ensino'),
+    path('api/distribuicao-cotas/', ApiDistribuicaoCotas.as_view(), name='api-distribuicao-cotas'),
+    path('api/distribuicao-escolas/', ApiDistribuicaoEscolas.as_view(), name='api-distribuicao-escolas'),
+    path('api/frequencia-mensal-alunos/', ApiFrequenciaMensalAlunos.as_view(), name='api-frequencia-mensal-alunos'),
+    path('api/funil-alunas/', ApiFunilAlunasApplicationLog.as_view(), name='api-funil-alunas'),
+    path('api/faixa-etaria/', ApiFaixaEtaria.as_view(), name='api-faixa-etaria'),
 
     path('qualquer/', Dashboard1.as_view(), name='qualquercoisa'),
     path('qualquer2/', Dashboard2.as_view(), name='qualquercoisa2'),
+    path('qualquer3/', Dashboard3.as_view(), name='qualquercoisa3'),
+    path('qualquer4/', Dashboard4.as_view(), name='qualquercoisa4'),
 
 ]

@@ -1,0 +1,148 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block content%}
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Distribuição de Cotas</h1>
+    <p class="text-sm text-gray-600 mb-4">Visualização da distribuição de estudantes por gênero, raça e tipo de escola.</p>
+
+    <div class="w-full min-h-[80vh]">
+        <div class="flex flex-wrap -mx-2">
+            <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
+                <!-- Gráfico de Barras Horizontal - Distribuição de Cotas -->
+                <div class="w-full md:w-1/2 h-100">
+                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Gênero, Raça e Tipo de Escola</h3>
+                        <canvas id="graficoDistribuicaoCotas"></canvas>
+                    </div>
+                </div>
+                  
+                <!-- Gráfico de Rosca - Tipo de Ensino -->
+                <div class="w-full md:w-1/2 h-100">
+                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
+                        <canvas id="graficoDistribuicaoEscolas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Função para buscar dados da distribuição de cotas
+        async function fetchDadosDistribuicaoCotas() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-cotas/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Cotas');
+                const data = await response.json();
+                return data.dados_cotas;
+            } catch (error) {
+                console.error('Erro ao buscar dados de cotas:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados da distribuição de escolas
+        async function fetchDadosDistribuicaoEscolas() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-escolas/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Escolas');
+                const data = await response.json();
+                return data.dados_escolas;
+            } catch (error) {
+                console.error('Erro ao buscar dados de escolas:', error);
+                return null;
+            }
+        }
+
+        // Função para inicializar os gráficos
+        async function inicializarGraficos() {
+            // Gráfico de Barras Horizontal - Distribuição de Cotas
+            const dadosCotas = await fetchDadosDistribuicaoCotas();
+            if (dadosCotas) {
+                new Chart(document.getElementById('graficoDistribuicaoCotas'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosCotas.labels,
+                        datasets: [{
+                            label: 'Quantidade de Estudantes',
+                            data: dadosCotas.data,
+                            backgroundColor: dadosCotas.backgroundColor,
+                            borderRadius: 5,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // Isso torna o gráfico horizontal
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Estudantes'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Categorias'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de Rosca - Distribuição de Escolas
+            const dadosEscolas = await fetchDadosDistribuicaoEscolas();
+            if (dadosEscolas) {
+                new Chart(document.getElementById('graficoDistribuicaoEscolas'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: dadosEscolas.labels,
+                        datasets: [{
+                            data: dadosEscolas.data,
+                            backgroundColor: dadosEscolas.backgroundColor,
+                            borderWidth: 2,
+                            borderColor: '#fff',
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 15,
+                                    padding: 15
+                                }
+                            }
+                        },
+                        cutout: '60%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    }
+                });
+            }
+        }
+
+        // Inicializar os gráficos quando a página carregar
+        document.addEventListener('DOMContentLoaded', inicializarGraficos);
+    </script>
+{% endblock %}

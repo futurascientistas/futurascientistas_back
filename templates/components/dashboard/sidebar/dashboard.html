@@ -166,6 +166,22 @@
                 </svg>
                 <span class="menu-text">Dashboard 2</span>
             </li>
+
+            <li class="menu-item {% if active_item == 'perfil' %}active{% endif %}" data-path="{% url 'qualquercoisa3' %}" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/>
+                    <path d="M4 20v-1c0-2 4-3 8-3s8 1 8 3v1"/>
+                </svg>
+                <span class="menu-text">Dashboard 3</span>
+            </li>
+
+            <li class="menu-item {% if active_item == 'perfil' %}active{% endif %}" data-path="{% url 'qualquercoisa4' %}" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4z"/>
+                    <path d="M4 20v-1c0-2 4-3 8-3s8 1 8 3v1"/>
+                </svg>
+                <span class="menu-text">Dashboard 4</span>
+            </li>
             {% for item in menu_items %}
             <li class="menu-item {% if active_item == item.id %}active{% endif %}" data-path="{{ item.url }}">
                 {{ item.icon_svg|safe }}

@@ -4,94 +4,273 @@
 {% block extra_css %}
 {% endblock %}
 
-
 {% block content%}
-
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
     <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
 
     <div class="w-full min-h-[100vh]">
-
-
         <div class="flex flex-col -mx-2">
-
             <div class="w-full px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-1">Evolução Temporal</h2>
             </div>
 
             <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
-                
                 <div class="w-full md:w-1/2 h-100">
                     <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 100%;">
-                      <canvas id=""><canvas>
+                      <canvas id="graficoEvolucaoInscricoesProjeto"></canvas>
                     </div>
                 </div>
                   
                 <div class="w-full md:w-1/2 h-100">
                     <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 100%;">
-                      <canvas id=""><canvas>
+                      <canvas id="graficoFunilPerformanceAlunas"></canvas>
                     </div>
                 </div>
             </div>
-
         </div>
 
-        
-        <div class="flex flex-wrap -mx-2">
-
+        <div class="flex flex-wrap -mx-2 mt-8">
             <div class="w-full px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-1">Evolução Temporal</h2>
+                <h2 class="text-xl font-bold text-gray-800 mb-1">Distribuição por Tipo de Escola e PCD</h2>
             </div>
-
-
 
             <div class="w-full px-2 h-100">
-              <div class="bg-white shadow-md rounded-lg py-[8rem]" style="height: 100%;">
-                <canvas id="graficoBarra"><canvas>
+              <div class="bg-white shadow-md rounded-lg min-h-[450px]" style="height: 100%;">
+                <canvas id="graficoBarra"></canvas>
               </div>
             </div>
-
-
-
         </div>
 
+        <!-- NOVOS GRÁFICOS: Regional e Formação -->
+        <div class="flex flex-col md:flex-row gap-5 -mx-2 mt-8">
+            <div class="w-full md:w-1/2 px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição Regional de Projetos</h2>
+                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                    <canvas id="graficoDistribuicaoRegional"></canvas>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Tempo de Formação</h2>
+                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                    <canvas id="graficoDistribuicaoFormacao" style="max-width: 400px; max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
-
-
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'js/graficos_chartjs.js' %}"></script>
 
     <script>
-        const graficoBarra = new BarChart({
-            idCanvas: "graficoBarra",
-            labels: ['Ampla Concorrência', 'PN e Quilombolas', 'Trans Travestis', 'PCD'],
-            datasets: [
-                {
-                  label: 'Escolas Regulares',
-                  data: [50, 45, 5, 6],
-                  backgroundColor: '#2ecc71',
-                  borderRadius: 8
-                },
-                {
-                  label: 'Escolas Técnicas',
-                  data: [40, 38, 4, 5],
-                  backgroundColor: '#e67e22',
-                  borderRadius: 8
-                },
-                {
-                  label: 'Professoras',
-                  data: [20, 18, 3, 3],
-                  backgroundColor: '#9b59b6',
-                  borderRadius: 8
-                }
-            ],
-        });
+        // Função para buscar dados da API
+        async function fetchDadosDiversidade() {
+            try {
+                const response = await fetch('/usuarios/api/dashboard-diversidade/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_diversidade;
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                return null;
+            }
+        }
 
-        graficoBarra.render();
+        async function fetchDadosDistribuicaoRegional() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-regional/');
+                const data = await response.json();
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de distribuição regional:', error);
+                return null;
+            }
+        }
+
+        async function fetchDadosDistribuicaoFormacao() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-formacao/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Formação');
+                const data = await response.json();
+                return data.dados_distribuicao_formacao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de formação:', error);
+                return null;
+            }
+        }
+
+        async function fetchDadosEvolucaoTemporal() {
+            try {
+                const response = await fetch('/usuarios/api/evolucao-temporal/');
+                if (!response.ok) throw new Error('Erro na API Evolução Temporal');
+                const data = await response.json();
+                return data.dados_evolucao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de evolução:', error);
+                return null;
+            }
+        }
+
+        async function fetchDadosFunilPerformance() {
+            try {
+                const response = await fetch('/usuarios/api/funil-performance/');
+                if (!response.ok) throw new Error('Erro na API Funil Performance');
+                const data = await response.json();
+                return data.dados_funil;
+            } catch (error) {
+                console.error('Erro ao buscar dados do funil:', error);
+                return null;
+            }
+        }
+
+        async function inicializarTodosGraficos() {
+            // Gráfico de Barras
+            const dadosDiversidade = await fetchDadosDiversidade();
+            if (dadosDiversidade && dadosDiversidade.grafico_barra) {
+                new Chart(document.getElementById('graficoBarra'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosDiversidade.grafico_barra.labels,
+                        datasets: dadosDiversidade.grafico_barra.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Distribuição por Tipos de Cota' },
+                            legend: { position: 'bottom' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade' } },
+                            x: { title: { display: true, text: 'Tipos de Cota' } }
+                        }
+                    }
+                });
+            }
+
+            // Evolução Temporal
+            const dadosEvolucao = await fetchDadosEvolucaoTemporal();
+            if (dadosEvolucao) {
+                new Chart(document.getElementById('graficoEvolucaoInscricoesProjeto'), {
+                    type: 'line',
+                    data: {
+                        labels: dadosEvolucao.labels,
+                        datasets: dadosEvolucao.datasets
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Evolução de Inscrições e Projetos' },
+                            legend: { position: 'bottom' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade' } }
+                        }
+                    }
+                });
+            }
+
+            // Funil Performance
+            const dadosFunil = await fetchDadosFunilPerformance();
+            if (dadosFunil) {
+                const totalInscritas = dadosFunil.datasets[0].data[0];
+                const percentages = dadosFunil.datasets[0].data.map(value => ((value / totalInscritas) * 100).toFixed(1) + '%');
+                new Chart(document.getElementById('graficoFunilPerformanceAlunas'), {
+                    type: 'line',
+                    data: {
+                        labels: dadosFunil.labels,
+                        datasets: [{ ...dadosFunil.datasets[0], borderWidth: 3 }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: { display: true, text: 'Funil de Performance das Alunas' },
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const index = context.dataIndex;
+                                        const value = context.dataset.data[index];
+                                        const percentage = percentages[index];
+                                        return `${dadosFunil.labels[index]}: ${value} (${percentage})`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade de Alunas' } },
+                            x: { title: { display: true, text: 'Etapas do Processo' } }
+                        }
+                    }
+                });
+            }
+
+            // Distribuição Regional
+            const dadosDistribuicao = await fetchDadosDistribuicaoRegional();
+            if (dadosDistribuicao) {
+                new Chart(document.getElementById('graficoDistribuicaoRegional'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosDistribuicao.labels,
+                        datasets: [{
+                            label: 'Projetos Cadastrados',
+                            data: dadosDistribuicao.data,
+                            backgroundColor: dadosDistribuicao.backgroundColor,
+                            borderRadius: 8,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade de Projetos' } },
+                            x: { title: { display: true, text: 'Regiões do Brasil' } }
+                        }
+                    }
+                });
+            }
+
+            // Distribuição Formação
+            const dadosFormacao = await fetchDadosDistribuicaoFormacao();
+            if (dadosFormacao) {
+                new Chart(document.getElementById('graficoDistribuicaoFormacao'), {
+                    type: 'pie',
+                    data: {
+                        labels: dadosFormacao.labels,
+                        datasets: [{
+                            data: dadosFormacao.data,
+                            backgroundColor: dadosFormacao.backgroundColor,
+                            borderWidth: 1,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: { padding: 15, usePointStyle: true }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', inicializarTodosGraficos);
     </script>
-
-{% endblock%}
-
-
-
+{% endblock %}

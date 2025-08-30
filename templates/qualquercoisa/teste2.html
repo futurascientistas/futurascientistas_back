@@ -1,5 +1,198 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block extra_css %}
+{% endblock %}
 
 {% block content%}
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
+    <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
 
-{% endblock%}
+    <div class="w-full min-h-[100vh]">
+        <!-- Primeira linha com dois gráficos de pizza -->
+        <div class="flex flex-col md:flex-row gap-5 -mx-2">
+            <!-- Card 1: Professoras por Tipo de Ensino -->
+            <div class="w-full md:w-1/2 px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Tipo de Ensino</h2>
+                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                    <canvas id="graficoProfessorasTipoEnsino"></canvas>
+                </div>
+            </div>
+
+            <!-- Card 2: Distribuição por Formação -->
+            <div class="w-full md:w-1/2 px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Formação</h2>
+                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                    <canvas id="graficoDistribuicaoFormacao"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segunda linha com o gráfico de barras -->
+        <div class="flex flex-wrap -mx-2 mt-8">
+            <div class="w-full px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Região</h2>
+                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
+                    <canvas id="graficoProfessorasRegiao"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Função para buscar dados de professoras por região
+        async function fetchDadosProfessorasRegiao() {
+            try {
+                const response = await fetch('/usuarios/api/professoras-distribuicao-regional/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de professoras por região:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados de professoras por tipo de ensino
+        async function fetchDadosProfessorasTipoEnsino() {
+            try {
+                const response = await fetch('/usuarios/api/professoras-distribuicao-tipo-ensino/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de professoras por tipo de ensino:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados de distribuição por formação
+        async function fetchDadosDistribuicaoFormacao() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-formacao/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_distribuicao_formacao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de distribuição por formação:', error);
+                return null;
+            }
+        }
+
+        async function inicializarTodosGraficos() {
+            // Gráfico de Professoras por Região
+            const dadosProfessorasRegiao = await fetchDadosProfessorasRegiao();
+            if (dadosProfessorasRegiao) {
+                new Chart(document.getElementById('graficoProfessorasRegiao'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosProfessorasRegiao.labels,
+                        datasets: [{
+                            label: 'Quantidade de Professoras',
+                            data: dadosProfessorasRegiao.data,
+                            backgroundColor: dadosProfessorasRegiao.backgroundColor,
+                            borderRadius: 8,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Distribuição de Professoras por Região' }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                title: { display: true, text: 'Quantidade de Professoras' } 
+                            },
+                            x: { 
+                                title: { display: true, text: 'Regiões do Brasil' } 
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de Professoras por Tipo de Ensino
+            const dadosProfessorasTipoEnsino = await fetchDadosProfessorasTipoEnsino();
+            if (dadosProfessorasTipoEnsino) {
+                new Chart(document.getElementById('graficoProfessorasTipoEnsino'), {
+                    type: 'pie',
+                    data: {
+                        labels: dadosProfessorasTipoEnsino.labels,
+                        datasets: [{
+                            data: dadosProfessorasTipoEnsino.data,
+                            backgroundColor: dadosProfessorasTipoEnsino.backgroundColor,
+                            borderWidth: 1,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: { padding: 15, usePointStyle: true }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfico de Distribuição por Formação
+            const dadosDistribuicaoFormacao = await fetchDadosDistribuicaoFormacao();
+            if (dadosDistribuicaoFormacao) {
+                new Chart(document.getElementById('graficoDistribuicaoFormacao'), {
+                    type: 'pie',
+                    data: {
+                        labels: dadosDistribuicaoFormacao.labels,
+                        datasets: [{
+                            data: dadosDistribuicaoFormacao.data,
+                            backgroundColor: dadosDistribuicaoFormacao.backgroundColor,
+                            borderWidth: 1,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: { padding: 15, usePointStyle: true }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', inicializarTodosGraficos);
+    </script>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block content%}
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Frequência Mensal dos Alunos</h1>
+    <p class="text-sm text-gray-600 mb-4">Acompanhamento da frequência média dos alunos por mês em todos os projetos.</p>
+
+    <div class="w-full min-h-[80vh]">
+        <!-- Container com 3 cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Card 1: Gráfico de Linha (Frequência Mensal) -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Frequência Média Mensal (%)</h3>
+                <canvas id="graficoFrequenciaMensal"></canvas>
+            </div>
+
+            <!-- Card 2: Funil de Alunas -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Funil de Alunas</h3>
+                <p class="text-sm text-gray-600 mb-4">Jornada das alunas ao longo das etapas do projeto</p>
+                <canvas id="graficoFunilAlunas"></canvas>
+            </div>
+        </div>
+
+        <!-- Card 3: Gráfico de Faixa Etária -->
+        <div class="bg-white shadow-md rounded-lg p-4 mb-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Faixa Etária</h3>
+            <canvas id="graficoFaixaEtaria"></canvas>
+        </div>
+    </div>
+
+    <!-- Carregar Chart.js primeiro -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Depois carregar o plugin de funil -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-funnel@1.0.5/dist/chartjs-plugin-funnel.min.js"></script>
+    
+    <script>
+        // Verificar se ChartFunnel foi carregado corretamente
+        if (typeof ChartFunnel === 'undefined') {
+            console.error('ChartFunnel não foi carregado corretamente. Verifique a URL do script.');
+        } else {
+            console.log('ChartFunnel carregado com sucesso');
+            Chart.register(ChartFunnel);
+        }
+
+        // Variáveis globais
+        let graficoFrequencia = null;
+        let graficoFunil = null;
+        let graficoFaixaEtaria = null;
+
+        // Função para buscar dados da frequência mensal (todos os projetos)
+        async function fetchDadosFrequenciaMensal() {
+            try {
+                const response = await fetch('/usuarios/api/frequencia-mensal-alunos/');
+                if (!response.ok) throw new Error('Erro na API Frequência Mensal Alunos');
+                const data = await response.json();
+                return data.dados_frequencia;
+            } catch (error) {
+                console.error('Erro ao buscar dados de frequência:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados do funil de alunas
+        async function fetchDadosFunilAlunas() {
+            try {
+                const response = await fetch('/usuarios/api/funil-alunas/');
+                if (!response.ok) throw new Error('Erro na API Funil Alunas');
+                const data = await response.json();
+                return data.dados_funil;
+            } catch (error) {
+                console.error('Erro ao buscar dados do funil:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados de faixa etária
+        async function fetchDadosFaixaEtaria() {
+            try {
+                const response = await fetch('/usuarios/api/faixa-etaria/');
+                if (!response.ok) throw new Error('Erro na API Faixa Etária');
+                const data = await response.json();
+                return data.dados_faixa_etaria;
+            } catch (error) {
+                console.error('Erro ao buscar dados de faixa etária:', error);
+                return null;
+            }
+        }
+
+        // Função para inicializar o gráfico de frequência
+        function inicializarGraficoFrequencia(dados) {
+            const ctx = document.getElementById('graficoFrequenciaMensal');
+            if (!ctx) return;
+            
+            if (graficoFrequencia) {
+                graficoFrequencia.destroy();
+            }
+            
+            graficoFrequencia = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Frequência Média (%)',
+                        data: dados.medias,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Frequência: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 0,
+                            max: 100,
+                            title: { display: true, text: 'Frequência Média (%)' },
+                            ticks: { callback: function(value) { return value + '%'; } }
+                        },
+                        x: {
+                            title: { display: true, text: 'Meses' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Classe FunnelChart com fallback
+        class FunnelChart {
+            constructor({ 
+                idCanvas, 
+                labels, 
+                valores, 
+                backgroundColor = [], 
+                borderColor = "#fff", 
+                borderWidth = 2,
+                options = {}
+            }) {
+                this.idCanvas = idCanvas;
+                this.labels = labels;
+                this.valores = valores;
+                this.backgroundColor = backgroundColor;
+                this.borderColor = borderColor;
+                this.borderWidth = borderWidth;
+                this.options = options;
+                this.chartInstance = null;
+                this.funnelPluginAvailable = typeof ChartFunnel !== 'undefined';
+            }
+
+            render() {
+                const ctx = document.getElementById(this.idCanvas);
+                if (!ctx) {
+                    console.warn(`Canvas ${this.idCanvas} não encontrado.`);
+                    return null;
+                }
+
+                if (this.chartInstance) {
+                    this.chartInstance.destroy();
+                }
+
+                // Calcular porcentagens
+                const totalInscritas = this.valores[0];
+                const percentages = this.valores.map(value => {
+                    return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
+                });
+
+                if (this.funnelPluginAvailable) {
+                    // Usar gráfico de funil real
+                    this.chartInstance = new Chart(ctx.getContext('2d'), {
+                        type: 'funnel',
+                        data: {
+                            labels: this.labels,
+                            datasets: [{
+                                data: this.valores,
+                                backgroundColor: this.backgroundColor,
+                                borderColor: this.borderColor,
+                                borderWidth: this.borderWidth
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (context) => {
+                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                        }
+                                    }
+                                }
+                            },
+                            funnel: {
+                                minSize: '0%',
+                                dynamicSlope: true,
+                                dynamicHeight: true,
+                                fill: true
+                            }
+                        }
+                    });
+                } else {
+                    // Fallback para gráfico de barras horizontal
+                    this.chartInstance = new Chart(ctx.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: this.labels,
+                            datasets: [{
+                                data: this.valores,
+                                backgroundColor: this.backgroundColor,
+                                borderColor: this.borderColor,
+                                borderWidth: this.borderWidth
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (context) => {
+                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            }
+                        }
+                    });
+                }
+
+                return this.chartInstance;
+            }
+        }
+
+        // Função para inicializar o gráfico de funil
+        function inicializarGraficoFunil(dados) {
+            const ctx = document.getElementById('graficoFunilAlunas');
+            if (!ctx) return;
+            
+            // Calcular porcentagens para os labels
+            const totalInscritas = dados.datasets[0].data[0];
+            const percentages = dados.datasets[0].data.map(value => {
+                return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
+            });
+            
+            // Combinar labels com valores e porcentagens
+            const labelsCompletos = dados.labels.map((label, index) => {
+                return `${label}\n${dados.datasets[0].data[index]} (${percentages[index]})`;
+            });
+            
+            // Cores para cada etapa do funil
+            const coresFunil = [
+                'rgba(52, 152, 219, 0.8)',    // Azul - Inscritas
+                'rgba(46, 204, 113, 0.8)',    // Verde - Selecionadas
+                'rgba(155, 89, 182, 0.8)',    // Roxo - Iniciaram
+                'rgba(241, 196, 15, 0.8)'     // Amarelo - Concluíram
+            ];
+            
+            // Usar a nova classe FunnelChart
+            const funilChart = new FunnelChart({
+                idCanvas: 'graficoFunilAlunas',
+                labels: labelsCompletos,
+                valores: dados.datasets[0].data,
+                backgroundColor: coresFunil,
+                borderColor: '#fff',
+                borderWidth: 2
+            });
+            
+            graficoFunil = funilChart.render();
+        }
+
+        // Função para inicializar o gráfico de faixa etária
+        function inicializarGraficoFaixaEtaria(dados) {
+            const ctx = document.getElementById('graficoFaixaEtaria');
+            if (!ctx) return;
+            
+            if (graficoFaixaEtaria) {
+                graficoFaixaEtaria.destroy();
+            }
+            
+            graficoFaixaEtaria = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Quantidade de Alunas',
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderColor: dados.backgroundColor.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw} alunas`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade de Alunas'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Faixa Etária'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para carregar e exibir todos os dados
+        async function carregarDados() {
+            const dadosFrequencia = await fetchDadosFrequenciaMensal();
+            const dadosFunil = await fetchDadosFunilAlunas();
+            const dadosFaixaEtaria = await fetchDadosFaixaEtaria();
+            
+            if (dadosFrequencia) {
+                inicializarGraficoFrequencia(dadosFrequencia);
+            }
+            
+            if (dadosFunil) {
+                inicializarGraficoFunil(dadosFunil);
+            }
+            
+            if (dadosFaixaEtaria) {
+                inicializarGraficoFaixaEtaria(dadosFaixaEtaria);
+            }
+        }
+
+        // Inicializar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDados();
+        });
+    </script>
+{% endblock %}
