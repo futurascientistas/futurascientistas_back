@@ -636,7 +636,7 @@ from applications.models import Application, ApplicationStatusLog
 
 class ApiAlunasDatas(APIView):
     def get(self, request, *args, **kwargs):
-        usuarios_qs = User.objects.all()
+        usuarios_qs = User.objects.filter(funcao='estudante')
         
         # Serialização manual
         usuarios = []
@@ -659,7 +659,7 @@ class ApiAlunasDatas(APIView):
         
 class ApiProfessoresDatas(APIView):
     def get(self, request, *args, **kwargs):
-        professores_qs = User.objects.filter(is_staff=True)
+        professores_qs = User.objects.filter(is_active=True, funcao='professora')
        
         # Serialização manual
         professores = []
@@ -1472,10 +1472,10 @@ class ApiDistribuicaoCotas(APIView):
             
             # Contar por tipo de escola
             escola_counts = estudantes.values(
-                'escola__tipo_ensino'
+                'escola__tipo_ensino__nome'
             ).annotate(
                 total=Count('id')
-            ).order_by('escola__tipo_ensino')
+            ).order_by('escola__tipo_ensino__nome')
             
             # Preparar dados para o gráfico de barras horizontais
             categorias = []
@@ -1547,11 +1547,13 @@ class ApiDistribuicaoEscolas(APIView):
             # Preparar dados para o gráfico de rosca
             tipos_ensino = []
             quantidades = []
+           
             
             for item in escola_counts:
                 if item['escola__tipo_ensino__nome']:
                     tipos_ensino.append(item['escola__tipo_ensino__nome'])
                     quantidades.append(item['total'])
+
             
             return Response({
                 "status": "success",
