@@ -1,6 +1,16 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px; /* Altura reduzida dos gráficos */
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Distribuição de Cotas</h1>
     <p class="text-sm text-gray-600 mb-4">Visualização da distribuição de estudantes por gênero, raça, tipo de escola e região.</p>
@@ -72,26 +82,28 @@
         </div>
     </div>
 
-    <div class="w-full min-h-[80vh]">
+    <div class="w-full">
         <!-- Primeira linha de gráficos -->
         <div class="flex flex-wrap -mx-2 mb-6">
             <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
                 
                 <!-- Gráfico de Projetos por Região -->
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px] h-full flex flex-col">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-white shadow-md rounded-lg p-4 h-full flex flex-col">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição de Projetos por Região</h3>
-                        <div class="flex-1">
-                            <canvas id="graficoDistribuicaoRegional" class="w-full h-full"></canvas>
+                        <div class="chart-container">
+                            <canvas id="graficoDistribuicaoRegional"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- Gráfico de Rosca - Tipo de Ensino -->
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-white shadow-md rounded-lg p-4 h-full flex flex-col">
                         <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
-                        <canvas id="graficoDistribuicaoEscolas" height="200"></canvas>
+                        <div class="chart-container">
+                            <canvas id="graficoDistribuicaoEscolas"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -101,9 +113,11 @@
         <!-- Segunda linha - Gráfico de Cotas (ocupa toda a largura) -->
         <div class="flex flex-wrap -mx-2">
             <div class="w-full px-2">
-                <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]">
+                <div class="bg-white shadow-md rounded-lg p-4">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Gênero, Raça e Tipo de Escola</h3>
-                    <canvas id="graficoDistribuicaoCotas"></canvas>
+                    <div class="chart-container">
+                        <canvas id="graficoDistribuicaoCotas"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -268,6 +282,7 @@
                     options: {
                         indexAxis: 'y', // Isso torna o gráfico horizontal
                         responsive: true,
+                        maintainAspectRatio: true, // Adicionado para respeitar o container
                         plugins: {
                             legend: {
                                 display: false
@@ -316,6 +331,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Adicionado para respeitar o container
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -351,7 +367,7 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: true,
                         plugins: {
                             legend: {
                                 display: false

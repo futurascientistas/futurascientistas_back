@@ -2,28 +2,39 @@
 {% load static %}
 
 {% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px; /* Altura reduzida dos gráficos */
+        width: 100%;
+    }
+</style>
 {% endblock %}
 
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
     <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
 
-    <div class="w-full min-h-[100vh]">
+    <div class="w-full">
         <!-- Primeira linha com dois gráficos de pizza -->
         <div class="flex flex-col md:flex-row gap-5 -mx-2">
             <!-- Card 1: Professoras por Tipo de Ensino -->
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Tipo de Ensino</h2>
-                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
-                    <canvas id="graficoProfessorasTipoEnsino"></canvas>
+                <div class="bg-white shadow-md rounded-lg p-4">
+                    <div class="chart-container">
+                        <canvas id="graficoProfessorasTipoEnsino"></canvas>
+                    </div>
                 </div>
             </div>
 
             <!-- Card 2: Distribuição por Formação -->
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Formação</h2>
-                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
-                    <canvas id="graficoDistribuicaoFormacao"></canvas>
+                <div class="bg-white shadow-md rounded-lg p-4">
+                    <div class="chart-container">
+                        <canvas id="graficoDistribuicaoFormacao"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -32,8 +43,10 @@
         <div class="flex flex-wrap -mx-2 mt-8">
             <div class="w-full px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Região</h2>
-                <div class="bg-white shadow-md rounded-lg min-h-[450px] flex items-center justify-center">
-                    <canvas id="graficoProfessorasRegiao"></canvas>
+                <div class="bg-white shadow-md rounded-lg p-4">
+                    <div class="chart-container">
+                        <canvas id="graficoProfessorasRegiao" height="400px"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,6 +114,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Importante para respeitar o container
                         plugins: {
                             legend: { display: false },
                             title: { display: true, text: 'Distribuição de Professoras por Região' }
@@ -134,6 +148,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Importante para respeitar o container
                         plugins: {
                             legend: { 
                                 position: 'right',
@@ -171,6 +186,7 @@
                     },
                     options: {
                         responsive: true,
+                        maintainAspectRatio: false, // Importante para respeitar o container
                         plugins: {
                             legend: { 
                                 position: 'right',
