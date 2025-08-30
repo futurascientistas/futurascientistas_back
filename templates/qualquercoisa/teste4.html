@@ -1,31 +1,47 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px; /* Altura reduzida dos gráficos */
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Frequência Mensal dos Alunos</h1>
     <p class="text-sm text-gray-600 mb-4">Acompanhamento da frequência média dos alunos por mês em todos os projetos.</p>
 
-    <div class="w-full min-h-[80vh]">
+    <div class="w-full">
         <!-- Container com 3 cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Card 1: Gráfico de Linha (Frequência Mensal) -->
             <div class="bg-white shadow-md rounded-lg p-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Frequência Média Mensal (%)</h3>
-                <canvas id="graficoFrequenciaMensal"></canvas>
+                <div class="chart-container">
+                    <canvas id="graficoFrequenciaMensal"></canvas>
+                </div>
             </div>
 
             <!-- Card 2: Funil de Alunas -->
             <div class="bg-white shadow-md rounded-lg p-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Funil de Alunas</h3>
                 <p class="text-sm text-gray-600 mb-4">Jornada das alunas ao longo das etapas do projeto</p>
-                <canvas id="graficoFunilAlunas"></canvas>
+                <div class="chart-container">
+                    <canvas id="graficoFunilAlunas"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Card 3: Gráfico de Faixa Etária -->
         <div class="bg-white shadow-md rounded-lg p-4 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Faixa Etária</h3>
-            <canvas id="graficoFaixaEtaria"></canvas>
+            <div class="chart-container">
+                <canvas id="graficoFaixaEtaria" height="500px"></canvas>
+            </div>
         </div>
     </div>
 
@@ -117,6 +133,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Adicionado para respeitar o container
                     plugins: {
                         legend: { position: 'top' },
                         tooltip: {
@@ -197,6 +214,7 @@
                         },
                         options: {
                             responsive: true,
+                            maintainAspectRatio: false, // Adicionado para respeitar o container
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
@@ -231,6 +249,7 @@
                         options: {
                             indexAxis: 'y',
                             responsive: true,
+                            maintainAspectRatio: false, // Adicionado para respeitar o container
                             plugins: {
                                 legend: { display: false },
                                 tooltip: {
@@ -314,6 +333,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // Adicionado para respeitar o container
                     plugins: {
                         legend: {
                             display: false
