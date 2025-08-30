@@ -37,6 +37,13 @@ urlpatterns = [
     
     #API VIEWS
     path('api/alunas-datas/', ApiAlunasDatas.as_view(), name='api-alunas-datas'),
+    path('api/professores-datas/', ApiProfessoresDatas.as_view(), name='api-professores-datas'),
+    path("api/deficiencia/", ApiUsuariosComDeficiencia.as_view(), name="usuarios-deficiencia"),
+    path('api/projetos-em-andamento/', ApiProjetosEmAndamento.as_view(), name='api_projetos_em_andamento'),
+    path('api/projetos-concluidos/', ApiPercentualProjetosConcluidos.as_view(), name='api_projetos_concluidos'),
+    path('api/projetos-com-regioes/', ApiProjetosComRegioes.as_view(), name='api_projetos_com_regioes'),
+    path('api/contagem-tipo-ensino/', ApiContagemPorTipoEnsino.as_view(), name='api_contagem_tipo_ensino'),
+    path('api/contagem-cidade/', ApiContagemPorCidade.as_view(), name='api_contagem_cidade'),
     
     
     path('api/dashboard-diversidade/', ApiDashboardDiversidade.as_view(), name='api-dashboard-diversidade'),

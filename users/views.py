@@ -656,7 +656,159 @@ class ApiAlunasDatas(APIView):
             "mensagem": "ok",
             "usuarios": usuarios
         })
+        
+class ApiProfessoresDatas(APIView):
+    def get(self, request, *args, **kwargs):
+        professores_qs = User.objects.filter(is_staff=True)
+       
+        # Serialização manual
+        professores = []
+        for p in professores_qs:
+            professores.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "email": p.email,
+                "cpf": p.cpf,
+                "telefone": p.telefone,
+                "funcao": p.funcao,
+                "data_nascimento": p.data_nascimento.isoformat() if p.data_nascimento else None,
+                "pronomes": p.pronomes,
+            })
 
+        return Response({
+            "mensagem": "ok",
+            "professores": professores
+        })
+        
+class ApiUsuariosComDeficiencia(APIView):
+    def get(self, request, *args, **kwargs):
+        usuarios = (
+            User.objects.filter(deficiencias__isnull=False)
+            .exclude(deficiencias__nome="Nenhuma")
+            .distinct()
+        )
+
+        dados = []
+        for u in usuarios:
+            dados.append({
+                "id": str(u.id),
+                "nome": u.nome,
+                "deficiencias": [d.nome for d in u.deficiencias.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "usuarios_com_deficiencia": dados
+        })
+
+class ApiProjetosEmAndamento(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.filter(status='em_andamento', ativo=True)
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "tutora": p.tutora.nome if p.tutora else None,
+                "eh_remoto": p.eh_remoto,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()],
+                "estados_aceitos": [e.nome for e in p.estados_aceitos.all()],
+                "cidades_aceitas": [c.nome for c in p.cidades_aceitas.all()],
+                "formato": p.formato,
+                "status": p.status,
+                "vagas": p.vagas,
+                "instituicao": p.instituicao,
+                "inicio_inscricoes": p.inicio_inscricoes,
+                "fim_inscricoes": p.fim_inscricoes,
+                "data_inicio": p.data_inicio,
+                "data_fim": p.data_fim
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_em_andamento": dados
+        })
+        
+class ApiPercentualProjetosConcluidos(APIView):
+    def get(self, request, *args, **kwargs):
+        total_projetos = Project.objects.count()
+        concluidos = Project.objects.filter(status='concluido').count()
+
+        percentual = 0
+        if total_projetos > 0:
+            percentual = (concluidos / total_projetos) * 100
+
+        # Opcional: arredondar para 2 casas decimais
+        percentual = round(percentual, 2)
+
+        return Response({
+            "mensagem": "ok",
+            "total_projetos": total_projetos,
+            "projetos_concluidos": concluidos,
+            "percentual_concluidos": percentual
+        })
+        
+class ApiProjetosComRegioes(APIView):
+    def get(self, request, *args, **kwargs):
+        projetos = Project.objects.prefetch_related('regioes_aceitas').all()
+
+        dados = []
+        for p in projetos:
+            dados.append({
+                "id": str(p.id),
+                "nome": p.nome,
+                "descricao": p.descricao,
+                "regioes_aceitas": [r.nome for r in p.regioes_aceitas.all()]
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "projetos_com_regioes": dados
+        })
+        
+class ApiContagemPorTipoEnsino(APIView):
+    def get(self, request, *args, **kwargs):
+        # Faz o join via ForeignKey e agrupa pelo nome do tipo de ensino
+        contagem = (
+            User.objects
+            .values('escola__tipo_ensino__nome')  # pega o nome do tipo de ensino
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "tipo_ensino": item['escola__tipo_ensino__nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_tipo_ensino": dados
+        })
+        
+class ApiContagemPorCidade(APIView):
+    def get(self, request, *args, **kwargs):
+        # Faz o join via ForeignKey: User → Endereco → Cidade
+        contagem = (
+            User.objects
+            .values('endereco__cidade__nome')  # pega o nome da cidade
+            .annotate(total=Count('id'))
+        )
+
+        dados = []
+        for item in contagem:
+            dados.append({
+                "cidade": item['endereco__cidade__nome'] or "Não informado",
+                "total": item['total']
+            })
+
+        return Response({
+            "mensagem": "ok",
+            "contagem_por_cidade": dados
+        })
 
 class ApiDashboardDiversidade(APIView):
     def get(self, request, *args, **kwargs):
@@ -1173,8 +1325,6 @@ class ApiProfessorasDistribuicaoTipoEnsino(APIView):
                 }
             })
 
-# No seu views.py, adicione esta view:
-
 class ApiFunilAlunasApplicationLog(APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -1300,8 +1450,6 @@ class ApiFunilAlunasApplicationLog(APIView):
                     }
                 })
 
-# No seu views.py, adicione estas views:
-
 class ApiDistribuicaoCotas(APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -1391,18 +1539,18 @@ class ApiDistribuicaoEscolas(APIView):
             
             # Contar por tipo de escola
             escola_counts = estudantes.values(
-                'escola__tipo_ensino'
+                'escola__tipo_ensino__nome'
             ).annotate(
                 total=Count('id')
-            ).order_by('escola__tipo_ensino')
+            ).order_by('escola__tipo_ensino__nome')
             
             # Preparar dados para o gráfico de rosca
             tipos_ensino = []
             quantidades = []
             
             for item in escola_counts:
-                if item['escola__tipo_ensino']:
-                    tipos_ensino.append(item['escola__tipo_ensino'])
+                if item['escola__tipo_ensino__nome']:
+                    tipos_ensino.append(item['escola__tipo_ensino__nome'])
                     quantidades.append(item['total'])
             
             return Response({
@@ -1430,17 +1578,14 @@ class ApiDistribuicaoEscolas(APIView):
                 }
             })
 
-# No seu views.py, adicione esta view:
-# No seu views.py, adicione estes imports:
+
 from django.db.models import Avg, Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.utils.timezone import now
 from datetime import date
 import logging
 from applications.models import AcompanhamentoProjeto
-# Configure o logger
 logger = logging.getLogger(__name__)
-# No seu views.py, adicione esta view simplificada:
 
 class ApiFrequenciaMensalAlunos(APIView):
     def get(self, request, *args, **kwargs):
@@ -1498,9 +1643,6 @@ class ApiFrequenciaMensalAlunos(APIView):
                     'medias': [85.5, 78.2, 82.7, 88.9, 91.3, 87.6, 92.1, 89.7, 86.4, 90.2, 88.9, 84.3]
                 }
             })
-
-
-# No seu views.py, adicione esta view:
 
 from datetime import date
 from django.db.models import Count, Q

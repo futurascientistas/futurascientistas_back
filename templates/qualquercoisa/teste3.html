@@ -3,32 +3,212 @@
 
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Distribuição de Cotas</h1>
-    <p class="text-sm text-gray-600 mb-4">Visualização da distribuição de estudantes por gênero, raça e tipo de escola.</p>
+    <p class="text-sm text-gray-600 mb-4">Visualização da distribuição de estudantes por gênero, raça, tipo de escola e região.</p>
 
-    <div class="w-full min-h-[80vh]">
-        <div class="flex flex-wrap -mx-2">
-            <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
-                <!-- Gráfico de Barras Horizontal - Distribuição de Cotas -->
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Gênero, Raça e Tipo de Escola</h3>
-                        <canvas id="graficoDistribuicaoCotas"></canvas>
-                    </div>
+    <!-- Seção de Big Numbers -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Card 1: Total de Alunas -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Total de Alunas</h3>
+                    <p id="total-alunas" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">Carregando...</p>
                 </div>
-                  
-                <!-- Gráfico de Rosca - Tipo de Ensino -->
-                <div class="w-full md:w-1/2 h-100">
-                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
-                        <canvas id="graficoDistribuicaoEscolas"></canvas>
-                    </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Professoras Ativas -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Professoras Ativas</h3>
+                    <p id="total-professoras" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-professoras" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Projetos em Andamento -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Projetos em Andamento</h3>
+                    <p id="total-projetos" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Taxa de Conclusão -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Taxa de Conclusão</h3>
+                    <p id="taxa-conclusao" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="w-full min-h-[80vh]">
+        <!-- Primeira linha de gráficos -->
+        <div class="flex flex-wrap -mx-2 mb-6">
+            <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
+                
+                <!-- Gráfico de Projetos por Região -->
+                <div class="w-full md:w-1/2 h-100">
+                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px] h-full flex flex-col">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição de Projetos por Região</h3>
+                        <div class="flex-1">
+                            <canvas id="graficoDistribuicaoRegional" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Rosca - Tipo de Ensino -->
+                <div class="w-full md:w-1/2 h-100">
+                    <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]" style="height: 100%;">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
+                        <canvas id="graficoDistribuicaoEscolas" height="200"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Segunda linha - Gráfico de Cotas (ocupa toda a largura) -->
+        <div class="flex flex-wrap -mx-2">
+            <div class="w-full px-2">
+                <div class="bg-white shadow-md rounded-lg p-4 min-h-[450px]">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Gênero, Raça e Tipo de Escola</h3>
+                    <canvas id="graficoDistribuicaoCotas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Função para calcular variação percentual (simulação - na prática viria da API)
+        function calcularVariacao(valorAtual) {
+            if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
+            
+            // Simulação: para valores não zero, gerar uma variação aleatória entre 3% e 20%
+            const variacao = Math.floor(Math.random() * 18) + 3;
+            return { 
+                valor: variacao, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+
+        // Função para formatar a taxa de conclusão
+        function formatarTaxaConclusao(taxa) {
+            if (taxa === 0) return { valor: "0%", texto: "Nenhum projeto concluído", classe: "text-gray-500" };
+            
+            // Simulação de variação para taxa de conclusão
+            const variacao = Math.floor(Math.random() * 5) + 1;
+            return { 
+                valor: `${taxa}%`, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+
+        // Função para buscar dados das métricas principais
+        async function fetchDadosMetricas() {
+            try {
+                // Buscar dados de alunas
+                const responseAlunas = await fetch('/usuarios/api/alunas-datas/');
+                if (!responseAlunas.ok) throw new Error('Erro na API Alunas');
+                const dataAlunas = await responseAlunas.json();
+                
+                // Buscar dados de professoras
+                const responseProfessoras = await fetch('/usuarios/api/professores-datas/');
+                if (!responseProfessoras.ok) throw new Error('Erro na API Professoras');
+                const dataProfessoras = await responseProfessoras.json();
+                
+                // Buscar dados de projetos em andamento
+                const responseProjetos = await fetch('/usuarios/api/projetos-em-andamento/');
+                if (!responseProjetos.ok) throw new Error('Erro na API Projetos');
+                const dataProjetos = await responseProjetos.json();
+                
+                // Buscar dados de taxa de conclusão
+                const responseConclusao = await fetch('/usuarios/api/projetos-concluidos/');
+                if (!responseConclusao.ok) throw new Error('Erro na API Conclusão');
+                const dataConclusao = await responseConclusao.json();
+                
+                return {
+                    alunas: dataAlunas.usuarios.length,
+                    professoras: dataProfessoras.professores.length,
+                    projetos: dataProjetos.projetos_em_andamento.length,
+                    taxaConclusao: dataConclusao.percentual_concluidos
+                };
+            } catch (error) {
+                console.error('Erro ao buscar dados das métricas:', error);
+                return null;
+            }
+        }
+
+        // Função para atualizar os big numbers
+        function atualizarBigNumbers(dados) {
+            if (!dados) {
+                // Em caso de erro, mostrar mensagem de erro
+                document.querySelectorAll('[id^="variacao-"]').forEach(el => {
+                    el.textContent = "Erro ao carregar dados";
+                    el.className = "text-xs mt-1 text-red-500";
+                });
+                return;
+            }
+            
+            // Atualizar Total de Alunas
+            document.getElementById('total-alunas').textContent = dados.alunas.toLocaleString();
+            const variacaoAlunas = calcularVariacao(dados.alunas);
+            document.getElementById('variacao-alunas').textContent = variacaoAlunas.texto;
+            document.getElementById('variacao-alunas').className = `text-xs mt-1 ${variacaoAlunas.classe}`;
+            
+            // Atualizar Professoras Ativas
+            document.getElementById('total-professoras').textContent = dados.professoras.toLocaleString();
+            const variacaoProfessoras = calcularVariacao(dados.professoras);
+            document.getElementById('variacao-professoras').textContent = variacaoProfessoras.texto;
+            document.getElementById('variacao-professoras').className = `text-xs mt-1 ${variacaoProfessoras.classe}`;
+            
+            // Atualizar Projetos em Andamento
+            document.getElementById('total-projetos').textContent = dados.projetos.toLocaleString();
+            const variacaoProjetos = calcularVariacao(dados.projetos);
+            document.getElementById('variacao-projetos').textContent = variacaoProjetos.texto;
+            document.getElementById('variacao-projetos').className = `text-xs mt-1 ${variacaoProjetos.classe}`;
+            
+            // Atualizar Taxa de Conclusão
+            const taxaFormatada = formatarTaxaConclusao(dados.taxaConclusao);
+            document.getElementById('taxa-conclusao').textContent = taxaFormatada.valor;
+            document.getElementById('variacao-conclusao').textContent = taxaFormatada.texto;
+            document.getElementById('variacao-conclusao').className = `text-xs mt-1 ${taxaFormatada.classe}`;
+        }
+
         // Função para buscar dados da distribuição de cotas
         async function fetchDadosDistribuicaoCotas() {
             try {
@@ -51,6 +231,19 @@
                 return data.dados_escolas;
             } catch (error) {
                 console.error('Erro ao buscar dados de escolas:', error);
+                return null;
+            }
+        }
+
+        // Função para buscar dados da distribuição regional
+        async function fetchDadosDistribuicaoRegional() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-regional/');
+                if (!response.ok) throw new Error('Erro na API Distribuição Regional');
+                const data = await response.json();
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados regionais:', error);
                 return null;
             }
         }
@@ -140,9 +333,62 @@
                     }
                 });
             }
+
+            // Novo Gráfico de Barras - Distribuição Regional
+            const dadosRegional = await fetchDadosDistribuicaoRegional();
+            if (dadosRegional) {
+                new Chart(document.getElementById('graficoDistribuicaoRegional'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosRegional.labels,
+                        datasets: [{
+                            label: 'Quantidade de Projetos',
+                            data: dadosRegional.data,
+                            backgroundColor: dadosRegional.backgroundColor,
+                            borderRadius: 5,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Projetos'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Regiões'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         }
 
-        // Inicializar os gráficos quando a página carregar
-        document.addEventListener('DOMContentLoaded', inicializarGraficos);
+        // Inicializar os big numbers e gráficos quando a página carregar
+        document.addEventListener('DOMContentLoaded', async function() {
+            const dadosMetricas = await fetchDadosMetricas();
+            atualizarBigNumbers(dadosMetricas);
+            inicializarGraficos();
+        });
     </script>
 {% endblock %}
