@@ -1138,6 +1138,71 @@ class ApiDistribuicaoRegional(APIView):
                     ]
                 }
             })
+            
+
+
+class ApiDistribuicaoEstados(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas projetos ativos
+            projetos = Project.objects.filter(ativo=True)
+
+            # Contar projetos por estado através dos estados aceitos
+            distribuicao_estados = projetos.annotate(
+                estado_nome=F('estados_aceitos__nome'),
+                estado_uf=F('estados_aceitos__uf')
+            ).values(
+                'estado_nome', 'estado_uf'
+            ).annotate(
+                total=Count('id')
+            ).order_by('estado_nome')
+
+            # Preparar dados para o gráfico
+            estados = []
+            ufs = []
+            quantidades = []
+
+            for item in distribuicao_estados:
+                if item['estado_nome']:
+                    estados.append(item['estado_nome'])
+                    ufs.append(item['estado_uf'])
+                    quantidades.append(item['total'])
+
+            # Adicionar estados com zero projetos (se necessário)
+            todos_estados = Estado.objects.all()
+            for estado in todos_estados:
+                if estado.nome not in estados:
+                    ufs.append(estado.uf)
+                    quantidades.append(0)
+
+            dados_distribuicao = {
+                'labels': ufs,
+                'data': quantidades,
+                'backgroundColor': [
+                    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+                    '#f39c12', '#27ae60', '#2980b9', '#c0392b', '#16a085',
+                    '#f1c40f', '#9b59b6', '#2c3e50', '#e67e22', '#d35400',
+                    '#7d3c98', '#1abc9c', '#34495e', '#e74c3c', '#95a5a6',
+                    '#00b894', '#fd79a8'
+                ]
+
+            }
+
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Estados: {str(e)}")
+            return Response({
+                "status": "error",
+                "mensagem": str(e)
+            })
+ 
+            
+            
 class ApiDistribuicaoFormacao(APIView):
     def get(self, request, *args, **kwargs):
         try:
