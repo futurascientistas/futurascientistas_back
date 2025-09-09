@@ -1140,40 +1140,33 @@ class ApiDistribuicaoRegional(APIView):
             })
             
 
+from django.db.models import Count
 
 class ApiDistribuicaoEstados(APIView):
     def get(self, request, *args, **kwargs):
         try:
-            # Filtrar apenas projetos ativos
-            projetos = Project.objects.filter(ativo=True)
-
-            # Contar projetos por estado através dos estados aceitos
-            distribuicao_estados = projetos.annotate(
-                estado_nome=F('estados_aceitos__nome'),
-                estado_uf=F('estados_aceitos__uf')
-            ).values(
-                'estado_nome', 'estado_uf'
-            ).annotate(
-                total=Count('id')
-            ).order_by('estado_nome')
+            # Contar applications distintas por estado
+            distribuicao_estados = (
+                Application.objects
+                .filter(projeto__ativo=True)
+                .values(
+                    estado_nome=F('projeto__estados_aceitos__nome'),
+                    estado_uf=F('projeto__estados_aceitos__uf')
+                )
+                .annotate(total=Count('id', distinct=True))
+                .order_by('estado_nome')
+            )
 
             # Preparar dados para o gráfico
-            estados = []
             ufs = []
             quantidades = []
 
             for item in distribuicao_estados:
                 if item['estado_nome']:
-                    estados.append(item['estado_nome'])
                     ufs.append(item['estado_uf'])
                     quantidades.append(item['total'])
 
-            # Adicionar estados com zero projetos (se necessário)
-            todos_estados = Estado.objects.all()
-            for estado in todos_estados:
-                if estado.nome not in estados:
-                    ufs.append(estado.uf)
-                    quantidades.append(0)
+
 
             dados_distribuicao = {
                 'labels': ufs,
@@ -1186,7 +1179,6 @@ class ApiDistribuicaoEstados(APIView):
                     '#7d3c98', '#1abc9c', '#34495e', '#e74c3c', '#95a5a6',
                     '#00b894', '#fd79a8'
                 ]
-
             }
 
             return Response({
@@ -1200,6 +1192,8 @@ class ApiDistribuicaoEstados(APIView):
                 "status": "error",
                 "mensagem": str(e)
             })
+
+
  
             
             
