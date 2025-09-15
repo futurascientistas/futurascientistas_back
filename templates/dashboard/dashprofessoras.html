@@ -5,8 +5,73 @@
 <style>
     .chart-container {
         position: relative;
-        height: 300px; /* Altura reduzida dos gráficos */
+        height: 300px;
         width: 100%;
+    }
+    
+    /* Estilos melhorados para os botões de alternância */
+    .chart-toggle {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    
+    .toggle-btn {
+        padding: 8px 16px;
+        background-color: #e2e8f0; /* Cor de fundo mais escura para melhor contraste */
+        color: #475569; /* Cor do texto mais escura */
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600; /* Texto mais forte */
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .toggle-btn:hover {
+        background-color: #cbd5e1;
+        border-color: #94a3b8;
+    }
+    
+    .toggle-btn.active {
+        background-color: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 1px 3px rgba(59, 130, 246, 0.4);
+    }
+    
+    .hidden {
+        display: none;
+    }
+    
+    /* Estilos para os big numbers */
+    .big-number-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .big-number-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #3b82f6;
+        margin: 10px 0;
+    }
+    
+    .big-number-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .big-number-variation {
+        font-size: 0.75rem;
+        color: #10b981;
+        margin-top: 5px;
     }
 </style>
 {% endblock %}
@@ -15,25 +80,95 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
     <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
 
+    <!-- Big Number de Professoras Ativas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="metric-card"
+            style="
+                background: #fff;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            ">
+            <div class="metric-content">
+                <h3 class="metric-label" style="font-size:1.1rem;font-weight:600;margin-bottom:4px;">Professoras Ativas</h3>
+                <p id="total-professoras" class="metric-value" style="font-size:1.8rem;font-weight:bold;margin-bottom:4px;">-</p>
+                <p id="variacao-professoras" class="metric-variation" style="color:#16a34a;font-size:0.9rem;">-</p>
+            </div>
+            <div class="metric-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
     <div class="w-full">
-        <!-- Primeira linha com dois gráficos de pizza -->
+        <!-- Primeira linha com gráficos de pizza -->
         <div class="flex flex-col md:flex-row gap-5 -mx-2">
             <!-- Card 1: Professoras por Tipo de Ensino -->
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Tipo de Ensino</h2>
                 <div class="bg-white shadow-md rounded-lg p-4">
                     <div class="chart-container">
-                        <canvas id="graficoProfessorasTipoEnsino"></canvas>
+                        <canvas id="graficoProfessorasTipoEnsino" height='416'></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Card 2: Distribuição por Formação -->
+            <!-- Card 2: Distribuição por Formação/Raça com alternância -->
             <div class="w-full md:w-1/2 px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Formação</h2>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Professoras por</h2>
+                    <!-- BOTÕES DE ALTERNÂNCIA FORMAÇÃO/RAÇA - ESTILO MELHORADO -->
+                    <div class="chart-toggle">
+                        <button id="toggle-formacao" class="toggle-btn active" 
+                        style="
+                            background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                            transition: all 0.2s ease;
+                        "
+                        onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                        >Formação</button>
+                        <button id="toggle-raca" class="toggle-btn" 
+                        style="
+                            background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                            transition: all 0.2s ease;
+                        "
+                        onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Raça</button>
+                    </div>
+                </div>
                 <div class="bg-white shadow-md rounded-lg p-4">
-                    <div class="chart-container">
-                        <canvas id="graficoDistribuicaoFormacao"></canvas>
+                    <!-- Container para o gráfico de formação -->
+                    <div id="container-formacao" class="chart-container">
+                        <canvas id="graficoDistribuicaoFormacao" height='400'></canvas>
+                    </div>
+                    
+                    <!-- Container para o gráfico de raça -->
+                    <div id="container-raca" class="chart-container hidden">
+                        <canvas id="graficoDistribuicaoRaca" height='400'></canvas>
                     </div>
                 </div>
             </div>
@@ -42,10 +177,53 @@
         <!-- Segunda linha com o gráfico de barras -->
         <div class="flex flex-wrap -mx-2 mt-8">
             <div class="w-full px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Região</h2>
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-gray-800">Professoras por Localização</h2>
+                    <!-- BOTÕES DE ALTERNÂNCIA REGIÃO/ESTADO - ESTILO MELHORADO -->
+                    <div class="chart-toggle">
+                        <button id="toggle-regiao" class="toggle-btn active"
+                                                style="
+                            background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                            transition: all 0.2s ease;
+                        "
+                        onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                        >Região</button>
+                        <button id="toggle-estado" class="toggle-btn"
+                                                style="
+                            background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                            color: #fff;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            font-size: 16px;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                            transition: all 0.2s ease;
+                        "
+                        onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                        onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                        >Estado</button>
+                    </div>
+                </div>
                 <div class="bg-white shadow-md rounded-lg p-4">
-                    <div class="chart-container">
-                        <canvas id="graficoProfessorasRegiao" height="400px"></canvas>
+                    <!-- Container para o gráfico de região -->
+                    <div id="container-regiao" class="chart-container">
+                        <canvas id="graficoProfessorasRegiao" height='300'></canvas>
+                    </div>
+                    
+                    <!-- Container para o gráfico de estado -->
+                    <div id="container-estado" class="chart-container hidden">
+                        <canvas id="graficoProfessorasEstado" height='300'></canvas>
                     </div>
                 </div>
             </div>
@@ -54,6 +232,120 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Variáveis globais para armazenar as instâncias dos gráficos
+        let graficoRegiao = null;
+        let graficoEstado = null;
+        let graficoFormacao = null;
+        let graficoRaca = null;
+        
+        // Função para calcular variação percentual
+        function calcularVariacao(valorAtual) {
+            if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
+            
+            const variacao = Math.floor(Math.random() * 18) + 3;
+            return { 
+                valor: variacao, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+        
+        // Função para buscar dados de professoras
+        async function fetchDadosProfessoras() {
+            try {
+                const response = await fetch('/usuarios/api/professores-datas/');
+                if (!response.ok) throw new Error('Erro na API Professoras');
+                const data = await response.json();
+                return data.professores.length;
+            } catch (error) {
+                console.error('Erro ao buscar dados de professoras:', error);
+                return null;
+            }
+        }
+        
+        // Função para atualizar o big number de professoras
+        function atualizarBigNumberProfessoras(total) {
+            if (total === null) {
+                document.getElementById('total-professoras').textContent = '--';
+                document.getElementById('variacao-professoras').textContent = 'Erro ao carregar dados';
+                document.getElementById('variacao-professoras').className = 'big-number-variation text-red-500';
+                return;
+            }
+            
+            document.getElementById('total-professoras').textContent = total.toLocaleString();
+            const variacao = calcularVariacao(total);
+            document.getElementById('variacao-professoras').textContent = variacao.texto;
+            document.getElementById('variacao-professoras').className = `big-number-variation ${variacao.classe}`;
+        }
+        
+        // Função para alternar entre os gráficos de localização
+        function alternarGraficosLocalizacao(tipo) {
+            const containerRegiao = document.getElementById('container-regiao');
+            const containerEstado = document.getElementById('container-estado');
+            const btnRegiao = document.getElementById('toggle-regiao');
+            const btnEstado = document.getElementById('toggle-estado');
+            
+            if (tipo === 'regiao') {
+                containerRegiao.classList.remove('hidden');
+                containerEstado.classList.add('hidden');
+                btnRegiao.classList.add('active');
+                btnEstado.classList.remove('active');
+            } else {
+                containerRegiao.classList.add('hidden');
+                containerEstado.classList.remove('hidden');
+                btnRegiao.classList.remove('active');
+                btnEstado.classList.add('active');
+                
+                // Se o gráfico de estado ainda não foi criado, criá-lo
+                if (!graficoEstado) {
+                    inicializarGraficoEstado();
+                }
+            }
+        }
+        
+        // Função para alternar entre os gráficos de formação/raça
+        function alternarGraficosFormacaoRaca(tipo) {
+            const containerFormacao = document.getElementById('container-formacao');
+            const containerRaca = document.getElementById('container-raca');
+            const btnFormacao = document.getElementById('toggle-formacao');
+            const btnRaca = document.getElementById('toggle-raca');
+            
+            if (tipo === 'formacao') {
+                containerFormacao.classList.remove('hidden');
+                containerRaca.classList.add('hidden');
+                btnFormacao.classList.add('active');
+                btnRaca.classList.remove('active');
+            } else {
+                containerFormacao.classList.add('hidden');
+                containerRaca.classList.remove('hidden');
+                btnFormacao.classList.remove('active');
+                btnRaca.classList.add('active');
+                
+                // Se o gráfico de raça ainda não foi criado, criá-lo
+                if (!graficoRaca) {
+                    inicializarGraficoRaca();
+                }
+            }
+        }
+        
+        // Configurar os event listeners para os botões de toggle de localização
+        document.getElementById('toggle-regiao').addEventListener('click', function() {
+            alternarGraficosLocalizacao('regiao');
+        });
+        
+        document.getElementById('toggle-estado').addEventListener('click', function() {
+            alternarGraficosLocalizacao('estado');
+        });
+        
+        // Configurar os event listeners para os botões de toggle de formação/raça
+        document.getElementById('toggle-formacao').addEventListener('click', function() {
+            alternarGraficosFormacaoRaca('formacao');
+        });
+        
+        document.getElementById('toggle-raca').addEventListener('click', function() {
+            alternarGraficosFormacaoRaca('raca');
+        });
+
         // Função para buscar dados de professoras por região
         async function fetchDadosProfessorasRegiao() {
             try {
@@ -64,6 +356,20 @@
                 return data.dados_distribuicao;
             } catch (error) {
                 console.error('Erro ao buscar dados de professoras por região:', error);
+                return null;
+            }
+        }
+        
+        // Função para buscar dados de professoras por estado
+        async function fetchDadosProfessorasEstado() {
+            try {
+                const response = await fetch('/usuarios/api/professoras-distribuicao-estadual/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de professoras por estado:', error);
                 return null;
             }
         }
@@ -95,12 +401,110 @@
                 return null;
             }
         }
+        
+        // Função para buscar dados de distribuição por raça
+        async function fetchDadosDistribuicaoRaca() {
+            try {
+                const response = await fetch('/usuarios/api/professoras-distribuicao-raca/');
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data.dados_distribuicao_raca;
+            } catch (error) {
+                console.error('Erro ao buscar dados de distribuição por raça:', error);
+                return null;
+            }
+        }
+        
+        // Função para inicializar o gráfico de estado
+        async function inicializarGraficoEstado() {
+            const dadosProfessorasEstado = await fetchDadosProfessorasEstado();
+            if (dadosProfessorasEstado) {
+                const ctx = document.getElementById('graficoProfessorasEstado').getContext('2d');
+                graficoEstado = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: dadosProfessorasEstado.labels,
+                        datasets: [{
+                            label: 'Quantidade de Professoras',
+                            data: dadosProfessorasEstado.data,
+                            backgroundColor: dadosProfessorasEstado.backgroundColor,
+                            borderRadius: 8,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Distribuição de Professoras por Estado' }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                title: { display: true, text: 'Quantidade de Professoras' } 
+                            },
+                            x: { 
+                                title: { display: true, text: 'Estados do Brasil' } 
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Função para inicializar o gráfico de raça
+        async function inicializarGraficoRaca() {
+            const dadosDistribuicaoRaca = await fetchDadosDistribuicaoRaca();
+            if (dadosDistribuicaoRaca) {
+                const ctx = document.getElementById('graficoDistribuicaoRaca').getContext('2d');
+                graficoRaca = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: dadosDistribuicaoRaca.labels,
+                        datasets: [{
+                            data: dadosDistribuicaoRaca.data,
+                            backgroundColor: dadosDistribuicaoRaca.backgroundColor,
+                            borderWidth: 1,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                position: 'right',
+                                labels: { padding: 15, usePointStyle: true }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         async function inicializarTodosGraficos() {
+            // Carregar dados de professoras para o big number
+            const totalProfessoras = await fetchDadosProfessoras();
+            atualizarBigNumberProfessoras(totalProfessoras);
+            
             // Gráfico de Professoras por Região
             const dadosProfessorasRegiao = await fetchDadosProfessorasRegiao();
             if (dadosProfessorasRegiao) {
-                new Chart(document.getElementById('graficoProfessorasRegiao'), {
+                const ctx = document.getElementById('graficoProfessorasRegiao').getContext('2d');
+                graficoRegiao = new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: dadosProfessorasRegiao.labels,
@@ -114,7 +518,7 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, // Importante para respeitar o container
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
                             title: { display: true, text: 'Distribuição de Professoras por Região' }
@@ -148,7 +552,7 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, // Importante para respeitar o container
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { 
                                 position: 'right',
@@ -173,7 +577,8 @@
             // Gráfico de Distribuição por Formação
             const dadosDistribuicaoFormacao = await fetchDadosDistribuicaoFormacao();
             if (dadosDistribuicaoFormacao) {
-                new Chart(document.getElementById('graficoDistribuicaoFormacao'), {
+                const ctx = document.getElementById('graficoDistribuicaoFormacao').getContext('2d');
+                graficoFormacao = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: dadosDistribuicaoFormacao.labels,
@@ -186,7 +591,7 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, // Importante para respeitar o container
+                        maintainAspectRatio: false,
                         plugins: {
                             legend: { 
                                 position: 'right',

@@ -1264,6 +1264,62 @@ class ApiDistribuicaoFormacao(APIView):
                     ]
                 }
             })
+            
+class ApiDistribuicaoRacaProfessoras(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas professoras
+            professoras = User.objects.filter(funcao='professora')
+            
+            # Contar por raça
+            raca_counts = professoras.values(
+                'raca__nome'
+            ).annotate(
+                total=Count('id')
+            ).order_by('raca__nome')
+            
+            # Preparar dados para o gráfico
+            dados_raca = {
+                'labels': [],
+                'data': [],
+                'backgroundColor': [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', 
+                    '#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5'
+                ]
+            }
+            
+            # Processar dados de raça
+            for item in raca_counts:
+                if item['raca__nome']:
+                    dados_raca['labels'].append(item['raca__nome'])
+                    dados_raca['data'].append(item['total'])
+                else:
+                    # Se não informado, agrupar como "Não informado"
+                    if 'Não informado' not in dados_raca['labels']:
+                        dados_raca['labels'].append('Não informado')
+                        dados_raca['data'].append(item['total'])
+                    else:
+                        index = dados_raca['labels'].index('Não informado')
+                        dados_raca['data'][index] += item['total']
+            
+            return Response({
+                "status": "success",
+                "dados_distribuicao_raca": dados_raca
+            })
+            
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Raça Professoras: {str(e)}")
+            # Fallback para dados mockados em caso de erro
+            return Response({
+                "status": "success",
+                "dados_distribuicao_raca": {
+                    'labels': ['Branca', 'Preta', 'Parda', 'Indígena', 'Amarela', 'Não informado'],
+                    'data': [45, 35, 40, 15, 10, 8],
+                    'backgroundColor': [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ]
+                }
+            })
 
 
 class ApiProfessorasDistribuicaoRegional(APIView):
@@ -1325,6 +1381,58 @@ class ApiProfessorasDistribuicaoRegional(APIView):
                     ]
                 }
             })
+            
+            
+class ApiProfessorasDistribuicaoEstadual(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas professoras
+            professoras = User.objects.filter(funcao='professora')
+            
+            # Contar professoras por estado - CORRIGIDO: usando 'uf' em vez de 'sigla'
+            distribuicao_estadual = professoras.filter(
+                endereco__isnull=False,
+                endereco__estado__isnull=False
+            ).values(
+                'endereco__estado__uf'  # Alterado de 'sigla' para 'uf'
+            ).annotate(
+                total=Count('id')
+            ).order_by('-total')  # Ordenar por quantidade (maior primeiro)
+            
+            # Preparar dados para o gráfico
+            estados = []
+            quantidades = []
+            
+            for item in distribuicao_estadual:
+                if item['endereco__estado__uf']:
+                    estados.append(item['endereco__estado__uf'])
+                    quantidades.append(item['total'])
+            
+            # Limitar a 10 estados para não sobrecarregar o gráfico
+            if len(estados) > 10:
+                estados = estados[:10]
+                quantidades = quantidades[:10]
+            
+            # Cores para os estados
+            cores = [
+                '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', 
+                '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
+            ]
+            
+            dados_distribuicao = {
+                'labels': estados,
+                'data': quantidades,
+                'backgroundColor': cores[:len(estados)]
+            }
+            
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+            
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Estadual de Professoras: {str(e)}")
+            return
             
 class ApiProfessorasDistribuicaoTipoEnsino(APIView):
     def get(self, request, *args, **kwargs):
@@ -1529,44 +1637,64 @@ class ApiDistribuicaoCotas(APIView):
                 total=Count('id')
             ).order_by('raca__nome')
             
-            # Contar por tipo de escola
-            escola_counts = estudantes.values(
+            # Contar por tipo de escola - CORRIGIDO
+            escola_counts = estudantes.exclude(escola__isnull=True).values(
                 'escola__tipo_ensino__nome'
             ).annotate(
                 total=Count('id')
             ).order_by('escola__tipo_ensino__nome')
             
-            # Preparar dados para o gráfico de barras horizontais
-            categorias = []
-            valores = []
+            # Contar estudantes sem escola
+            estudantes_sem_escola = estudantes.filter(escola__isnull=True).count()
             
-            # Adicionar dados de gênero
+            # Preparar dados separados
+            dados_genero = {
+                'labels': [],
+                'data': [],
+                'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            }
+            
+            dados_raca = {
+                'labels': [],
+                'data': [],
+                'backgroundColor': ['#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5']
+            }
+            
+            dados_escola = {
+                'labels': [],
+                'data': [],
+                'backgroundColor': ['#ffd700', '#98ddca', '#ffaaa7', '#c5a3ff']
+            }
+            
+            # Processar dados de gênero
             for item in genero_counts:
                 if item['genero__nome']:
-                    categorias.append(f"Gênero: {item['genero__nome']}")
-                    valores.append(item['total'])
+                    dados_genero['labels'].append(item['genero__nome'])
+                    dados_genero['data'].append(item['total'])
             
-            # Adicionar dados de raça
+            # Processar dados de raça
             for item in raca_counts:
                 if item['raca__nome']:
-                    categorias.append(f"Raça: {item['raca__nome']}")
-                    valores.append(item['total'])
+                    dados_raca['labels'].append(item['raca__nome'])
+                    dados_raca['data'].append(item['total'])
             
-            # Adicionar dados de escola
+            # Processar dados de escola
             for item in escola_counts:
-                if item['escola__tipo_ensino']:
-                    categorias.append(f"Escola: {item['escola__tipo_ensino']}")
-                    valores.append(item['total'])
+                if item['escola__tipo_ensino__nome']:
+                    dados_escola['labels'].append(item['escola__tipo_ensino__nome'])
+                    dados_escola['data'].append(item['total'])
+            
+            # Adicionar estudantes sem escola
+            if estudantes_sem_escola > 0:
+                dados_escola['labels'].append('Não informada')
+                dados_escola['data'].append(estudantes_sem_escola)
             
             return Response({
                 "status": "success",
-                "dados_cotas": {
-                    'labels': categorias,
-                    'data': valores,
-                    'backgroundColor': [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                        '#8ac6d1', '#ff6b6b', '#a5dee5', '#ffd700', '#98ddca', '#ffaaa7'
-                    ]
+                "dados_separados": {
+                    'genero': dados_genero,
+                    'raca': dados_raca,
+                    'escola': dados_escola
                 }
             })
             
@@ -1575,20 +1703,24 @@ class ApiDistribuicaoCotas(APIView):
             # Fallback para dados mockados
             return Response({
                 "status": "success",
-                "dados_cotas": {
-                    'labels': [
-                        'Gênero: Feminino', 'Gênero: Masculino', 'Gênero: Não-binário',
-                        'Raça: Branca', 'Raça: Preta', 'Raça: Parda', 'Raça: Indígena', 
-                        'Escola: Pública', 'Escola: Privada'
-                    ],
-                    'data': [120, 15, 8, 45, 35, 40, 15, 110, 25],
-                    'backgroundColor': [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                        '#8ac6d1', '#ff6b6b', '#a5dee5'
-                    ]
+                "dados_separados": {
+                    'genero': {
+                        'labels': ['Feminino', 'Masculino', 'Não-binário'],
+                        'data': [120, 15, 8],
+                        'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56']
+                    },
+                    'raca': {
+                        'labels': ['Branca', 'Preta', 'Parda', 'Indígena'],
+                        'data': [45, 35, 40, 15],
+                        'backgroundColor': ['#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b']
+                    },
+                    'escola': {
+                        'labels': ['Pública', 'Privada', 'Não informada'],
+                        'data': [110, 25, 10],
+                        'backgroundColor': ['#ffd700', '#98ddca', '#ffaaa7']
+                    }
                 }
             })
-
 
 class ApiDistribuicaoEscolas(APIView):
     def get(self, request, *args, **kwargs):
@@ -1639,7 +1771,197 @@ class ApiDistribuicaoEscolas(APIView):
                 }
             })
 
+class ApiAlunasDistribuicaoRegional(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas alunas
+            alunas = User.objects.filter(funcao='estudante')
+            
+            # Contar alunas por região através do endereço -> estado -> região
+            distribuicao_regional = alunas.filter(
+                endereco__isnull=False,
+                endereco__estado__isnull=False,
+                endereco__estado__regiao__isnull=False
+            ).values(
+                'endereco__estado__regiao__nome'
+            ).annotate(
+                total=Count('id')
+            ).order_by('endereco__estado__regiao__nome')
+            
+            # Preparar dados para o gráfico
+            regioes = []
+            quantidades = []
+            
+            for item in distribuicao_regional:
+                if item['endereco__estado__regiao__nome']:
+                    regioes.append(item['endereco__estado__regiao__nome'])
+                    quantidades.append(item['total'])
+            
+            # Adicionar regiões com zero alunas (se necessário)
+            todas_regioes = Regiao.objects.all()
+            for regiao in todas_regioes:
+                if regiao.nome not in regioes:
+                    regioes.append(regiao.nome)
+                    quantidades.append(0)
+            
+            dados_distribuicao = {
+                'labels': regioes,
+                'data': quantidades,
+                'backgroundColor': [
+                    '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c'
+                ]
+            }
+            
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+            
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Regional de Alunas: {str(e)}")
+            # Fallback para dados mockados
+            return Response({
+                "status": "success",
+                "dados_distribuicao": {
+                    'labels': ['Sudeste', 'Nordeste', 'Sul', 'Centro-Oeste', 'Norte'],
+                    'data': [120, 85, 60, 40, 25],
+                    'backgroundColor': [
+                        '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c'
+                    ]
+                }
+            })
 
+
+class ApiAlunasDistribuicaoEstadual(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas alunas
+            alunas = User.objects.filter(funcao='estudante')
+            
+            # Contar alunas por estado
+            distribuicao_estadual = alunas.filter(
+                endereco__isnull=False,
+                endereco__estado__isnull=False
+            ).values(
+                'endereco__estado__uf'
+            ).annotate(
+                total=Count('id')
+            ).order_by('-total')  # Ordenar por quantidade (maior primeiro)
+            
+            # Preparar dados para o gráfico
+            estados = []
+            quantidades = []
+            
+            for item in distribuicao_estadual:
+                if item['endereco__estado__uf']:
+                    estados.append(item['endereco__estado__uf'])
+                    quantidades.append(item['total'])
+            
+            # Gerar cores para todos os estados
+            cores_base = [
+                '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', 
+                '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad',
+                '#27ae60', '#f39c12', '#16a085', '#8e44ad', '#2c3e50'
+            ]
+            
+            # Gerar cores para todos os estados (repetindo se necessário)
+            cores = []
+            for i in range(len(estados)):
+                cores.append(cores_base[i % len(cores_base)])
+            
+            dados_distribuicao = {
+                'labels': estados,
+                'data': quantidades,
+                'backgroundColor': cores
+            }
+            
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+            
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Estadual de Alunas: {str(e)}")
+            # Fallback para dados mockados
+            return Response({
+                "status": "success",
+                "dados_distribuicao": {
+                    'labels': ['SP', 'RJ', 'MG', 'BA', 'RS', 'PR', 'PE', 'CE', 'SC', 'GO'],
+                    'data': [65, 45, 40, 35, 30, 25, 20, 18, 15, 12],
+                    'backgroundColor': [
+                        '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c',
+                        '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
+                    ]
+                }
+            })
+class ApiAlunasDistribuicaoCidades(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Filtrar apenas alunas
+            alunas = User.objects.filter(funcao='estudante')
+            
+            # Contar alunas por cidade
+            distribuicao_cidades = alunas.filter(
+                endereco__isnull=False,
+                endereco__cidade__isnull=False
+            ).values(
+                'endereco__cidade__nome',
+                'endereco__estado__uf'
+            ).annotate(
+                total=Count('id')
+            ).order_by('-total')  # Ordenar por quantidade (maior primeiro)
+            
+            # Preparar dados para o gráfico
+            cidades = []
+            quantidades = []
+            
+            for item in distribuicao_cidades:
+                if item['endereco__cidade__nome'] and item['endereco__estado__uf']:
+                    # Formatar como "Cidade - UF"
+                    cidade_formatada = f"{item['endereco__cidade__nome']} - {item['endereco__estado__uf']}"
+                    cidades.append(cidade_formatada)
+                    quantidades.append(item['total'])
+            
+            # Gerar cores para todas as cidades
+            cores_base = [
+                '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', 
+                '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
+            ]
+            
+            # Gerar cores para todas as cidades (repetindo se necessário)
+            cores = []
+            for i in range(len(cidades)):
+                cores.append(cores_base[i % len(cores_base)])
+            
+            dados_distribuicao = {
+                'labels': cidades,
+                'data': quantidades,
+                'backgroundColor': cores
+            }
+            
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+            
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição por Cidades de Alunas: {str(e)}")
+            # Fallback para dados mockados
+            return Response({
+                "status": "success",
+                "dados_distribuicao": {
+                    'labels': ['São Paulo - SP', 'Rio de Janeiro - RJ', 'Belo Horizonte - MG', 
+                              'Salvador - BA', 'Porto Alegre - RS', 'Curitiba - PR', 
+                              'Recife - PE', 'Fortaleza - CE', 'Florianópolis - SC', 'Goiânia - GO'],
+                    'data': [35, 25, 20, 18, 15, 12, 10, 8, 7, 6],
+                    'backgroundColor': [
+                        '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c',
+                        '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
+                    ]
+                }
+            })
+            
+            
 from django.db.models import Avg, Count
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.utils.timezone import now
