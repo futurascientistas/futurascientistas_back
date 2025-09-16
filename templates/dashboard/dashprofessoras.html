@@ -231,7 +231,12 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Adicionando o plugin Chart.js datalabels -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
+        // Registrar o plugin datalabels globalmente
+        Chart.register(ChartDataLabels);
+        
         // Variáveis globais para armazenar as instâncias dos gráficos
         let graficoRegiao = null;
         let graficoEstado = null;
@@ -438,15 +443,32 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            title: { display: true, text: 'Distribuição de Professoras por Estado' }
+                            title: { display: false },
+                            datalabels: {
+                                color: '#333',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: function(value) {
+                                    return value;
+                                }
+                            }
                         },
                         scales: {
                             y: { 
-                                beginAtZero: true, 
-                                title: { display: true, text: 'Quantidade de Professoras' } 
+                                beginAtZero: true,
+                                display: false,
+                                grid: {
+                                    display: false
+                                }
                             },
                             x: { 
-                                title: { display: true, text: 'Estados do Brasil' } 
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
@@ -488,6 +510,18 @@
                                         return `${label}: ${value} (${percentage}%)`;
                                     }
                                 }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(value, context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${percentage}%`;
+                                }
                             }
                         }
                     }
@@ -521,15 +555,32 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: { display: false },
-                            title: { display: true, text: 'Distribuição de Professoras por Região' }
+                            title: { display: false },
+                            datalabels: {
+                                color: '#333',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: function(value) {
+                                    return value;
+                                }
+                            }
                         },
                         scales: {
                             y: { 
-                                beginAtZero: true, 
-                                title: { display: true, text: 'Quantidade de Professoras' } 
+                                beginAtZero: true,
+                                display: false,
+                                grid: {
+                                    display: false
+                                }
                             },
                             x: { 
-                                title: { display: true, text: 'Regiões do Brasil' } 
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
@@ -567,6 +618,18 @@
                                         const percentage = Math.round((value / total) * 100);
                                         return `${label}: ${value} (${percentage}%)`;
                                     }
+                                }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(value, context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${percentage}%`;
                                 }
                             }
                         }
@@ -606,6 +669,18 @@
                                         const percentage = Math.round((value / total) * 100);
                                         return `${label}: ${value} (${percentage}%)`;
                                     }
+                                }
+                            },
+                            datalabels: {
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(value, context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${percentage}%`;
                                 }
                             }
                         }

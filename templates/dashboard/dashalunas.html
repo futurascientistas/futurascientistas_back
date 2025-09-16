@@ -130,7 +130,7 @@
 
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard Geral</h1>
-<p class="text-sm text-gray-600 mb-6">Visão completa de métricas, distribuição de cotas e frequência dos alunos.</p>
+<p class="text-sm text-gray-600 mb-6">Visão completa de métricas, distribuição de cotas và frequência dos alunos.</p>
 
 <!-- Seção de Big Numbers - REMOVIDO PROFESSORAS ATIVAS -->
 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-8">
@@ -287,7 +287,7 @@
     </div>
 
     <!-- Linha 4: Novos gráficos de distribuição geográfica -->
-    <div class="bg-white shadow-md rounded-lg p-4">
+    <div class="bg-white shadow-md rounded-lg p-4" style="position:relative; display:flex; flex-direction:column;">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-800">Distribuição Geográfica de Alunas</h3>
             <div class="distribuicao-tabs" id="tabs-distribuicao-geografica">
@@ -304,10 +304,9 @@
                     transition: all 0.2s ease;
                 "
                 onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Regional</button>
-                <button class="distribuicao-tab" data-tab="estadual" onclick="mudarAbaGeografica('estadual')"
-                  style="
+                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Regional</button>
+
+                <button class="distribuicao-tab" data-tab="estadual" onclick="mudarAbaGeografica('estadual')" style="
                     background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                     color: #fff;
                     border: none;
@@ -320,9 +319,9 @@
                     transition: all 0.2s ease;
                 "
                 onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Estadual</button>
-                <button class="distribuicao-tab" data-tab="municipal" onclick="mudarAbaGeografica('municipal')"   style="
+                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Estadual</button>
+
+                <button class="distribuicao-tab" data-tab="municipal" onclick="mudarAbaGeografica('municipal')" style="
                     background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                     color: #fff;
                     border: none;
@@ -335,37 +334,95 @@
                     transition: all 0.2s ease;
                 "
                 onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Municipal</button>
+                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Municipal</button>
             </div>
         </div>
-        
+
         <!-- Container único para o gráfico geográfico ativo -->
-        <div class="chart-container">
-            <canvas id="graficoGeograficoAtivo" height='400'></canvas>
+        <div class="chart-container" style="flex:1;">
+            <canvas id="graficoGeograficoAtivo" height="400"></canvas>
         </div>
-        
-        <!-- Navegação com setas (será mostrada apenas para municipal e estadual) -->
-        <div class="chart-navigation" id="geografico-navigation" style="display: none;">
-            <button class="nav-button" id="prev-button" disabled><</button>
-            <span class="page-info" id="page-info">Página 1 de 1</span>
-            <button class="nav-button" id="next-button" disabled>></button>
+
+        <!-- Navegação centralizada ao fundo -->
+        <div class="chart-navigation" id="geografico-navigation" style="
+            display:none;
+            margin-top:20px;
+            font-family: Arial, sans-serif;
+            text-align:center;
+            align-self:center;
+        ">
+            <button id="prev-button" disabled
+                style="
+                background-color:#8b5cf6;
+                color:white;
+                border:none;
+                padding:8px 14px;
+                margin:0 8px;
+                border-radius:6px;
+                cursor:pointer;
+                font-size:16px;
+                transition:background-color 0.3s, transform 0.2s;
+                "
+                onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
+                onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
+            >&lt;</button>
+
+            <span id="page-info"
+                style="
+                    display:inline-block;
+                    background:linear-gradient(135deg,#f0f0f0,#e0e0e0);
+                    padding:6px 14px;
+                    border-radius:20px;
+                    font-size:15px;
+                    font-weight:600;
+                    color:#222;
+                    letter-spacing:0.5px;
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+                    margin:0 10px;
+                    transition:transform 0.2s;
+                "
+                onmouseover="this.style.transform='scale(1.05)'"
+                onmouseout="this.style.transform='scale(1)'"
+            >Página 1 de 1</span>
+
+            <button id="next-button" disabled
+                style="
+                background-color:#8b5cf6;
+                color:white;
+                border:none;
+                padding:8px 14px;
+                margin:0 8px;
+                border-radius:6px;
+                cursor:pointer;
+                font-size:16px;
+                transition:background-color 0.3s, transform 0.2s;
+                "
+                onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
+                onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
+            >&gt;</button>
         </div>
     </div>
+
 </div>
 
     <!-- Carregar Chart.js primeiro -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Depois carregar o plugin de funil -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-funnel@1.0.5/dist/chartjs-plugin-funnel.min.js"></script>
+    <!-- Plugin para mostrar labels dentro dos gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <script>
+        // Registrar o plugin de datalabels
+        Chart.register(ChartDataLabels);
+        
         // Variáveis globais para os gráficos
         let graficoFrequencia = null;
         let graficoFunil = null;
         let graficoFaixaEtaria = null;
         let graficoAtivo = null;
         let graficoGeograficoAtivo = null;
+        let graficoDistribuicaoEscolas = null;
         let dadosSeparados = null;
         let dadosGeograficos = {
             regional: null,
@@ -420,7 +477,7 @@
             let titulo, indexAxis, xTitle, yTitle;
             let dadosParaExibir = {...dadosGeograficos[tipo]};
             
-            // Para municipal e estadual, aplicar paginação
+            // Para municipal và estadual, aplicar paginação
             if (tipo === 'estadual' || tipo === 'municipal') {
                 const inicio = (paginaAtual - 1) * itensPorPagina;
                 const fim = inicio + itensPorPagina;
@@ -484,15 +541,35 @@
                                     return `${context.label}: ${context.raw} alunas`;
                                 }
                             }
+                        },
+                        // MODIFICADO: Dados fora das barras e em preto
+                        datalabels: {
+                            color: '#000', // Alterado para preto
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value) {
+                                return value;
+                            },
+                            anchor: 'center', // Alterado para colocar fora da barra
+                            align: 'center',   // Alterado para colocar fora da barra
+                            display: true
                         }
                     },
                     scales: {
                         x: {
                             beginAtZero: true,
-                            title: { display: true, text: xTitle }
+                            title: { display: true, text: xTitle },
+                            grid: {
+                                display: false // Remover grid do eixo X
+                            }
                         },
                         y: {
-                            title: { display: true, text: yTitle }
+                            title: { display: true, text: yTitle },
+                            grid: {
+                                display: false // Remover grid do eixo Y
+                            }
                         }
                     }
                 }
@@ -556,15 +633,35 @@
                                     return `${context.label}: ${context.raw} estudantes`;
                                 }
                             }
+                        },
+                        // MODIFICADO: Dados fora das barras e em preto
+                        datalabels: {
+                            color: '#000',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value) {
+                                return value;
+                            },
+                            anchor: 'center', // Alterado para colocar fora da barra
+                            align: 'center',
+                            display: true   // Alterado para colocar fora da barra
                         }
                     },
                     scales: {
                         x: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Quantidade' }
+                            title: { display: true, text: 'Quantidade' },
+                            grid: {
+                                display: false // Remover grid do eixo X
+                            }
                         },
                         y: {
-                            title: { display: true, text: 'Categorias' }
+                            title: { display: true, text: 'Categorias' },
+                            grid: {
+                                display: false // Remover grid do eixo Y
+                            }
                         }
                     }
                 }
@@ -652,6 +749,13 @@
                 const response = await fetch('/usuarios/api/faixa-etaria/');
                 if (!response.ok) throw new Error('Erro na API Faixa Etária');
                 const data = await response.json();
+                
+                // DEBUG: Log dos dados recebidos
+                console.log('Dados faixa etária:', data.dados_faixa_etaria);
+                console.log('Labels:', data.dados_faixa_etaria.labels);
+                console.log('Data:', data.dados_faixa_etaria.data);
+                console.log('Cores:', data.dados_faixa_etaria.backgroundColor);
+                
                 return data.dados_faixa_etaria;
             } catch (error) {
                 console.error('Erro ao buscar dados de faixa etária:', error);
@@ -698,6 +802,20 @@
                                     return `Frequência: ${context.raw}%`;
                                 }
                             }
+                        },
+                        // MODIFICADO: Dados fora dos pontos e em preto
+                        datalabels: {
+                            display: true,
+                            color: '#000', // Alterado para preto
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            formatter: function(value) {
+                                return value + '%';
+                            },
+                            align: 'top',
+                            anchor: 'end'
                         }
                     },
                     scales: {
@@ -706,10 +824,16 @@
                             min: 0,
                             max: 100,
                             title: { display: true, text: 'Frequência Média (%)' },
-                            ticks: { callback: function(value) { return value + '%'; } }
+                            ticks: { callback: function(value) { return value + '%'; } },
+                            grid: {
+                                display: false // Remover grid do eixo Y
+                            }
                         },
                         x: {
-                            title: { display: true, text: 'Meses' }
+                            title: { display: true, text: 'Meses' },
+                            grid: {
+                                display: false // Remover grid do eixo X
+                            }
                         }
                     }
                 }
@@ -779,6 +903,31 @@
                                             return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
                                         }
                                     }
+                                },
+                                // MODIFICADO: Dados em preto
+                                datalabels: {
+                                    color: '#000', // Alterado para preto
+                                    font: {
+                                        weight: 'bold',
+                                        size: 12
+                                    },
+                                    formatter: function(value, context) {
+                                        return `${value}\n${percentages[context.dataIndex]}`;
+                                    },
+                                    anchor: 'center',
+                                    align: 'center'
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    grid: {
+                                        display: false // Remover grid do eixo X
+                                    }
+                                },
+                                y: {
+                                    grid: {
+                                        display: false // Remover grid do eixo Y
+                                    }
                                 }
                             },
                             funnel: {
@@ -814,11 +963,35 @@
                                             return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
                                         }
                                     }
+                                },
+                                // MODIFICADO: Dados fora das barras e em preto
+                                datalabels: {
+                                    color: '#000', // Alterado para preto
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    },
+                                    formatter: function(value, context) {
+                                        return `${value}\n${percentages[context.dataIndex]}`;
+                                    },
+                                    anchor: 'end', // Alterado para colocar fora da barra
+                                    align: 'end',
+                                    display: true   // Alterado para colocar fora da barra
                                 }
                             },
                             scales: {
-                                x: { display: false },
-                                y: { display: false }
+                                x: { 
+                                    display: false,
+                                    grid: {
+                                        display: false // Remover grid do eixo X
+                                    }
+                                },
+                                y: { 
+                                    display: false,
+                                    grid: {
+                                        display: false // Remover grid do eixo Y
+                                    }
+                                }
                             }
                         }
                     });
@@ -874,6 +1047,16 @@
                 graficoFaixaEtaria.destroy();
             }
             
+            // Garantir que temos cores para todas as categorias
+            const coresCompletas = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
+            ];
+            
+            // Usar as cores fornecidas ou completar com as padrão
+            const backgroundColor = dados.backgroundColor && dados.backgroundColor.length >= dados.labels.length 
+                ? dados.backgroundColor 
+                : coresCompletas.slice(0, dados.labels.length);
+            
             graficoFaixaEtaria = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
                 data: {
@@ -881,8 +1064,12 @@
                     datasets: [{
                         label: 'Quantidade de Alunas',
                         data: dados.data,
-                        backgroundColor: dados.backgroundColor,
-                        borderColor: dados.backgroundColor.map(color => color.replace('0.8', '1')),
+                        backgroundColor: backgroundColor,
+                        borderColor: backgroundColor.map(color => {
+                            // Garantir que a cor de borda seja visível
+                            if (color.includes('95a5a6')) return '#7a8a8a'; // Escurecer o cinza
+                            return color.replace('0.8', '1').replace('0.6', '1');
+                        }),
                         borderWidth: 1,
                         borderRadius: 6
                     }]
@@ -900,6 +1087,20 @@
                                     return `${context.label}: ${context.raw} alunas`;
                                 }
                             }
+                        },
+                        // MODIFICADO: Dados fora das barras e em preto
+                        datalabels: {
+                            color: '#000', // Alterado para preto
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value) {
+                                return value;
+                            },
+                            anchor: 'center', // Alterado para colocar fora da barra
+                            align: 'center',
+                            display: true   // Alterado para colocar fora da barra
                         }
                     },
                     scales: {
@@ -908,12 +1109,21 @@
                             title: {
                                 display: true,
                                 text: 'Quantidade de Alunas'
+                            },
+                            ticks: {
+                                precision: 0 // Sem decimais
+                            },
+                            grid: {
+                                display: false // Remover grid do eixo Y
                             }
                         },
                         x: {
                             title: {
                                 display: true,
                                 text: 'Faixa Etária'
+                            },
+                            grid: {
+                                display: false // Remover grid do eixo X
                             }
                         }
                     }
@@ -1025,6 +1235,65 @@
             }
         }
 
+        // Função para inicializar o gráfico de distribuição de escolas
+        function inicializarGraficoDistribuicaoEscolas(dados) {
+            const ctx = document.getElementById('graficoDistribuicaoEscolas');
+            if (!ctx) return;
+            
+            if (graficoDistribuicaoEscolas) {
+                graficoDistribuicaoEscolas.destroy();
+            }
+            
+            // Calcular totais para mostrar porcentagens
+            const total = dados.data.reduce((acc, val) => acc + val, 0);
+            
+            graficoDistribuicaoEscolas = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 15,
+                                padding: 15
+                            }
+                        },
+                        // MODIFICADO: Dados em preto (mantido dentro das fatias)
+                        datalabels: {
+                            color: '#000', // Alterado para preto
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value, context) {
+                                const percentage = Math.round((value / total) * 100);
+                                return `${value}\n${percentage}%`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
+                        }
+                    },
+                    cutout: '60%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+        }
+
         // Função para carregar e exibir todos os dados
         async function carregarTodosDados() {
             // Carregar dados dos novos gráficos
@@ -1066,40 +1335,10 @@
                 atualizarGraficoGeograficoAtivo('regional');
             }
             
-            // Manter gráfico de distribuição de escolas
+            // Carregar e inicializar gráfico de distribuição de escolas
             const dadosEscolas = await fetchDadosDistribuicaoEscolas();
             if (dadosEscolas) {
-                new Chart(document.getElementById('graficoDistribuicaoEscolas'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: dadosEscolas.labels,
-                        datasets: [{
-                            data: dadosEscolas.data,
-                            backgroundColor: dadosEscolas.backgroundColor,
-                            borderWidth: 2,
-                            borderColor: '#fff',
-                            hoverOffset: 15
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 15,
-                                    padding: 15
-                                }
-                            }
-                        },
-                        cutout: '60%',
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true
-                        }
-                    }
-                });
+                inicializarGraficoDistribuicaoEscolas(dadosEscolas);
             }
         }
 
