@@ -76,8 +76,6 @@ class User(AbstractUser):
         verbose_name='Comprovante de deficiência no Drive'
     )
 
-
-
     # Configurações do usuário
     termo_responsabilidade = models.BooleanField(default=False, verbose_name="Termo de responsabilidade")
     autodeclaracao = models.BooleanField(default=False, verbose_name="Declaração de veracidade das informações")

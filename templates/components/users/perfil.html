@@ -157,10 +157,11 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disciplina</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bimestre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Excluir</th>
+                                        <th class="w-32 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Disciplina</th>
+                                        <th class="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Bimestre</th>
+                                        <th class="w-40 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipo de Conceito</th>
+                                        <th class="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
+                                        <th class="w-16 px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Excluir</th>
                                     </tr>
                                 </thead>
                                 <tbody id="notas-table-body" class="bg-white divide-y divide-gray-200">
@@ -172,14 +173,18 @@
                                             {{ hidden }}
                                         {% endfor %}
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.disciplina class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                                            {% render_field form_nota.disciplina class="mt-1 block w-32 rounded border border-gray-300 px-3 py-2" required="required" %}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.bimestre class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                                            {% render_field form_nota.bimestre class="mt-1 block w-20 rounded border border-gray-300 px-3 py-2" required="required" %}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                                            {% render_field form_nota.tipo_conceito class="mt-1 block w-32 rounded border border-gray-300 px-3 py-2" required="required" %}
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            {% render_field form_nota.nota_original class="mt-1 block w-24 rounded border border-gray-300 px-3 py-2" required="required" %}
+                                        </td>
+
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                             <div class="flex items-center justify-center h-full">
                                                 {% render_field form_nota.DELETE class="hidden" %}
@@ -362,6 +367,39 @@
 <script src="{% static 'js/perfil_forms.js' %}"></script>
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dataNascimentoInput = document.querySelector('input[name="data_nascimento"]');
+        const idadeMinima = 12;
+
+        if (dataNascimentoInput) {
+            let errorContainer = document.createElement('p');
+            errorContainer.classList.add('mt-2', 'text-sm', 'text-red-600');
+            dataNascimentoInput.insertAdjacentElement('afterend', errorContainer);
+
+            dataNascimentoInput.addEventListener('change', () => {
+                const dataNascimento = new Date(dataNascimentoInput.value);
+                const hoje = new Date();
+                const dataLimite = new Date(hoje.getFullYear() - idadeMinima, hoje.getMonth(), hoje.getDate());
+
+                if (!dataNascimentoInput.value) {
+                    errorContainer.textContent = '';
+                    dataNascimentoInput.classList.remove('border-red-500');
+                    dataNascimentoInput.classList.add('border-gray-300');
+                    return;
+                }
+
+                if (dataNascimento > dataLimite) {
+                    errorContainer.textContent = `Você deve ter no mínimo ${idadeMinima} anos para se cadastrar.`;
+                    dataNascimentoInput.classList.add('border-red-500');
+                    dataNascimentoInput.classList.remove('border-gray-300');
+                } else {
+                    errorContainer.textContent = '';
+                    dataNascimentoInput.classList.remove('border-red-500');
+                    dataNascimentoInput.classList.add('border-gray-300');
+                }
+            });
+        }
+    });
     const urls = [
         '/usuarios/api/alunas-datas/',
         '/usuarios/api/professores-datas/',
