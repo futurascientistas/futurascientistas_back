@@ -6,7 +6,8 @@ from futuras_cientistas import settings
 class HistoricoEscolar(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    historico_escolar = models.FileField("Upload do histórico escolar", null=True, blank=True)
+    # historico_escolar = models.FileField("Upload do histórico escolar", null=True, blank=True)
+    historico_escolar = models.CharField("ID do Histórico Escolar no Drive", max_length=255, null=True, blank=True)
     def __str__(self):
         return f"Histórico de {self.usuario.username}"
 

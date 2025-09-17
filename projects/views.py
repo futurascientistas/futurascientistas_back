@@ -95,6 +95,9 @@ class ImportarProjetosView(APIView):
 
     def post(self, request, *args, **kwargs):
         arquivo = request.FILES.get('arquivo')
+
+        print("Arquivo recebido:", arquivo)
+
         if not arquivo:
             return Response({"erro": "Arquivo não enviado."}, status=status.HTTP_400_BAD_REQUEST)
 
