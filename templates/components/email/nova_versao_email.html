@@ -1,0 +1,62 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Nova versão disponível - Futuras Cientistas</title>
+</head>
+<body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px 0;">
+    <tr>
+        <td align="center">
+            <!-- Container principal -->
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden;">
+                
+                <!-- Header rosa com logo -->
+                <tr>
+                    <td align="center" style="padding: 20px; background-color: #FF69B4;">
+                        <img src="{{ protocol }}://{{ domain }}{% static 'public/images/futuras-cientistas-logo.png' %}" 
+                             alt="Logo" width="200" style="display:block;">
+                    </td>
+                </tr>
+
+                <!-- Corpo do e-mail -->
+                <tr>
+                    <td style="padding: 20px;">
+                        <h2 style="color: #333333; text-align: center;">🚀 Nova versão disponível!</h2>
+                        <p style="color: #555555; font-size: 14px; line-height: 1.6; text-align:center;">
+                            Olá, {{nome}}!<br><br>
+                            Temos o prazer de informar que a <strong>Versão 2</strong> do sistema <em>Futuras Cientistas</em> já está disponível.
+                        </p>
+                        <p style="color: #555555; font-size: 14px; line-height: 1.6; text-align:center;">
+                            Agora, será possível inserir <strong>notas por conceitos</strong>, tornando o processo de avaliação mais simples e eficiente.
+                        </p>
+                        <p style="text-align: center; margin: 30px 0;">
+                            <a href="{{ protocol }}://{{ domain }}/login" 
+                               style="background-color: #6c63ff; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block;">
+                               Acessar sistema
+                            </a>
+                        </p>
+                        <p style="color: #555555; font-size: 12px; text-align: center;">
+                            Em caso de dúvidas, entre em contato com o suporte.
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Footer com redes sociais -->
+                <tr>
+                    <td align="center" style="padding: 20px; background-color: #FF69B4;">
+                        <!-- aqui ficam os ícones sociais que você já tinha -->
+                        <p style="color: #fff; font-size: 12px; margin: 0;">© 2025 Futuras Cientistas - Todos os direitos reservados</p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
