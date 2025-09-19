@@ -1420,60 +1420,50 @@ class ApiProfessorasDistribuicaoEstadual(APIView):
         try:
             # Filtrar apenas professoras
             professoras = User.objects.filter(funcao='professora')
-            
-            # Contar todas as professoras
             total_professoras = professoras.count()
-            
+
             # Contar professoras por estado
-            distribuicao_estadual = professoras.filter(
-                endereco__isnull=False,
-                endereco__estado__isnull=False
-            ).values(
-                'endereco__estado__uf'
-            ).annotate(
-                total=Count('id')
-            ).order_by('-total')
-            
+            distribuicao_estadual = (
+                professoras.filter(endereco__isnull=False, endereco__estado__isnull=False)
+                .values('endereco__estado__uf')
+                .annotate(total=Count('id'))
+                .order_by('-total')
+            )
+
             # Calcular professoras sem estado
             professoras_com_estado = sum(item['total'] for item in distribuicao_estadual)
             professoras_sem_estado = total_professoras - professoras_com_estado
-            
+
             # Preparar dados para o gráfico
-            estados = []
-            quantidades = []
-            
-            for item in distribuicao_estadual:
-                if item['endereco__estado__uf']:
-                    estados.append(item['endereco__estado__uf'])
-                    quantidades.append(item['total'])
-            
-            # Limitar a 10 estados para não sobrecarregar o gráfico
-            if len(estados) > 10:
-                estados = estados[:10]
-                quantidades = quantidades[:10]
-            
-            # Adicionar "Não informado" se houver professoras sem estado
+            estados = [item['endereco__estado__uf'] for item in distribuicao_estadual if item['endereco__estado__uf']]
+            quantidades = [item['total'] for item in distribuicao_estadual if item['endereco__estado__uf']]
+
+            # ➡️ Removido o trecho que limitava a 10 estados
+            # if len(estados) > 10:
+            #     estados = estados[:10]
+            #     quantidades = quantidades[:10]
+
+            # Adicionar "Não informado", se necessário
             if professoras_sem_estado > 0:
                 estados.append('Não informado')
                 quantidades.append(professoras_sem_estado)
-            
-            # Cores para os estados
-            cores = [
-                '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', 
-                '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad', '#95a5a6'
+
+            # Gera cores dinamicamente conforme o total de estados
+            cores_base = [
+                '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c',
+                '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
             ]
-            
+            # Repete ou corta para cobrir todos os estados
+            cores = (cores_base * ((len(estados) // len(cores_base)) + 1))[:len(estados)]
+
             dados_distribuicao = {
                 'labels': estados,
                 'data': quantidades,
-                'backgroundColor': cores[:len(estados)]
+                'backgroundColor': cores
             }
-            
-            return Response({
-                "status": "success",
-                "dados_distribuicao": dados_distribuicao
-            })
-            
+
+            return Response({"status": "success", "dados_distribuicao": dados_distribuicao})
+
         except Exception as e:
             logger.error(f"Erro na API Distribuição Estadual de Professoras: {str(e)}")
             return Response({
@@ -1486,6 +1476,7 @@ class ApiProfessorasDistribuicaoEstadual(APIView):
                     ]
                 }
             })
+
 
 class ApiProfessorasDistribuicaoTipoEnsino(APIView):
     def get(self, request, *args, **kwargs):

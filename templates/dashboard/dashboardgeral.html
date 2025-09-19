@@ -269,15 +269,35 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            // configura o plugin datalabels para mostrar dentro da barra
+                            datalabels: {
+                                color: '#000000ff',              // cor do texto
+                                anchor: 'center',          // ancora no centro
+                                align: 'center',           // centralizado verticalmente
+                                font: {
+                                    weight: 'bold',
+                                    size: 14
+                                },
+                                formatter: (value) => value // exibe o valor diretamente
+                            }
                         },
                         scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade de Projetos' } },
-                            x: { title: { display: true, text: 'Regiões do Brasil' } }
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Quantidade de Projetos' },
+                                grid: { display: false }
+                            },
+                            x: {
+                                title: { display: true, text: 'Regiões do Brasil' },
+                                grid: { display: false }
+                            }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels] // registra o plugin
                 });
             }
+
 
             // Distribuição por Estado
             const dadosDistribuicaoEstados = await fetchDadosDistribuicaoEstados();
