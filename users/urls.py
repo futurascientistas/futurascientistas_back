@@ -50,6 +50,7 @@ urlpatterns = [
     path('api/evolucao-temporal/', ApiEvolucaoTemporal.as_view(), name='api-evolucao-temporal'),
     path('api/funil-performance/', ApiFunilPerformance.as_view(), name='api-funil-performance'),
     path('api/distribuicao-regional/', ApiDistribuicaoRegional.as_view(), name='api-distribuicao-regional'),
+    path('api/distribuicao-estados/', ApiDistribuicaoEstados.as_view(), name='api-distribuicao-estados'),    
     path('api/distribuicao-formacao/', ApiDistribuicaoFormacao.as_view(), name='api-distribuicao-formacao'),
     path('api/professoras-distribuicao-regional/', ApiProfessorasDistribuicaoRegional.as_view(), name='professoras-distribuicao-regional'),
     path('api/professoras-distribuicao-tipo-ensino/', ApiProfessorasDistribuicaoTipoEnsino.as_view(), name='professoras-distribuicao-tipo-ensino'),

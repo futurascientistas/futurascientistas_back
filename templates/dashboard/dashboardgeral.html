@@ -16,51 +16,65 @@
 
             <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
                 <div class="w-full md:w-1/2">
-                    <div class="bg-white shadow-md rounded-lg h-80 relative">
+                    <div class="bg-white shadow-md rounded-lg h-96 relative">
                       <canvas id="graficoEvolucaoInscricoesProjeto"></canvas>
                     </div>
                 </div>
                   
                 <div class="w-full md:w-1/2">
-                    <div class="bg-white shadow-md rounded-lg h-80 relative">
+                    <div class="bg-white shadow-md rounded-lg h-96 relative">
                       <canvas id="graficoFunilPerformanceAlunas"></canvas>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="flex flex-wrap -mx-2 mt-8">
+        {% comment %} <div class="flex flex-wrap -mx-2 mt-8">
             <div class="w-full px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-1">Distribuição por Tipo de Escola e PCD</h2>
             </div>
 
             <div class="w-full px-2">
-              <div class="bg-white shadow-md rounded-lg h-80 relative">
+              <div class="bg-white shadow-md rounded-lg h-96 relative">
                 <canvas id="graficoBarra"></canvas>
               </div>
             </div>
-        </div>
+        </div> {% endcomment %}
+
+
+
+
 
         <!-- NOVOS GRÁFICOS: Regional e Formação -->
         <div class="flex flex-col md:flex-row gap-5 -mx-2 mt-8">
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição Regional de Projetos</h2>
-                <div class="bg-white shadow-md rounded-lg h-80 relative">
+                <div class="bg-white shadow-md rounded-lg h-96 relative">
                     <canvas id="graficoDistribuicaoRegional"></canvas>
                 </div>
             </div>
 
             <div class="w-full md:w-1/2 px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Tempo de Formação</h2>
-                <div class="bg-white shadow-md rounded-lg h-80 relative flex items-center justify-center">
-                    <canvas id="graficoDistribuicaoFormacao"></canvas>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Inscrições por Estado</h2>
+                <div class="bg-white shadow-md rounded-lg h-96 relative">
+                    <canvas id="graficoDistribuicaoEstados"></canvas>
                 </div>
             </div>
+
+
+
+            {% comment %} <div class="w-full md:w-1/2 px-2">
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Tempo de Formação</h2>
+                <div class="bg-white shadow-md rounded-lg h-96 relative flex items-center justify-center">
+                    <canvas id="graficoDistribuicaoFormacao"></canvas>
+                </div>
+            </div> {% endcomment %}
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{% static 'js/graficos_chartjs.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <script>
         // Função para buscar dados da API
@@ -84,6 +98,17 @@
                 return data.dados_distribuicao;
             } catch (error) {
                 console.error('Erro ao buscar dados de distribuição regional:', error);
+                return null;
+            }
+        }
+
+        async function fetchDadosDistribuicaoEstados() {
+            try {
+                const response = await fetch('/usuarios/api/distribuicao-estados/');
+                const data = await response.json();
+                return data.dados_distribuicao;
+            } catch (error) {
+                console.error('Erro ao buscar dados de distribuição por estado:', error);
                 return null;
             }
         }
@@ -236,6 +261,54 @@
                     }
                 });
             }
+
+            // Distribuição por Estado
+            const dadosDistribuicaoEstados = await fetchDadosDistribuicaoEstados();
+            if (dadosDistribuicaoEstados) {
+                new Chart(document.getElementById('graficoDistribuicaoEstados'), {
+                    type: 'bar',
+                    data: {
+                        labels: dadosDistribuicaoEstados.labels,
+                        datasets: [{
+                            label: 'Aplicações',
+                            data: dadosDistribuicaoEstados.data,
+                            backgroundColor: dadosDistribuicaoEstados.backgroundColor,
+                            borderRadius: 6,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                anchor: 'center',
+                                align: 'center',
+                                color: '#000',
+                                font: { weight: 'bold', size: 11 },
+                                formatter: (value) => value
+                            }
+                        },
+                        scales: {
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { display: false },
+                                ticks: { display: false }
+
+                            },
+                            x: { 
+                                title: { display: true, text: 'Estados' },
+                                grid: { display: false } 
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+
+
+
 
             // Distribuição Formação
             const dadosFormacao = await fetchDadosDistribuicaoFormacao();

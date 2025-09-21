@@ -418,6 +418,7 @@ function validateAndAdvance(event) {
         if (!validateCep('endereco_escola-cep')) isStepValid = false;
         if (!validatePhoneFields()) isStepValid = false;
     } else if (currentStep === 5) {
+              console.log('    shakira ');
         const notasTableBody = document.getElementById('notas-table-body');
         const notaRows = notasTableBody ? notasTableBody.querySelectorAll('.form-row:not(.hidden)') : [];
         let disciplinaMap = {};
@@ -429,14 +430,16 @@ function validateAndAdvance(event) {
         notaRows.forEach(row => {
             const disciplinaSel = row.querySelector('select[name$="-disciplina"]');
             const bimestreSel   = row.querySelector('select[name$="-bimestre"]');
-            const valorInput    = row.querySelector('input[name$="-valor"]');
+            const valorInput    = row.querySelector('input[name$="-nota_original"]');
+            console.log('    shakira ');
 
             const missing = [];
             if (!disciplinaSel?.value) { missing.push('disciplina'); disciplinaSel?.classList.add('border-red-500'); }
             if (!bimestreSel?.value)   { missing.push('bimestre'); bimestreSel?.classList.add('border-red-500'); }
-            if (!valorInput?.value)    { missing.push('nota'); valorInput?.classList.add('border-red-500'); }
+            if (!valorInput?.value)    { missing.push('nota_original'); valorInput?.classList.add('border-red-500'); }
 
             if (missing.length) {
+                console.log('    shakira ');
                 appendRowErrorAfter(row, `Preencha ${missing.join(', ')}.`);
                 isStepValid = false;
             }

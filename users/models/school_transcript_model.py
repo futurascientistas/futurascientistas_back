@@ -18,14 +18,53 @@ class Disciplina(models.Model):
         return self.nome
 
 class Nota(models.Model):
+    TIPOS_CONCEITO = [
+        ("LETRAS", "Conceito em letras (MB, B, R, I)"),
+        ("0-10", "Nota de 0 a 10"),
+        ("0-25", "Nota de 0 a 25"),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     historico = models.ForeignKey(HistoricoEscolar, related_name='notas', on_delete=models.CASCADE)
     disciplina = models.ForeignKey(Disciplina, on_delete=models.CASCADE)
+    valor = models.DecimalField("Nota normalizada (0-10)", max_digits=4, decimal_places=2, null=True, blank=True)
     bimestre = models.PositiveSmallIntegerField("Bimestre", choices=[(1, '1º'), (2, '2º')])
-    valor = models.DecimalField("Valor da Nota", max_digits=4, decimal_places=2, null=True, blank=True)
-    
+
+    tipo_conceito = models.CharField("Tipo de Conceito", max_length=10, choices=TIPOS_CONCEITO, default="LETRAS")
+    nota_original = models.CharField("Nota informada", max_length=5, null=True, blank=True)
+
     class Meta:
         unique_together = ('historico', 'disciplina', 'bimestre')
+
+    def save(self, *args, **kwargs):
+        n = self.nota_original.strip().upper()
+
+        if self.tipo_conceito == "LETRAS":
+            mapping = {"MB": 9, "B": 7, "R": 6, "I": 5}
+            if n not in mapping:
+                raise ValueError("Informe MB, B, R ou I para notas do tipo LETRAS")
+            self.valor = mapping[n]
+
+        elif self.tipo_conceito == "0-10":
+            try:
+                num = float(n)
+            except ValueError:
+                raise ValueError("Informe um número válido para notas do tipo 0-10")
+            if not 0 <= num <= 10:
+                raise ValueError("Nota fora da escala 0-10")
+            self.valor = num
+
+        elif self.tipo_conceito == "0-25":
+            try:
+                num = float(n)
+            except ValueError:
+                raise ValueError("Informe um número válido para notas do tipo 0-25")
+            if not 0 <= num <= 25:
+                raise ValueError("Nota fora da escala 0-25")
+            # normaliza para 0–10
+            self.valor = round(num / 25 * 10, 2)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.disciplina.nome} - {self.bimestre}º Bimestre ({self.historico.usuario.username})"

@@ -1,5 +1,6 @@
 import re
 from django import forms
+from datetime import date
 from django.contrib.auth.models import Group
 from utils.utils import get_binary_field_display_name
 from users.services import validar_email, validar_cpf, validar_senha
@@ -247,7 +248,19 @@ class UserUpdateForm(forms.ModelForm):
                     )
         
         
-
+    def clean_data_nascimento(self):
+        data_nascimento = self.cleaned_data.get("data_nascimento")
+        if not data_nascimento:
+            return data_nascimento
+        
+        hoje = date.today()
+        idade_minima = 12
+        data_minima = date(hoje.year - idade_minima, hoje.month, hoje.day)
+        
+        if data_nascimento > data_minima:
+            raise forms.ValidationError(f"Você deve ter no mínimo {idade_minima} anos para se cadastrar.")
+        
+        return data_nascimento
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:

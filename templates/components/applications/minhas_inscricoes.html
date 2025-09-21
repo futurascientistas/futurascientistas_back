@@ -44,13 +44,16 @@
                   <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-600 hover:text-pink-800 inline-flex items-center gap-1">
                     Editar
                   </a>
+                  <!--
                   <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 ml-2">
                     Visualizar
-                  </a>
+                  </a>     -->
                 {% else %}
-                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
+                   <!-- 
+                    <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
                     Visualizar
                   </a>
+                  -->
                 {% endif %}
               </td>
             </tr>

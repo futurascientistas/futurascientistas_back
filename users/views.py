@@ -1205,6 +1205,65 @@ class ApiDistribuicaoRegional(APIView):
                     ]
                 }
             })
+            
+
+from django.db.models import Count
+
+class ApiDistribuicaoEstados(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Contar applications distintas por estado
+            distribuicao_estados = (
+                Application.objects
+                .filter(projeto__ativo=True)
+                .values(
+                    estado_nome=F('projeto__estados_aceitos__nome'),
+                    estado_uf=F('projeto__estados_aceitos__uf')
+                )
+                .annotate(total=Count('id', distinct=True))
+                .order_by('estado_nome')
+            )
+
+            # Preparar dados para o gráfico
+            ufs = []
+            quantidades = []
+
+            for item in distribuicao_estados:
+                if item['estado_nome']:
+                    ufs.append(item['estado_uf'])
+                    quantidades.append(item['total'])
+
+
+
+            dados_distribuicao = {
+                'labels': ufs,
+                'data': quantidades,
+                'backgroundColor': [
+                    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+                    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
+                    '#f39c12', '#27ae60', '#2980b9', '#c0392b', '#16a085',
+                    '#f1c40f', '#9b59b6', '#2c3e50', '#e67e22', '#d35400',
+                    '#7d3c98', '#1abc9c', '#34495e', '#e74c3c', '#95a5a6',
+                    '#00b894', '#fd79a8'
+                ]
+            }
+
+            return Response({
+                "status": "success",
+                "dados_distribuicao": dados_distribuicao
+            })
+
+        except Exception as e:
+            logger.error(f"Erro na API Distribuição Estados: {str(e)}")
+            return Response({
+                "status": "error",
+                "mensagem": str(e)
+            })
+
+
+ 
+            
+            
 class ApiDistribuicaoFormacao(APIView):
     def get(self, request, *args, **kwargs):
         try:
