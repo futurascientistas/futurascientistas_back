@@ -1,0 +1,79 @@
+<div class="mb-6">
+    <label class="text-sm font-medium text-gray-700 block mb-2">Notas por Disciplina</label>
+    <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mb-4">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disciplina</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bimestre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Excluir</th>
+                </tr>
+            </thead>
+            <tbody id="notas-table-body" class="bg-white divide-y divide-gray-200">
+                {{ formset.management_form }}
+                {% for form_nota in formset %}
+                <tr class="form-row {% if form_nota.DELETE.value %}hidden{% endif %}">
+                    {{ form_nota.id }}
+                    {% for hidden in form_nota.hidden_fields %}
+                        {{ hidden }}
+                    {% endfor %}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% render_field form_nota.disciplina class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% render_field form_nota.bimestre class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {% render_field form_nota.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                        <div class="flex items-center justify-center h-full">
+                            {% render_field form_nota.DELETE class="hidden" %}
+                            <button type="button" class="text-red-500 hover:text-red-700 ml-2 focus:outline-none remover-nota-button" aria-label="Remover Nota">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-end mt-4">
+        <button type="button" id="add-nota-button" class="bg-pink-500 text-white px-4 py-2 rounded-md h-10 w-full sm:w-auto hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 transition ease-in-out duration-150">
+            Adicionar Nota
+        </button>
+    </div>
+</div>
+
+
+<template id="empty-form-template">
+    <tr class="form-row">
+        {{ formset.empty_form.id }}
+        {% for hidden in formset.empty_form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {% render_field formset.empty_form.disciplina class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {% render_field formset.empty_form.bimestre class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {% render_field formset.empty_form.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+            <div class="flex items-center justify-center h-full">
+                {% render_field formset.empty_form.DELETE class="hidden" %}
+                <button type="button" class="text-red-500 hover:text-red-700 ml-2 focus:outline-none remover-nota-button" aria-label="Remover Nota">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </td>
+    </tr>
+</template>

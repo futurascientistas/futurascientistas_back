@@ -60,8 +60,6 @@ class CidadeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Estado '{estado_nome}' não encontrado.")
         return Cidade.objects.create(estado=estado, **validated_data)
 
-from rest_framework import serializers
-from core.models import Cidade
 
 class CidadeDisplaySerializer(serializers.ModelSerializer):
     nome_completo = serializers.SerializerMethodField()

@@ -6,7 +6,7 @@
       {{ field.label }}
     </label>
 
-    {% if field.field.drive_link %}
+    {% if field.field.drive_link or field.drive_link  %}
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center justify-between" role="alert">
             <div>
                 <span class="font-semibold">✅ "{{ field.field.friendly_label|capfirst }}" salvo no Google Drive:</span>

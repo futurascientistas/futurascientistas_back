@@ -22,7 +22,7 @@ from django.db import transaction
 from core.models import Cidade, Estado
 from users.models.address_model import Endereco
 from users.models.school_model import Escola
-from users.models.school_transcript_model import HistoricoEscolar
+from users.models.school_transcript_model import Disciplina, HistoricoEscolar, Nota
 from .forms import *
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -440,7 +440,7 @@ def dashboard(request):
     }
     return render(request, "components/dashboard/sidebar/dashboard.html", context)
 
-
+@login_required
 def perfil_view(request):
     user = request.user
 
@@ -448,6 +448,26 @@ def perfil_view(request):
     escola_instance = user.escola if user.escola else Escola()
     historico, created = HistoricoEscolar.objects.get_or_create(usuario=user)
     endereco_escola_instance = escola_instance.endereco if escola_instance.endereco else Endereco()
+    
+    if user.funcao == 'estudante':
+        if not historico.notas.exists():
+            try:
+                disciplinas = Disciplina.objects.all()
+                bimestres = ['1º Bimestre', '2º Bimestre']
+                
+                with transaction.atomic():
+                    for disciplina in disciplinas:
+                        for bimestre in bimestres:
+                            Nota.objects.create(
+                                historico=historico,
+                                disciplina=disciplina,
+                                bimestre=bimestre,
+                                valor=0.0
+                            )
+                messages.info(request, "Notas iniciais criadas para todas as disciplinas.")
+            except Exception as e:
+                logger.error(f"Erro ao criar notas iniciais: {str(e)}")
+                messages.error(request, "Erro ao carregar o formulário de notas. Por favor, tente novamente.")
 
     if request.method == 'POST':
         current_step = int(request.POST.get('current_step', 1))
@@ -539,13 +559,51 @@ def perfil_view(request):
 
                 elif current_step == 5:
                     formset = HistoricoNotaFormSet(request.POST, instance=historico,  prefix="notas")
-                    if formset.is_valid():
-                        formset.save()
-                        messages.success(request, 'Histórico escolar atualizado com sucesso! 📝')
-                        is_valid = True
+                    user_form = UserUpdateForm(request.POST, request.FILES, instance=user, user=request.user)
+                    is_upload = request.POST.get("auto_upload") == "1"
+                    # historico_form = HistoricoEscolarForm(request.POST, request.FILES, instance=historico)
+                    if is_upload:
+                        if user_form.is_valid():
+                            try:
+
+                                user = user_form.save()
+                                user.refresh_from_db() 
+
+                                historico.historico_escolar = user.drive_boletim_escolar
+                                historico.save()
+
+                                messages.success(request, 'Boletim enviado com sucesso! 📝')
+
+                                is_valid = True
+                            except Exception as e:
+                                logger.error(f"Erro ao fazer upload para o Drive: {str(e)}")
+                                messages.error(request, f'Erro ao enviar documentos para o Drive: {str(e)}')
+                        else:
+                            error_messages = []
+                            for field, errors in user_form.errors.items():
+                                field_label = user_form.fields[field].label if field in user_form.fields else field
+                                for error in errors:
+                                    error_messages.append(f"{field_label}: {error}")
+                            messages.error(request, 'Erro no formulário de upload. Por favor, corrija os erros abaixo:')
+                            for error_msg in error_messages:
+                                messages.error(request, error_msg)
+                            logger.error(f"Erro na validação do upload na etapa 5: {user_form.errors}")
+                            messages.error(request, 'Erro na validação do formulário enviado.')
+                            
+                        return redirect(f'{request.path}?step={current_step}')  
                     else:
-                        logger.error(f"Erro na validação do histórico escolar. Por favor, corrija os erros abaixo: {formset.errors}")
-                        messages.error(request, 'Erro na validação do histórico escolar. Por favor, corrija os erros abaixo.')
+                        if formset.is_valid() and user_form.is_valid():
+                            try:
+                                formset.save()
+                                user = user_form.save()
+                                messages.success(request, 'Boletim escolar atualizado com sucesso! 📝')
+                                is_valid = True
+                            except:
+                                logger.error(f"Erro ao salvar formulários da etapa 5: {str(e)}")
+                                messages.error(request, f'Erro ao salvar. Tente novamente.{str(e)}')
+                        else:
+                            logger.error(f"Erro na validação do boletim escolar. Por favor, corrija os erros abaixo: {formset.errors}")
+                            messages.error(request, 'Erro na validação do boletim escolar. Por favor, corrija os erros abaixo.')
 
                 elif current_step == 6:
                     form = UserUpdateForm(request.POST, request.FILES, instance=user)
@@ -578,10 +636,18 @@ def perfil_view(request):
     endereco_form = EnderecoForm(instance=endereco_instance)
     escola_form = EscolaForm(instance=escola_instance)
     escola_endereco_form = EnderecoForm(instance=endereco_escola_instance, prefix='endereco_escola')
-    formset = HistoricoNotaFormSet(instance=historico,  prefix="notas")
+    # historico_form = HistoricoEscolarForm(instance=historico)
+    queryset_notas = historico.notas.all().order_by('disciplina__nome', 'bimestre')
+    
+    formset = HistoricoNotaFormSet(
+        request.POST or None,
+        instance=historico,
+        prefix="notas",
+        queryset=queryset_notas
+    )
 
     if user.funcao == 'professora':
-        campos_estudante = ['historico_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
+        campos_estudante = ['drive_boletim_escolar', 'telefone_responsavel', 'comprovante_autorizacao_responsavel', 'comprovante_autorizacao_responsavel__upload', 'comprovante_autorizacao_responsavel__clear']
         for campo in campos_estudante:
             if campo in user_form.fields:
                 del user_form.fields[campo]
@@ -610,6 +676,7 @@ def perfil_view(request):
         'escola_form': escola_form,
         'escola_endereco_form': escola_endereco_form,
         'formset': formset, 
+        # 'historico_form': historico_form,
         'user': user,
         'steps': steps,
     }
