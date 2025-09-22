@@ -2085,78 +2085,68 @@ class ApiFaixaEtaria(APIView):
         try:
             # Filtrar apenas estudantes
             estudantes = User.objects.filter(funcao='estudante')
-            
-            # DEBUG: Verificar contagens
+
             total_estudantes = estudantes.count()
             sem_data = estudantes.filter(data_nascimento__isnull=True).count()
-            com_data = estudantes.filter(data_nascimento__isnull=False).count()
-            
-            print(f"DEBUG - Total: {total_estudantes}, Sem data: {sem_data}, Com data: {com_data}")
-            
-            # Calcular idades e agrupar por faixa etária
+
+            # Agora com a faixa abaixo de 13 anos
             faixas_etarias = {
+                '-12 anos': 0,
                 '13-15 anos': 0,
                 '16-18 anos': 0,
                 '19-21 anos': 0,
                 '22-24 anos': 0,
                 '25+ anos': 0,
-                'Não informado': sem_data  # Usar a contagem direta do banco
+                'Não informado': sem_data
             }
-            
+
             hoje = date.today()
-            
-            # Processar apenas estudantes com data de nascimento
             estudantes_com_data = estudantes.filter(data_nascimento__isnull=False)
-            
+
             for estudante in estudantes_com_data:
-                if estudante.data_nascimento:  # Verificação adicional por segurança
-                    idade = hoje.year - estudante.data_nascimento.year
-                    
-                    # Ajustar se ainda não fez aniversário este ano
-                    if (hoje.month, hoje.day) < (estudante.data_nascimento.month, estudante.data_nascimento.day):
-                        idade -= 1
-                    
-                    # Classificar por faixa etária
-                    if 13 <= idade <= 15:
-                        faixas_etarias['13-15 anos'] += 1
-                    elif 16 <= idade <= 18:
-                        faixas_etarias['16-18 anos'] += 1
-                    elif 19 <= idade <= 21:
-                        faixas_etarias['19-21 anos'] += 1
-                    elif 22 <= idade <= 24:
-                        faixas_etarias['22-24 anos'] += 1
-                    elif idade >= 25:
-                        faixas_etarias['25+ anos'] += 1
-            
-            # Verificar se a soma bate com o total
-            total_calculado = sum(faixas_etarias.values())
-            print(f"DEBUG - Total calculado: {total_calculado}, Total real: {total_estudantes}")
-            
-            # Preparar dados para o gráfico
+                idade = hoje.year - estudante.data_nascimento.year
+                if (hoje.month, hoje.day) < (estudante.data_nascimento.month, estudante.data_nascimento.day):
+                    idade -= 1
+
+                if idade < 13:
+                    faixas_etarias['-12 anos'] += 1
+                elif 13 <= idade <= 15:
+                    faixas_etarias['13-15 anos'] += 1
+                elif 16 <= idade <= 18:
+                    faixas_etarias['16-18 anos'] += 1
+                elif 19 <= idade <= 21:
+                    faixas_etarias['19-21 anos'] += 1
+                elif 22 <= idade <= 24:
+                    faixas_etarias['22-24 anos'] += 1
+                elif idade >= 25:
+                    faixas_etarias['25+ anos'] += 1
+
             labels = list(faixas_etarias.keys())
             data = list(faixas_etarias.values())
-            
+
             return Response({
                 "status": "success",
                 "dados_faixa_etaria": {
                     'labels': labels,
                     'data': data,
                     'backgroundColor': [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
+                        '#E57373', '#FF6384', '#36A2EB',
+                        '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
                     ]
                 }
             })
-            
+
         except Exception as e:
             logger.error(f"Erro na API Faixa Etária: {str(e)}")
-            # Fallback para dados mockados
             return Response({
                 "status": "success",
                 "dados_faixa_etaria": {
-                    'labels': ['13-15 anos', '16-18 anos', '19-21 anos', '22-24 anos', '25+ anos', 'Não informado'],
-                    'data': [120, 250, 180, 90, 60, 447],  # Agora com o valor real de não informados
+                    'labels': ['-12 anos', '13-15 anos', '16-18 anos',
+                               '19-21 anos', '22-24 anos', '25+ anos', 'Não informado'],
+                    'data': [0, 120, 250, 180, 90, 60, 447],
                     'backgroundColor': [
-                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
+                        '#E57373', '#FF6384', '#36A2EB',
+                        '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
                     ]
                 }
             })
