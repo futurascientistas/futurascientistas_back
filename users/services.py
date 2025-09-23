@@ -206,7 +206,7 @@ def menu_sidebar(request):
             """
         },
         {
-            "id": "inscricao_professora",
+            "id": "inscricao_professora_default",
             "title": "Minha Inscrição",
             "roles": ["professora"],
             "url": "/inscricoes/professora",

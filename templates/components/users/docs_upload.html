@@ -1,11 +1,28 @@
-{% load widget_tweaks custom_filters %}
+{% load widget_tweaks %}
 
-<div class="space-y-4">
+{% if only_boletim %}
+  <div class="space-y-4">
     {% for field in user_form %}
-        {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "drive_" in field.name %}
-            {% if user.funcao != 'professora' or field.name != 'comprovante_autorizacao_responsavel' %}
-                {% include "components/users/form_field.html" with field=field %}
-            {% endif %}
-        {% endif %}
+      {% if field.name == "drive_boletim_escolar__upload" or field.name == "drive_boletim_escolar__clear" %}
+        {% include "components/users/form_field.html" with field=field %}
+      {% endif %}
     {% endfor %}
-</div>
+  </div>
+
+{% else %}
+  <div class="space-y-4">
+    {% for field in user_form %}
+      {% if "documento" in field.name or "comprovante" in field.name or "foto" in field.name or "drive_" in field.name %}
+
+        {% if hide_boletim and "drive_boletim_escolar" in field.name %}
+          {# pula #}
+        {% else %}
+            {% if user.funcao == 'professora' or field.name != 'comprovante_autorizacao_responsavel' %}
+                {% include "components/users/form_field.html" with field=field %}
+            {% endif %} 
+        {% endif %}
+
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}

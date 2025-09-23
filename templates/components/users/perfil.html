@@ -31,37 +31,37 @@
         </div>
     </div>
     {% if messages %}
-<div class="space-y-4 mb-6">
-  {% for message in messages %}
-  <div role="alert" data-autoclose="true"
-       class="flex items-center justify-between p-4 rounded-lg shadow-md border transition ease-in-out duration-300
-       {% if message.tags == 'success' %} bg-green-50 border-green-300 text-green-800
-       {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-50 border-red-300 text-red-800
-       {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-300 text-yellow-800
-       {% else %} bg-blue-50 border-blue-300 text-blue-800 {% endif %}">
-    
-    <div class="flex items-center">
-      {% if message.tags == 'success' %}
-        <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-      {% elif message.tags == 'error' or message.tags == 'danger' %}
-        <svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.516 11.596c.75 1.336-.213 3.005-1.742 3.005H3.483c-1.529 0-2.492-1.669-1.742-3.005L8.257 3.1zM9 7a1 1 0 012 0v4a1 1 0 01-2 0V7zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg>
-      {% elif message.tags == 'warning' %}
-        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.516 11.596c.75 1.336-.213 3.005-1.742 3.005H3.483c-1.529 0-2.492-1.669-1.742-3.005L8.257 3.1zM9 7a1 1 0 012 0v4a1 1 0 01-2 0V7zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg>
-      {% else %}
-        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zM9 9V5h2v4H9zm0 2v2h2v-2H9z" clip-rule="evenodd"/></svg>
-      {% endif %}
-      <span>{{ message }}</span>
-    </div>
+        <div class="space-y-4 mb-6">
+            {% for message in messages %}
+                <div role="alert" data-autoclose="true"
+                    class="flex items-center justify-between p-4 rounded-lg shadow-md border transition ease-in-out duration-300
+                    {% if message.tags == 'success' %} bg-green-50 border-green-300 text-green-800
+                    {% elif message.tags == 'error' or message.tags == 'danger' %} bg-red-50 border-red-300 text-red-800
+                    {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-300 text-yellow-800
+                    {% else %} bg-blue-50 border-blue-300 text-blue-800 {% endif %}">
+                    
+                    <div class="flex items-center">
+                    {% if message.tags == 'success' %}
+                        <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.516 11.596c.75 1.336-.213 3.005-1.742 3.005H3.483c-1.529 0-2.492-1.669-1.742-3.005L8.257 3.1zM9 7a1 1 0 012 0v4a1 1 0 01-2 0V7zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg>
+                    {% elif message.tags == 'warning' %}
+                        <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.485 0l6.516 11.596c.75 1.336-.213 3.005-1.742 3.005H3.483c-1.529 0-2.492-1.669-1.742-3.005L8.257 3.1zM9 7a1 1 0 012 0v4a1 1 0 01-2 0V7zm1 8a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" clip-rule="evenodd"/></svg>
+                    {% else %}
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8zM9 9V5h2v4H9zm0 2v2h2v-2H9z" clip-rule="evenodd"/></svg>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                    </div>
 
-    <button type="button" class="ml-4 text-gray-400 hover:text-gray-600" onclick="this.closest('[role=alert]').remove()">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
+                    <button type="button" class="ml-4 text-gray-400 hover:text-gray-600" onclick="this.closest('[role=alert]').remove()">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 
     <form method="post" enctype="multipart/form-data" class="space-y-6" id="perfil-form" novalidate>
@@ -139,7 +139,7 @@
 
             {% elif step.number == 4 %}
             <div class="space-y-4">
-                {% include "components/users/docs_upload.html" %}
+                {% include "components/users/docs_upload.html" with hide_boletim=True %}
             </div>
             <div class="flex justify-between mt-4">
                 <button type="button" data-navigation="3" class="bg-gray-300 px-4 py-2 rounded">Voltar</button>
@@ -147,98 +147,19 @@
             </div>
 
             {% elif step.number == 5 %}
-                <div class="space-y-4">
-                    {% include "components/users/form_field.html" with field=user_form.historico_escolar %}
-                    {% include "components/users/form_field.html" with field=user_form.autorizacao_responsavel %}
+            <div class="space-y-4">
+                {% include "components/users/notas_fixas.html" %}
+                {% include "components/users/docs_upload.html" with only_boletim=True %}
+            </div>
 
-                    <div class="mb-6">
-                        <label class="text-sm font-medium text-gray-700 block mb-2">Notas por Disciplina</label>
-                        <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm mb-4">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disciplina</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bimestre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Excluir</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="notas-table-body" class="bg-white divide-y divide-gray-200">
-                                    {{ formset.management_form }}
-                                    {% for form_nota in formset %}
-                                    <tr class="form-row {% if form_nota.DELETE.value %}hidden{% endif %}">
-                                        {{ form_nota.id }}
-                                        {% for hidden in form_nota.hidden_fields %}
-                                            {{ hidden }}
-                                        {% endfor %}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.disciplina class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.bimestre class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {% render_field form_nota.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                                            <div class="flex items-center justify-center h-full">
-                                                {% render_field form_nota.DELETE class="hidden" %}
-                                                <button type="button" class="text-red-500 hover:text-red-700 ml-2 focus:outline-none remover-nota-button" aria-label="Remover Nota">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="flex justify-end mt-4">
-                            <button type="button" id="add-nota-button" class="bg-pink-500 text-white px-4 py-2 rounded-md h-10 w-full sm:w-auto hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 transition ease-in-out duration-150">
-                                Adicionar Nota
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <template id="empty-form-template">
-                    <tr class="form-row">
-                        {{ formset.empty_form.id }}
-                        {% for hidden in formset.empty_form.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% render_field formset.empty_form.disciplina class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% render_field formset.empty_form.bimestre class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% render_field formset.empty_form.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" required="required" %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                            <div class="flex items-center justify-center h-full">
-                                {% render_field formset.empty_form.DELETE class="hidden" %}
-                                <button type="button" class="text-red-500 hover:text-red-700 ml-2 focus:outline-none remover-nota-button" aria-label="Remover Nota">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </template>
-
-                <div class="flex justify-between mt-4">
-                    <button type="button" data-navigation="4" class="bg-gray-300 px-4 py-2 rounded">
-                        Voltar
-                    </button>
-                    <button type="submit" name="submit_step" value="{{ step.number }}" class="bg-pink-500 text-white px-4 py-2 rounded">
-                        Próximo
-                    </button>
-                </div>
+            <div class="flex justify-between mt-4">
+                <button type="button" data-navigation="4" class="bg-gray-300 px-4 py-2 rounded">
+                    Voltar
+                </button>
+                <button type="submit" name="submit_step" value="{{ step.number }}" class="bg-pink-500 text-white px-4 py-2 rounded">
+                    Próximo
+                </button>
+            </div>
 
             {% elif step.number == 6 %}
             <div class="space-y-4">
@@ -359,9 +280,627 @@
     }
 </style>
 
-<script src="{% static 'js/perfil_forms.js' %}"></script>
 
 <script>
+    function setErrorMessage(field, message) { 
+    let errorElement = field.nextElementSibling;
+    if (!errorElement || !errorElement.classList.contains("error-message")) {
+        errorElement = document.createElement("span");
+        errorElement.className = "text-red-500 text-sm mt-1 error-message";
+        field.parentNode.insertBefore(errorElement, field.nextElementSibling);
+    }
+    errorElement.textContent = message;
+}
+
+function clearAllErrors(stepId) {
+    const stepDiv = document.getElementById(stepId);
+    if (!stepDiv) return;
+    const errorElements = stepDiv.querySelectorAll('.error-message');
+    errorElements.forEach(el => el.textContent = '');
+}
+
+function clearTableErrors() {
+    document.querySelectorAll('#notas-table-body .error-row').forEach(el => el.remove());
+}
+
+function appendRowErrorAfter(row, message) {
+    if (!row) return;
+    const next = row.nextElementSibling;
+    if (next && next.classList.contains('error-row')) next.remove();
+
+    const tr = document.createElement('tr');
+    tr.className = 'error-row';
+    const td = document.createElement('td');
+    td.colSpan = row.children.length || 4;
+    td.className = 'text-red-500 text-sm p-2';
+    td.textContent = message;
+    tr.appendChild(td);
+    row.insertAdjacentElement('afterend', tr);
+}
+
+function appendTableErrorAtEnd(message) {
+    const tbody = document.getElementById('notas-table-body');
+    if (!tbody) return;
+    const refRow = tbody.querySelector('.form-row');
+    const tr = document.createElement('tr');
+    tr.className = 'error-row';
+    const td = document.createElement('td');
+    td.colSpan = (refRow?.children.length) || 4;
+    td.className = 'text-red-500 text-sm p-2';
+    td.textContent = message;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+}
+
+function validateRequiredFields(stepId) {
+    const stepDiv = document.getElementById(stepId);
+    if (!stepDiv) return true;
+
+    const requiredFields = stepDiv.querySelectorAll('[required]:not([style*="display: none"])');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (field.tagName === 'SELECT' && field.value === '') {
+            setErrorMessage(field, "Este campo é obrigatório.");
+            isValid = false;
+        } else if (!field.value.trim()) {
+            setErrorMessage(field, "Este campo é obrigatório.");
+            isValid = false;
+        } else {
+            setErrorMessage(field, "");
+        }
+    });
+
+    return isValid;
+}
+
+function validateCep(inputName) {
+    const cepInput = document.querySelector(`input[name="${inputName}"]`);
+    if (!cepInput) return true;
+
+    if (cepInput.closest('.form-step').classList.contains('hidden')) {
+        return true;
+    }
+
+    const cepValue = cepInput.value.replace(/\D/g, '');
+    const hasLetters = /[a-zA-Z]/.test(cepInput.value);
+
+    if (cepValue === '' && !cepInput.required) {
+        setErrorMessage(cepInput, "");
+        return true;
+    }
+
+    if (hasLetters || cepValue.length !== 8) {
+        setErrorMessage(cepInput, "O CEP deve conter 8 dígitos e apenas números.");
+        return false;
+    }
+    setErrorMessage(cepInput, "");
+    return true;
+}
+
+function validatePhoneFields() {
+    const phoneFields = document.querySelectorAll('input[name*="telefone"], input[name*="celular"]');
+    let isValid = true;
+    const phoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+
+    phoneFields.forEach((field) => {
+        if (field.closest('.form-step').classList.contains('hidden')) {
+            return;
+        }
+
+        let errorElement = field.nextElementSibling;
+        if (!errorElement || !errorElement.classList.contains("error-message")) {
+            errorElement = document.createElement("span");
+            errorElement.className = "text-red-500 text-sm mt-1 error-message";
+            field.parentNode.insertBefore(errorElement, field.nextElementSibling);
+        }
+
+        if (field.required && field.value.trim() === "") {
+            errorElement.textContent = "Este campo é obrigatório.";
+            field.classList.add("border-red-500");
+            isValid = false;
+        } else if (field.value.trim() !== "" && !phoneRegex.test(field.value)) {
+            errorElement.textContent = "Formato de telefone inválido. Use (##) 9####-#### ou (##) ####-####.";
+            field.classList.add("border-red-500");
+            isValid = false;
+        } else {
+            errorElement.textContent = "";
+            field.classList.remove("border-red-500");
+        }
+    });
+    return isValid;
+}
+
+function setupCepAutocomplete(cepInput, prefix = '') {
+    if (!cepInput) {
+        return;
+    }
+
+    cepInput.addEventListener('blur', async () => {
+        let cep = cepInput.value.replace(/\D/g, '');
+
+        if (cep.length !== 8) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            if (!response.ok) {
+                throw new Error('Erro na consulta do CEP');
+            }
+
+            const data = await response.json();
+            if (data.erro) {
+                alert('CEP não encontrado.');
+                return;
+            }
+
+            const rua = document.querySelector(`input[name="${prefix}rua"]`);
+            const bairro = document.querySelector(`input[name="${prefix}bairro"]`);
+            const cidade = document.querySelector(`select[name="${prefix}cidade"], input[name="${prefix}cidade"]` );
+            const estado = document.querySelector(`select[name="${prefix}estado"], input[name="${prefix}estado"]`);
+            const numero = document.querySelector(`input[name="${prefix}numero"]`);
+
+            if (rua) rua.value = data.logradouro || '';
+            if (bairro) bairro.value = data.bairro || '';
+            
+            if (estado && estado.tagName === 'SELECT') {
+                const uf = data.uf;
+                const option = Array.from(estado.options).find(opt => opt.textContent.includes(uf));
+                 
+                if (option) {
+                    estado.value = option.value;
+                    estado.dispatchEvent(new Event('change'));
+                } else {
+                    console.warn(`Opção para o estado "${uf}" não encontrada.`);
+                }
+            }
+
+            if (numero) numero.focus();
+        } 
+        catch (error) {
+            console.error(error);
+            alert('Não foi possível buscar o endereço pelo CEP.');
+        }
+    });
+}
+
+async function fetchCidadesPorEstado(estadoId) {
+    try {
+        const response = await fetch(`/api/cidades/?estado=${estadoId}`);
+        if (!response.ok) {
+            throw new Error('Erro ao buscar cidades da API.');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Erro ao carregar cidades:", error);
+        return [];
+    }
+}
+
+function populateCidadeSelect(selectElement, cidades, selectedValue = null) {
+    selectElement.innerHTML = '';
+    
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecione uma cidade';
+    selectElement.appendChild(defaultOption);
+
+    cidades.forEach(cidade => {
+        const option = document.createElement('option');
+        option.value = cidade.id;
+        option.textContent = cidade.nome_completo; 
+        if (selectedValue !== null && String(cidade.id) === String(selectedValue)) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+}
+
+function setupCidadeAutocomplete(prefix = '') {
+    const estadoSelect = document.querySelector(`select[name="${prefix}estado"]`);
+    const cidadeSelect = document.querySelector(`select[name="${prefix}cidade"]`);
+
+    if (!estadoSelect || !cidadeSelect) {
+        return;
+    }
+
+    estadoSelect.addEventListener('change', async () => {
+        const estadoId = estadoSelect.value;
+        if (estadoId) {
+            cidadeSelect.disabled = true;
+            cidadeSelect.innerHTML = '<option>Carregando...</option>';
+
+            const cidades = await fetchCidadesPorEstado(estadoId);
+            populateCidadeSelect(cidadeSelect, cidades);
+
+            cidadeSelect.disabled = false;
+        } else {
+            cidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro</option>';
+        }
+    });
+
+    const initialEstadoId = estadoSelect.value;
+    if (initialEstadoId) {
+        const initialCidadeId = cidadeSelect.value;
+        fetchCidadesPorEstado(initialEstadoId).then(cidades => {
+            populateCidadeSelect(cidadeSelect, cidades, initialCidadeId);
+        });
+    }
+}
+
+let disciplinaOptions = [];
+
+async function fetchDisciplinas() {
+    try {
+        const response = await fetch('/api/disciplinas/');
+        if (!response.ok) {
+            throw new Error('Erro ao buscar disciplinas da API.');
+        }
+        const data = await response.json();
+        disciplinaOptions = data;
+    } catch (error) {
+        console.error("Erro ao carregar disciplinas:", error);
+        alert("Não foi possível carregar as disciplinas. Tente novamente mais tarde.");
+    }
+}
+
+function populateDisciplinaSelect(selectElement, selectedValue = null) {
+    while (selectElement.options.length > 0) {
+        selectElement.remove(0);
+    }
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecione uma disciplina';
+    selectElement.appendChild(defaultOption);
+
+    disciplinaOptions.forEach(disciplina => {
+        const option = document.createElement('option');
+        option.value = disciplina.id;
+        option.textContent = disciplina.nome;
+        if (selectedValue !== null && String(disciplina.id) === String(selectedValue)) {
+            option.selected = true;
+        }
+        selectElement.appendChild(option);
+    });
+}
+
+function updateElementIndex(el, prefix, new_index) {
+    const id_regex = new RegExp('(' + prefix + '-\\d+-)|(' + prefix + '-__prefix__-)');
+    const replacement = prefix + '-' + new_index + '-';
+
+    if (el.getAttribute('for')) {
+        el.setAttribute('for', el.getAttribute('for').replace(id_regex, replacement));
+    }
+    if (el.id) {
+        el.id = el.id.replace(id_regex, replacement);
+    }
+    if (el.name) {
+        el.name = el.name.replace(id_regex, replacement);
+    }
+}
+
+window.adicionarFormularioComDisciplinas = function() {
+    const notasTableBody = document.getElementById('notas-table-body');
+    const emptyFormTemplate = document.getElementById('empty-form-template');
+    
+    if (!emptyFormTemplate) {
+        console.error("Template 'empty-form-template' não encontrado!");
+        return;
+    }
+
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]'); 
+    if (!totalFormsInput) {
+        console.error("TOTAL_FORMS input não encontrado!");
+        return;
+    }
+
+    let formIdx = parseInt(totalFormsInput.value);
+
+    const newFormRow = emptyFormTemplate.content.cloneNode(true);
+    const formRowElement = newFormRow.querySelector('.form-row');
+
+    const formsetPrefix = window.formsetPrefix || 'notas';
+
+    formRowElement.querySelectorAll('[id*="__prefix__"], [name*="__prefix__"]').forEach(function(el) {
+        updateElementIndex(el, formsetPrefix, formIdx);
+    });
+
+    notasTableBody.appendChild(formRowElement);
+
+    const newDisciplinaSelect = formRowElement.querySelector(`select[name="${formsetPrefix}-${formIdx}-disciplina"]`);
+    if (newDisciplinaSelect) {
+        populateDisciplinaSelect(newDisciplinaSelect);
+    }
+
+    totalFormsInput.value = formIdx + 1;
+};
+
+window.removerForm = function(button) {
+    const row = button.closest('.form-row');
+    if (!row) return;
+
+    const deleteInput = row.querySelector('input[name$="-DELETE"]');
+    if (deleteInput) {
+        deleteInput.checked = true;
+        row.classList.add('hidden');
+    } else {
+        row.remove();
+        const totalFormsInput = document.querySelector(`input[name="${formsetPrefix}-TOTAL_FORMS"]`);
+        totalFormsInput.value = parseInt(totalFormsInput.value) - 1;
+    }
+};
+
+function setupSubmitButton() {
+    const checkbox = document.getElementById('id_autodeclaracao');
+    const submitButton = document.getElementById('submit-step-6');
+
+    if (checkbox && submitButton) {
+        function toggleSubmitButton() {
+            submitButton.disabled = !checkbox.checked;
+        }
+
+        checkbox.addEventListener('change', toggleSubmitButton);
+        toggleSubmitButton();
+    }
+}
+
+function goToStep(step) {
+    showLoading();
+    setTimeout(() => {
+        document.querySelectorAll('.form-step').forEach(div => div.classList.add('hidden'));
+        document.getElementById('step-' + step).classList.remove('hidden');
+
+        const currentStepInput = document.getElementById('current-step-input');
+        if (currentStepInput) {
+            currentStepInput.value = step;
+        }
+        
+        document.querySelectorAll('.step-item').forEach(item => {
+            item.classList.remove('active');
+            if (parseInt(item.dataset.step) === step) {
+                item.classList.add('active');
+            }
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (step === 2) {
+            setupCidadeAutocomplete();
+            const cepInputUser = document.querySelector('input[name="cep"]');
+            if (cepInputUser) setupCepAutocomplete(cepInputUser);
+        } else if (step === 3) {
+            setupCidadeAutocomplete('endereco_escola-');
+            const cepInputEscola = document.querySelector('input[name="endereco_escola-cep"]');
+            if (cepInputEscola) setupCepAutocomplete(cepInputEscola, 'endereco_escola-');
+        }
+        
+        hideLoading();
+    },100);
+    
+}
+
+function validateAndAdvance(event) {
+    const currentStep = parseInt(document.getElementById('current-step-input').value);
+    let isStepValid = true;
+
+    clearAllErrors(`step-${currentStep}`);
+
+    if (document.getElementById("auto-upload-flag").value === "1") {
+        return true;
+    }
+
+    if (currentStep === 1) {
+        if (!validateRequiredFields('step-1')) isStepValid = false;
+        if (!validatePhoneFields()) isStepValid = false;
+    } else if (currentStep === 2) {
+        if (!validateRequiredFields('step-2')) isStepValid = false;
+        if (!validateCep('cep')) isStepValid = false;
+    } else if (currentStep === 3) {
+        if (!validateRequiredFields('step-3')) isStepValid = false;
+        if (!validateCep('endereco_escola-cep')) isStepValid = false;
+        if (!validatePhoneFields()) isStepValid = false;
+    } else if (currentStep === 5) {
+        const notasTableBody = document.getElementById('notas-table-body');
+        const notaRows = notasTableBody ? notasTableBody.querySelectorAll('.form-row:not(.hidden)') : [];
+        let disciplinaMap = {};
+
+        clearTableErrors();
+        document.querySelectorAll('#step-5 .error-message').forEach(el => el.textContent = '');
+        document.querySelectorAll('#step-5 .border-red-500').forEach(el => el.classList.remove('border-red-500'));
+
+        notaRows.forEach(row => {
+            const disciplinaSel = row.querySelector('select[name$="-disciplina"]');
+            const bimestreSel   = row.querySelector('select[name$="-bimestre"]');
+            const valorInput    = row.querySelector('input[name$="-nota_original"]');
+
+            const missing = [];
+            if (!disciplinaSel?.value) { missing.push('disciplina'); disciplinaSel?.classList.add('border-red-500'); }
+            if (!bimestreSel?.value)   { missing.push('bimestre'); bimestreSel?.classList.add('border-red-500'); }
+            if (!valorInput?.value)    { missing.push('nota_original'); valorInput?.classList.add('border-red-500'); }
+
+            if (missing.length) {
+                appendRowErrorAfter(row, `Preencha ${missing.join(', ')}.`);
+                isStepValid = false;
+            }
+
+            const discValue = disciplinaSel?.value;
+            const bimValue  = bimestreSel?.value;
+            if (discValue) {
+                if (!disciplinaMap[discValue]) disciplinaMap[discValue] = new Set();
+                if (bimValue) disciplinaMap[discValue].add(String(bimValue));
+            }
+        });
+
+        if (!disciplinaOptions || disciplinaOptions.length === 0) {
+            appendTableErrorAtEnd("Não há disciplinas configuradas no sistema.");
+            isStepValid = false;
+        } else {
+            disciplinaOptions.forEach(disciplina => {
+                const bimestres = disciplinaMap[disciplina.id] || new Set();
+                const tem1 = bimestres.has("1");
+                const tem2 = bimestres.has("2");
+
+                if (!(tem1 && tem2)) {
+                    const anchor = Array.from(notaRows).reverse().find(r =>
+                        r.querySelector('select[name$="-disciplina"]')?.value === String(disciplina.id)
+                    );
+                    const msg = `A disciplina ${disciplina.nome} precisa ter notas para o 1º e 2º bimestre.`;
+                    if (anchor) appendRowErrorAfter(anchor, msg);
+                    else appendTableErrorAtEnd(msg);
+
+                    isStepValid = false;
+                }
+            });
+        }
+    }
+
+    if (!isStepValid) {
+        event.preventDefault();
+        hideLoading();
+        const firstInvalidField = document.querySelector(`#step-${currentStep} .error-message:not(:empty)`);
+        if (firstInvalidField) {
+            firstInvalidField.previousElementSibling?.focus();
+        }
+    }
+}
+
+function showLoading() {
+    document.getElementById('loading-overlay')?.classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loading-overlay')?.classList.add('hidden');
+}
+
+function submitAutoUploadForm() {
+    const form = document.getElementById("perfil-form");
+    if (form) {
+        document.getElementById("auto-upload-flag").value = "1";
+        showLoading();
+        form.submit();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchDisciplinas(); 
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const stepInUrl = parseInt(urlParams.get('step')) || 1;
+    goToStep(stepInUrl); 
+
+    document.querySelectorAll('#notas-table-body select[name$="-disciplina"]').forEach(selectElement => {
+        const initialValue = selectElement.value;
+        populateDisciplinaSelect(selectElement, initialValue);
+    });
+
+    setupSubmitButton(); 
+
+    document.querySelectorAll('button[data-navigation]').forEach(button => {
+        if (button.textContent.trim().toLowerCase() === 'voltar') {
+            button.addEventListener('click', () => {
+                const step = parseInt(button.dataset.navigation);
+                goToStep(step);
+            });
+        }
+    });
+
+    // ✅ Ajustado: reset do auto-upload flag nos submits de step
+    document.querySelectorAll('button[type="submit"][name="submit_step"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const autoFlag = document.getElementById("auto-upload-flag");
+            if (autoFlag) autoFlag.value = "0";
+            showLoading();
+        });
+    });
+
+    const addButton = document.getElementById('add-nota-button'); 
+    if (addButton) {
+        addButton.addEventListener('click', adicionarFormularioComDisciplinas);
+    }
+    
+    const notasTableBody = document.getElementById('notas-table-body');
+    if (notasTableBody) {
+        notasTableBody.addEventListener('click', (event) => {
+            const removerButton = event.target.closest('.remover-nota-button');
+            if (removerButton) removerForm(removerButton);
+        });
+    }
+
+    document.querySelectorAll('.file-upload-input').forEach(input => {
+        input.addEventListener('change', submitAutoUploadForm);
+    });
+
+    document.querySelectorAll('.js-clear-button').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const targetName = this.getAttribute('data-clear-target');
+            const hiddenInput = document.querySelector(`input[name="${targetName}"]`);
+
+            if (hiddenInput) {
+                hiddenInput.disabled = false;
+                hiddenInput.checked = true;
+                hiddenInput.value = "1";
+                hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+
+                const autoFlag = document.getElementById("auto-upload-flag");
+                if (autoFlag) autoFlag.value = "1";
+
+                const form = this.closest('form');
+                if (form) {
+                    showLoading();
+                    form.submit();
+                }
+            } else {
+                console.warn("Input __clear não encontrado:", targetName);
+            }
+        });
+    });
+
+    document.getElementById("perfil-form").addEventListener("submit", () => {
+        const clears = Array.from(document.querySelectorAll("input[name$='__clear']"));
+        clears.forEach(c => {
+            console.log("➡️ Enviando:", c.name, "checked:", c.checked, "value:", c.value);
+        });
+    });
+
+    document.getElementById('perfil-form').addEventListener('submit', validateAndAdvance);
+});
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dataNascimentoInput = document.querySelector('input[name="data_nascimento"]');
+        const idadeMinima = 12;
+
+        if (dataNascimentoInput) {
+            let errorContainer = document.createElement('p');
+            errorContainer.classList.add('mt-2', 'text-sm', 'text-red-600');
+            dataNascimentoInput.insertAdjacentElement('afterend', errorContainer);
+
+            dataNascimentoInput.addEventListener('change', () => {
+                const dataNascimento = new Date(dataNascimentoInput.value);
+                const hoje = new Date();
+                const dataLimite = new Date(hoje.getFullYear() - idadeMinima, hoje.getMonth(), hoje.getDate());
+
+                if (!dataNascimentoInput.value) {
+                    errorContainer.textContent = '';
+                    dataNascimentoInput.classList.remove('border-red-500');
+                    dataNascimentoInput.classList.add('border-gray-300');
+                    return;
+                }
+
+                if (dataNascimento > dataLimite) {
+                    errorContainer.textContent = `Você deve ter no mínimo ${idadeMinima} anos para se cadastrar.`;
+                    dataNascimentoInput.classList.add('border-red-500');
+                    dataNascimentoInput.classList.remove('border-gray-300');
+                } else {
+                    errorContainer.textContent = '';
+                    dataNascimentoInput.classList.remove('border-red-500');
+                    dataNascimentoInput.classList.add('border-gray-300');
+                }
+            });
+        }
+    });
     const urls = [
         '/usuarios/api/alunas-datas/',
         '/usuarios/api/professores-datas/',

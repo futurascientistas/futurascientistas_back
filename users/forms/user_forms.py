@@ -1,5 +1,6 @@
 import re
 from django import forms
+from datetime import date
 from django.contrib.auth.models import Group
 from utils.utils import get_binary_field_display_name
 from users.services import validar_email, validar_cpf, validar_senha
@@ -113,9 +114,11 @@ class UserUpdateForm(forms.ModelForm):
         'drive_rg_frente': "RG (frente)",
         'drive_rg_verso': "RG (verso)", 
         'drive_cpf_anexo': "CPF",
-        'drive_foto': "Foto do Usuário",
+        'drive_foto': "Foto",
         'drive_autodeclaracao_racial':"Autodeclaração para cotas",
-        'drive_comprovante_deficiencia': "Comprovante de deficiência"
+        'drive_comprovante_deficiencia': "Comprovante de deficiência",
+        'drive_boletim_escolar': "Boletim escolar"
+        
     }
 
     # for field_name in BINARY_FILE_FIELDS:
@@ -137,8 +140,8 @@ class UserUpdateForm(forms.ModelForm):
     for field_name, label in DRIVE_UPLOAD_FIELDS.items():
         locals()[f"{field_name}__upload"] = forms.FileField(
             required=False,
-            label=f"Enviar {label} para o Drive",
-            help_text="O arquivo será salvo apenas no Google Drive"
+            label=f"Enviar: {label} da pessoa participante para o Drive",
+            help_text="O arquivo será salvo apenas no Drive"
         )
         locals()[f"{field_name}__upload"].friendly_label = label 
         locals()[f"{field_name}__clear"] = forms.BooleanField(
@@ -232,7 +235,7 @@ class UserUpdateForm(forms.ModelForm):
                 
                 # Se o ID existe, adiciona o link ao campo de upload
                 if file_id:
-                    drive_link = f"https://drive.google.com/file/d/{file_id}/view?usp=sharing"
+                    drive_link = f"https://drive.google.com/file/d/{file_id}/view"
                     
                     upload_field_name = f"{field_name}__upload"
                     
@@ -241,11 +244,23 @@ class UserUpdateForm(forms.ModelForm):
                     
                     # Adiciona uma mensagem de ajuda mais clara
                     self.fields[upload_field_name].help_text = (
-                        f"Um arquivo já foi enviado. Envie um novo para substituí-lo ou marque a caixa abaixo para remover."
+                        f"Um arquivo já foi enviado. Envie um novo arquivo para substituir o que já foi enviado, ou clique no ícone da lixeira para removê-lo"
                     )
         
         
-
+    def clean_data_nascimento(self):
+        data_nascimento = self.cleaned_data.get("data_nascimento")
+        if not data_nascimento:
+            return data_nascimento
+        
+        hoje = date.today()
+        idade_minima = 12
+        data_minima = date(hoje.year - idade_minima, hoje.month, hoje.day)
+        
+        if data_nascimento > data_minima:
+            raise forms.ValidationError(f"Você deve ter no mínimo {idade_minima} anos para se cadastrar.")
+        
+        return data_nascimento
 
     def _apply_binary_uploads(self, instance):
         for field_name in self.BINARY_FILE_FIELDS:

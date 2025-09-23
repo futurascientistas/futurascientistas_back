@@ -1,0 +1,46 @@
+{% load widget_tweaks %}
+
+<div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+    {{ formset.management_form }}
+    <table class="min-w-full divide-y divide-gray-200" id="notas-table">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Disciplina
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    1º Bimestre
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    2º Bimestre
+                </th>
+            </tr>
+        </thead>
+        <tbody id="notas-table-body" class="bg-white divide-y divide-gray-200">
+            {% regroup formset.forms by instance.disciplina.nome as disciplinas %}
+            {% for disciplina in disciplinas %}
+                <tr class="form-row">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                        {{ disciplina.grouper }}
+                    </td>
+
+                    {% for form in disciplina.list %}
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% render_field form.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" %}
+
+                            {{ form.id }}
+                            {{ form.disciplina.as_hidden }}
+                            {{ form.bimestre.as_hidden }}
+
+                            {% if form.errors %}
+                                <div class="text-red-500 text-xs mt-1">
+                                    {{ form.errors }}
+                                </div>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
