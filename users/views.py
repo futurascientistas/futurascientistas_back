@@ -453,7 +453,7 @@ def perfil_view(request):
         if not historico.notas.exists():
             try:
                 disciplinas = Disciplina.objects.all()
-                bimestres = ['1º Bimestre', '2º Bimestre']
+                bimestres = [1, 2]
                 
                 with transaction.atomic():
                     for disciplina in disciplinas:

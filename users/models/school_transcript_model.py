@@ -37,6 +37,11 @@ class Nota(models.Model):
         unique_together = ('historico', 'disciplina', 'bimestre')
 
     def save(self, *args, **kwargs):
+        if not self.nota_original:
+            # se não tem nota informada, só salva sem processar
+            super().save(*args, **kwargs)
+            return
+
         n = self.nota_original.strip().upper()
 
         if self.tipo_conceito == "LETRAS":
