@@ -1615,6 +1615,191 @@ class ApiProfessorasDistribuicaoTipoEnsino(APIView):
                     ]
                 }
             })
+
+class ApiDashboardUnificado(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            print("=== INÍCIO API DASHBOARD UNIFICADO ===")
+
+            # Obter parâmetros de filtro da query string
+            estado_filter = request.GET.get('estado')
+            raca_filter = request.GET.get('raca')
+            formacao_filter = request.GET.get('formacao')
+            tipo_ensino_filter = request.GET.get('tipo_ensino')
+
+            print(f"📊 Filtros recebidos:")
+            print(f"   - Estado/Região: {estado_filter}")
+            print(f"   - Raça: {raca_filter}")
+            print(f"   - Formação: {formacao_filter}")
+            print(f"   - Tipo Ensino: {tipo_ensino_filter}")
+
+            # Base queryset para professoras (User)
+            professoras = User.objects.filter(funcao='professora')
+            print(f"👩‍🏫 Total de professoras inicial: {professoras.count()}")
+
+            # Aplicar filtros que são da model User
+            if estado_filter and estado_filter != 'todos':
+                professoras = professoras.filter(endereco__estado__regiao__nome=estado_filter)
+                print(f"📍 Filtro estado/região aplicado: {estado_filter}")
+
+            if raca_filter and raca_filter != 'todos':
+                professoras = professoras.filter(raca__nome=raca_filter)
+                print(f"🎨 Filtro raça aplicado: {raca_filter}")
+
+            if tipo_ensino_filter and tipo_ensino_filter != 'todos':
+                professoras = professoras.filter(escola__tipo_ensino__nome=tipo_ensino_filter)
+                print(f"🏫 Filtro tipo ensino aplicado: {tipo_ensino_filter}")
+
+            print(f"👩‍🏫 Total de professoras após filtros User: {professoras.count()}")
+
+            # Para formação, usamos a model Application separadamente
+            aplicacoes_filtradas = Application.objects.filter(usuario__funcao='professora')
+            print(f"📝 Total de aplicações inicial: {aplicacoes_filtradas.count()}")
+
+            # Aplicar filtros nas applications
+            if estado_filter and estado_filter != 'todos':
+                aplicacoes_filtradas = aplicacoes_filtradas.filter(
+                    usuario__endereco__estado__regiao__nome=estado_filter
+                )
+                print(f"📍 Filtro estado/região aplicado nas applications: {estado_filter}")
+
+            if raca_filter and raca_filter != 'todos':
+                aplicacoes_filtradas = aplicacoes_filtradas.filter(usuario__raca__nome=raca_filter)
+                print(f"🎨 Filtro raça aplicado nas applications: {raca_filter}")
+
+            if tipo_ensino_filter and tipo_ensino_filter != 'todos':
+                aplicacoes_filtradas = aplicacoes_filtradas.filter(
+                    usuario__escola__tipo_ensino__nome=tipo_ensino_filter
+                )
+                print(f"🏫 Filtro tipo ensino aplicado nas applications: {tipo_ensino_filter}")
+
+            if formacao_filter and formacao_filter != 'todos':
+                aplicacoes_filtradas = aplicacoes_filtradas.filter(grau_formacao=formacao_filter)
+                print(f"🎓 Filtro formação aplicado: {formacao_filter}")
+
+            print(f"📝 Total de aplicações após filtros: {aplicacoes_filtradas.count()}")
+
+            # Gerar os dados para os gráficos
+            distribuicao_formacao = self._get_distribuicao_formacao(aplicacoes_filtradas)
+            distribuicao_raca = self._get_distribuicao_raca(professoras)
+            distribuicao_regional = self._get_distribuicao_regional(professoras)
+            distribuicao_estadual = self._get_distribuicao_estadual(professoras, estado_filter)
+            distribuicao_tipo_ensino = self._get_distribuicao_tipo_ensino(professoras)
+
+            total_professoras = professoras.count()
+            print(f"👩‍🏫 Total final de professoras: {total_professoras}")
+
+            resultado = {
+                "status": "success",
+                "filtros_ativos": {
+                    "estado": estado_filter,
+                    "raca": raca_filter,
+                    "formacao": formacao_filter,
+                    "tipo_ensino": tipo_ensino_filter
+                },
+                "total_professoras": total_professoras,
+                "dados_formacao": distribuicao_formacao,
+                "dados_raca": distribuicao_raca,
+                "dados_regional": distribuicao_regional,
+                "dados_estadual": distribuicao_estadual,
+                "dados_tipo_ensino": distribuicao_tipo_ensino
+            }
+
+            print("✅ API executada com sucesso!")
+            return Response(resultado)
+
+        except Exception as e:
+            print("❌ ERRO NA API DASHBOARD UNIFICADO")
+            print(f"💥 Erro: {str(e)}")
+            logger.error(f"Erro na API Dashboard Unificado: {str(e)}")
+            return Response({"status": "error", "message": str(e)}, status=500)
+
+    # ---------- MÉTODOS AUXILIARES ----------
+
+    def _get_distribuicao_formacao(self, aplicacoes):
+        distribuicao = aplicacoes.values('grau_formacao').annotate(total=Count('id')).order_by('grau_formacao')
+        label_map = {
+            'graduacao': 'Graduação', 'licenciatura': 'Licenciatura',
+            'bacharelado': 'Bacharelado', 'tecnologo': 'Tecnólogo',
+            'especializacao': 'Especialização', 'mestrado': 'Mestrado',
+            'doutorado': 'Doutorado', 'pos_doutorado': 'Pós-doutorado',
+            'outro': 'Outro'
+        }
+        labels, data = [], []
+        nao_informado_count = 0
+        for item in distribuicao:
+            grau_formacao = item['grau_formacao']
+            total = item['total']
+            if grau_formacao and grau_formacao.strip():
+                label = label_map.get(grau_formacao, grau_formacao.capitalize())
+                labels.append(label)
+                data.append(total)
+            else:
+                nao_informado_count += total
+        if nao_informado_count > 0:
+            labels.append('Não informado')
+            data.append(nao_informado_count)
+        return {'labels': labels, 'data': data, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(labels)]}
+
+    def _get_distribuicao_raca(self, professoras):
+        raca_counts = professoras.values('raca__nome').annotate(total=Count('id')).order_by('raca__nome')
+        labels, data = [], []
+        nao_informado_count = 0
+        for item in raca_counts:
+            raca_nome = item['raca__nome']
+            total = item['total']
+            if raca_nome and raca_nome.strip():
+                labels.append(raca_nome)
+                data.append(total)
+            else:
+                nao_informado_count += total
+        if nao_informado_count > 0:
+            labels.append('Não informado')
+            data.append(nao_informado_count)
+        return {'labels': labels, 'data': data, 'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5', '#95a5a6'][:len(labels)]}
+
+    def _get_distribuicao_regional(self, professoras):
+        distribuicao = professoras.filter(endereco__estado__regiao__nome__isnull=False)\
+            .values('endereco__estado__regiao__nome').annotate(total=Count('id')).order_by('endereco__estado__regiao__nome')
+        regioes, quantidades = [], []
+        for item in distribuicao:
+            regioes.append(item['endereco__estado__regiao__nome'])
+            quantidades.append(item['total'])
+        # Adiciona regiões sem professoras
+        todas_regioes = Regiao.objects.values_list('nome', flat=True)
+        for regiao in todas_regioes:
+            if regiao not in regioes:
+                regioes.append(regiao)
+                quantidades.append(0)
+        return {'labels': regioes, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(regioes)]}
+
+    def _get_distribuicao_estadual(self, professoras, estado_filter=None):
+        queryset = professoras
+        if estado_filter and estado_filter != 'todos':
+            # Se for filtro por região, restringe aos estados dessa região
+            queryset = queryset.filter(endereco__estado__regiao__nome=estado_filter)
+        distribuicao = queryset.filter(endereco__estado__uf__isnull=False)\
+            .values('endereco__estado__uf').annotate(total=Count('id')).order_by('-total')
+        estados = [item['endereco__estado__uf'] for item in distribuicao]
+        quantidades = [item['total'] for item in distribuicao]
+        return {'labels': estados, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(estados)]}
+
+    def _get_distribuicao_tipo_ensino(self, professoras):
+        distribuicao = professoras.filter(escola__tipo_ensino__nome__isnull=False)\
+            .values('escola__tipo_ensino__nome').annotate(total=Count('id')).order_by('escola__tipo_ensino__nome')
+        tipos, quantidades = [], []
+        for item in distribuicao:
+            tipos.append(item['escola__tipo_ensino__nome'])
+            quantidades.append(item['total'])
+        # Adiciona tipos sem professoras
+        todos_tipos = TipoEnsino.objects.values_list('nome', flat=True)
+        for tipo in todos_tipos:
+            if tipo not in tipos:
+                tipos.append(tipo)
+                quantidades.append(0)
+        return {'labels': tipos, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(tipos)]}
+    
+
 class ApiFunilAlunasApplicationLog(APIView):
     def get(self, request, *args, **kwargs):
         try:

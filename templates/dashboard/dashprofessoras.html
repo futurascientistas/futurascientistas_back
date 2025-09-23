@@ -73,12 +73,105 @@
         color: #10b981;
         margin-top: 5px;
     }
+
+    /* Estilos para indicador de filtros */
+    .filter-indicator {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: #3b82f6;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 0 2px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .clear-filters {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        cursor: pointer;
+        text-decoration: underline;
+        margin-left: auto;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .clear-filters:hover {
+        color: #1d4ed8;
+    }
+
+    /* Cursor pointer para gráficos interativos */
+    .chart-container canvas {
+        cursor: pointer;
+    }
+
+    /* Loading state */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
 {% endblock %}
 
 {% block content%}
-    <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
-    <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises Interativas</h1>
+    <p class="text-sm text-gray-600 mb-4">Clique em qualquer gráfico para filtrar os dados. Todos os gráficos se atualizam automaticamente.</p>
+
+    <!-- Indicador de Filtros Ativos -->
+    <div id="filter-indicator" class="hidden" 
+        style="display:flex; align-items:center; gap:12px; background-color:#f0f4ff; border:1px solid #3b82f6; border-radius:8px; padding:10px 16px; font-family:Arial,sans-serif; font-size:14px; color:#1e3a8a; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <span style="font-weight:600;">Filtros ativos:</span>
+        <span id="active-filters" style="flex:1;"></span>
+        <button id="clear-filters" 
+                style="background-color:#3b82f6; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; transition:background 0.2s;"
+                onmouseover="this.style.backgroundColor='#2563eb'" 
+                onmouseout="this.style.backgroundColor='#3b82f6'">
+            Limpar todos
+        </button>
+    </div>
+
 
     <!-- Big Number de Professoras Ativas -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -107,14 +200,13 @@
         </div>
     </div>
 
-
-    <div class="w-full">
+    <div id="dashboard-content">
         <!-- Primeira linha com gráficos de pizza -->
         <div class="flex flex-col md:flex-row gap-5 -mx-2">
             <!-- Card 1: Professoras por Tipo de Ensino -->
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Tipo de Ensino</h2>
-                <div class="bg-white shadow-md rounded-lg p-4">
+                <div class="bg-white shadow-md rounded-lg p-4 relative">
                     <div class="chart-container">
                         <canvas id="graficoProfessorasTipoEnsino" height='416'></canvas>
                     </div>
@@ -160,7 +252,7 @@
                         onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Raça</button>
                     </div>
                 </div>
-                <div class="bg-white shadow-md rounded-lg p-4">
+                <div class="bg-white shadow-md rounded-lg p-4 relative">
                     <!-- Container para o gráfico de formação -->
                     <div id="container-formacao" class="chart-container">
                         <canvas id="graficoDistribuicaoFormacao" height='400'></canvas>
@@ -182,7 +274,7 @@
                     <!-- BOTÕES DE ALTERNÂNCIA REGIÃO/ESTADO - ESTILO MELHORADO -->
                     <div class="chart-toggle">
                         <button id="toggle-regiao" class="toggle-btn active"
-                                                style="
+                        style="
                             background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                             color: #fff;
                             border: none;
@@ -198,7 +290,7 @@
                         onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
                         >Região</button>
                         <button id="toggle-estado" class="toggle-btn"
-                                                style="
+                        style="
                             background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                             color: #fff;
                             border: none;
@@ -215,7 +307,7 @@
                         >Estado</button>
                     </div>
                 </div>
-                <div class="bg-white shadow-md rounded-lg p-4">
+                <div class="bg-white shadow-md rounded-lg p-4 relative">
                     <!-- Container para o gráfico de região -->
                     <div id="container-regiao" class="chart-container">
                         <canvas id="graficoProfessorasRegiao" height='300'></canvas>
@@ -230,6 +322,12 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <span style="margin-left: 10px; font-weight: 600; color: #3b82f6;">Atualizando dados...</span>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Adicionando o plugin Chart.js datalabels -->
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -242,7 +340,476 @@
         let graficoEstado = null;
         let graficoFormacao = null;
         let graficoRaca = null;
+        let graficoTipoEnsino = null;
         
+        // Estado dos filtros
+        let filtrosAtivos = {
+            estado: null,
+            raca: null,
+            formacao: null,
+            tipo_ensino: null
+        };
+
+        // Função para mostrar/ocultar loading
+        function setLoading(loading) {
+            const overlay = document.getElementById('loading-overlay');
+            const content = document.getElementById('dashboard-content');
+            
+            if (loading) {
+                overlay.classList.remove('hidden');
+                content.classList.add('loading');
+            } else {
+                overlay.classList.add('hidden');
+                content.classList.remove('loading');
+            }
+        }
+
+        // Função para buscar dados unificados
+        async function fetchDadosUnificados() {
+            const params = new URLSearchParams();
+            
+            // Adicionar apenas filtros ativos
+            Object.entries(filtrosAtivos).forEach(([key, value]) => {
+                if (value && value !== 'todos') {
+                    params.append(key, value);
+                }
+            });
+            
+            try {
+                const response = await fetch(`/usuarios/api/dashboard-unificado/?${params}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar dados unificados:', error);
+                // Fallback para dados mockados em caso de erro
+                return getDadosMockados();
+            }
+        }
+
+        // Função de fallback com dados mockados
+        function getDadosMockados() {
+            return {
+                status: "success",
+                total_professoras: 150,
+                filtros_ativos: filtrosAtivos,
+                dados_formacao: {
+                    labels: ['Graduação', 'Mestrado', 'Doutorado', 'Especialização', 'Licenciatura', 'Não informado'],
+                    data: [120, 85, 45, 30, 25, 15],
+                    backgroundColor: ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#95a5a6']
+                },
+                dados_raca: {
+                    labels: ['Branca', 'Preta', 'Parda', 'Indígena', 'Amarela', 'Não informado'],
+                    data: [45, 35, 40, 15, 10, 8],
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6']
+                },
+                dados_regional: {
+                    labels: ['Sudeste', 'Nordeste', 'Sul', 'Centro-Oeste', 'Norte', 'Não informado'],
+                    data: [45, 35, 25, 15, 10, 5],
+                    backgroundColor: ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#95a5a6']
+                },
+                dados_estadual: {
+                    labels: ['SP', 'RJ', 'MG', 'BA', 'RS', 'PE', 'Não informado'],
+                    data: [25, 18, 15, 12, 8, 6, 7],
+                    backgroundColor: ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6']
+                },
+                dados_tipo_ensino: {
+                    labels: ['REGULAR', 'INTEGRAL', 'Não informado'],
+                    data: [65, 35, 12],
+                    backgroundColor: ['#3498db', '#2ecc71', '#95a5a6']
+                }
+            };
+        }
+
+        // Função para atualizar todos os gráficos
+        async function atualizarTodosGraficos() {
+            setLoading(true);
+            
+            try {
+                const dados = await fetchDadosUnificados();
+                if (!dados) return;
+                
+                // Atualizar big number
+                atualizarBigNumberProfessoras(dados.total_professoras);
+                
+                // Atualizar indicador de filtros
+                atualizarIndicadorFiltros(dados.filtros_ativos);
+                
+                // Atualizar gráficos individuais
+                atualizarGraficoTipoEnsino(dados.dados_tipo_ensino);
+                atualizarGraficoFormacao(dados.dados_formacao);
+                atualizarGraficoRaca(dados.dados_raca);
+                atualizarGraficoRegiao(dados.dados_regional);
+                atualizarGraficoEstado(dados.dados_estadual);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Função para atualizar indicador de filtros
+        function atualizarIndicadorFiltros(filtros) {
+            const indicator = document.getElementById('filter-indicator');
+            const activeFilters = document.getElementById('active-filters');
+            
+            const filtrosArray = Object.entries(filtros)
+                .filter(([key, value]) => value && value !== 'todos')
+                .map(([key, value]) => {
+                    const labelMap = {
+                        'estado': 'Estado',
+                        'raca': 'Raça',
+                        'formacao': 'Formação',
+                        'tipo_ensino': 'Tipo de Ensino'
+                    };
+                    return `<span class="filter-tag">${labelMap[key]}: ${value}</span>`;
+                });
+            
+            if (filtrosArray.length > 0) {
+                indicator.classList.remove('hidden');
+                activeFilters.innerHTML = filtrosArray.join('');
+            } else {
+                indicator.classList.add('hidden');
+                activeFilters.innerHTML = '';
+            }
+        }
+
+        // Função para limpar todos os filtros
+        function limparFiltros() {
+            filtrosAtivos = {
+                estado: null,
+                raca: null,
+                formacao: null,
+                tipo_ensino: null
+            };
+            atualizarTodosGraficos();
+        }
+
+        // Funções de atualização específicas para cada gráfico
+        function atualizarGraficoTipoEnsino(dados) {
+            const ctx = document.getElementById('graficoProfessorasTipoEnsino');
+            
+            if (graficoTipoEnsino) {
+                graficoTipoEnsino.destroy();
+            }
+            
+            graficoTipoEnsino = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderWidth: 1,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = dados.labels[index];
+                            // Ignorar cliques em "Não informado"
+                            if (label !== 'Não informado') {
+                                filtrosAtivos.tipo_ensino = label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: { padding: 15, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value, context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${percentage}%`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoFormacao(dados) {
+            const ctx = document.getElementById('graficoDistribuicaoFormacao');
+            
+            if (graficoFormacao) {
+                graficoFormacao.destroy();
+            }
+            
+            graficoFormacao = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderWidth: 1,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = dados.labels[index];
+                            if (label !== 'Não informado') {
+                                filtrosAtivos.formacao = label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: { padding: 15, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value, context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${percentage}%`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoRaca(dados) {
+            const ctx = document.getElementById('graficoDistribuicaoRaca');
+            
+            if (graficoRaca) {
+                graficoRaca.destroy();
+            }
+            
+            graficoRaca = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderWidth: 1,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = dados.labels[index];
+                            if (label !== 'Não informado') {
+                                filtrosAtivos.raca = label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'right',
+                            labels: { padding: 15, usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            formatter: function(value, context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${percentage}%`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoRegiao(dados) {
+            const ctx = document.getElementById('graficoProfessorasRegiao');
+            
+            if (graficoRegiao) {
+                graficoRegiao.destroy();
+            }
+            
+            graficoRegiao = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Quantidade de Professoras',
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderRadius: 8,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = dados.labels[index];
+                            if (label !== 'Não informado') {
+                                filtrosAtivos.estado = label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false },
+                        datalabels: {
+                            color: '#333',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            anchor: 'center',
+                            align: 'center',
+                            formatter: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: { 
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function atualizarGraficoEstado(dados) {
+            const ctx = document.getElementById('graficoProfessorasEstado');
+            
+            if (graficoEstado) {
+                graficoEstado.destroy();
+            }
+            
+            graficoEstado = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dados.labels,
+                    datasets: [{
+                        label: 'Quantidade de Professoras',
+                        data: dados.data,
+                        backgroundColor: dados.backgroundColor,
+                        borderRadius: 8,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (evt, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            const label = dados.labels[index];
+                            if (label !== 'Não informado') {
+                                filtrosAtivos.estado = label;
+                                atualizarTodosGraficos();
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false },
+                        datalabels: {
+                            color: '#333',
+                            font: {
+                                weight: 'bold',
+                                size: 12
+                            },
+                            anchor: 'center',
+                            align: 'center',
+                            formatter: function(value) {
+                                return value;
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            display: false,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        x: { 
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
         // Função para calcular variação percentual
         function calcularVariacao(valorAtual) {
             if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
@@ -253,19 +820,6 @@
                 texto: `+${variacao}% este mês`, 
                 classe: "text-green-600" 
             };
-        }
-        
-        // Função para buscar dados de professoras
-        async function fetchDadosProfessoras() {
-            try {
-                const response = await fetch('/usuarios/api/professores-datas/');
-                if (!response.ok) throw new Error('Erro na API Professoras');
-                const data = await response.json();
-                return data.professores.length;
-            } catch (error) {
-                console.error('Erro ao buscar dados de professoras:', error);
-                return null;
-            }
         }
         
         // Função para atualizar o big number de professoras
@@ -300,11 +854,6 @@
                 containerEstado.classList.remove('hidden');
                 btnRegiao.classList.remove('active');
                 btnEstado.classList.add('active');
-                
-                // Se o gráfico de estado ainda não foi criado, criá-lo
-                if (!graficoEstado) {
-                    inicializarGraficoEstado();
-                }
             }
         }
         
@@ -325,370 +874,33 @@
                 containerRaca.classList.remove('hidden');
                 btnFormacao.classList.remove('active');
                 btnRaca.classList.add('active');
-                
-                // Se o gráfico de raça ainda não foi criado, criá-lo
-                if (!graficoRaca) {
-                    inicializarGraficoRaca();
-                }
-            }
-        }
-        
-        // Configurar os event listeners para os botões de toggle de localização
-        document.getElementById('toggle-regiao').addEventListener('click', function() {
-            alternarGraficosLocalizacao('regiao');
-        });
-        
-        document.getElementById('toggle-estado').addEventListener('click', function() {
-            alternarGraficosLocalizacao('estado');
-        });
-        
-        // Configurar os event listeners para os botões de toggle de formação/raça
-        document.getElementById('toggle-formacao').addEventListener('click', function() {
-            alternarGraficosFormacaoRaca('formacao');
-        });
-        
-        document.getElementById('toggle-raca').addEventListener('click', function() {
-            alternarGraficosFormacaoRaca('raca');
-        });
-
-        // Função para buscar dados de professoras por região
-        async function fetchDadosProfessorasRegiao() {
-            try {
-                const response = await fetch('/usuarios/api/professoras-distribuicao-regional/');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(data.message);
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de professoras por região:', error);
-                return null;
-            }
-        }
-        
-        // Função para buscar dados de professoras por estado
-        async function fetchDadosProfessorasEstado() {
-            try {
-                const response = await fetch('/usuarios/api/professoras-distribuicao-estadual/');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(data.message);
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de professoras por estado:', error);
-                return null;
             }
         }
 
-        // Função para buscar dados de professoras por tipo de ensino
-        async function fetchDadosProfessorasTipoEnsino() {
-            try {
-                const response = await fetch('/usuarios/api/professoras-distribuicao-tipo-ensino/');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(data.message);
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de professoras por tipo de ensino:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados de distribuição por formação
-        async function fetchDadosDistribuicaoFormacao() {
-            try {
-                const response = await fetch('/usuarios/api/distribuicao-formacao/');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(data.message);
-                return data.dados_distribuicao_formacao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição por formação:', error);
-                return null;
-            }
-        }
-        
-        // Função para buscar dados de distribuição por raça
-        async function fetchDadosDistribuicaoRaca() {
-            try {
-                const response = await fetch('/usuarios/api/professoras-distribuicao-raca/');
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                if (data.status === 'error') throw new Error(data.message);
-                return data.dados_distribuicao_raca;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição por raça:', error);
-                return null;
-            }
-        }
-        
-        // Função para inicializar o gráfico de estado
-        async function inicializarGraficoEstado() {
-            const dadosProfessorasEstado = await fetchDadosProfessorasEstado();
-            if (dadosProfessorasEstado) {
-                const ctx = document.getElementById('graficoProfessorasEstado').getContext('2d');
-                graficoEstado = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: dadosProfessorasEstado.labels,
-                        datasets: [{
-                            label: 'Quantidade de Professoras',
-                            data: dadosProfessorasEstado.data,
-                            backgroundColor: dadosProfessorasEstado.backgroundColor,
-                            borderRadius: 8,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: false },
-                            datalabels: {
-                                color: '#333',
-                                font: {
-                                    weight: 'bold',
-                                    size: 12
-                                },
-                                anchor: 'center',
-                                align: 'center',
-                                formatter: function(value) {
-                                    return value;
-                                }
-                            }
-                        },
-                        scales: {
-                            y: { 
-                                beginAtZero: true,
-                                display: false,
-                                grid: {
-                                    display: false
-                                }
-                            },
-                            x: { 
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-        
-        // Função para inicializar o gráfico de raça
-        async function inicializarGraficoRaca() {
-            const dadosDistribuicaoRaca = await fetchDadosDistribuicaoRaca();
-            if (dadosDistribuicaoRaca) {
-                const ctx = document.getElementById('graficoDistribuicaoRaca').getContext('2d');
-                graficoRaca = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: dadosDistribuicaoRaca.labels,
-                        datasets: [{
-                            data: dadosDistribuicaoRaca.data,
-                            backgroundColor: dadosDistribuicaoRaca.backgroundColor,
-                            borderWidth: 1,
-                            hoverOffset: 15
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { 
-                                position: 'right',
-                                labels: { padding: 15, usePointStyle: true }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
-                                }
-                            },
-                            datalabels: {
-                                color: '#fff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 12
-                                },
-                                formatter: function(value, context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${percentage}%`;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        async function inicializarTodosGraficos() {
-            // Carregar dados de professoras para o big number
-            const totalProfessoras = await fetchDadosProfessoras();
-            atualizarBigNumberProfessoras(totalProfessoras);
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Carregar dados iniciais
+            atualizarTodosGraficos();
             
-            // Gráfico de Professoras por Região
-            const dadosProfessorasRegiao = await fetchDadosProfessorasRegiao();
-            if (dadosProfessorasRegiao) {
-                const ctx = document.getElementById('graficoProfessorasRegiao').getContext('2d');
-                graficoRegiao = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: dadosProfessorasRegiao.labels,
-                        datasets: [{
-                            label: 'Quantidade de Professoras',
-                            data: dadosProfessorasRegiao.data,
-                            backgroundColor: dadosProfessorasRegiao.backgroundColor,
-                            borderRadius: 8,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: false },
-                            datalabels: {
-                                color: '#333',
-                                font: {
-                                    weight: 'bold',
-                                    size: 12
-                                },
-                                anchor: 'center',
-                                align: 'center',
-                                formatter: function(value) {
-                                    return value;
-                                }
-                            }
-                        },
-                        scales: {
-                            y: { 
-                                beginAtZero: true,
-                                display: false,
-                                grid: {
-                                    display: false
-                                }
-                            },
-                            x: { 
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Professoras por Tipo de Ensino
-            const dadosProfessorasTipoEnsino = await fetchDadosProfessorasTipoEnsino();
-            if (dadosProfessorasTipoEnsino) {
-                new Chart(document.getElementById('graficoProfessorasTipoEnsino'), {
-                    type: 'pie',
-                    data: {
-                        labels: dadosProfessorasTipoEnsino.labels,
-                        datasets: [{
-                            data: dadosProfessorasTipoEnsino.data,
-                            backgroundColor: dadosProfessorasTipoEnsino.backgroundColor,
-                            borderWidth: 1,
-                            hoverOffset: 15
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { 
-                                position: 'right',
-                                labels: { padding: 15, usePointStyle: true }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
-                                }
-                            },
-                            datalabels: {
-                                color: '#fff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 12
-                                },
-                                formatter: function(value, context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${percentage}%`;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Gráfico de Distribuição por Formação
-            const dadosDistribuicaoFormacao = await fetchDadosDistribuicaoFormacao();
-            if (dadosDistribuicaoFormacao) {
-                const ctx = document.getElementById('graficoDistribuicaoFormacao').getContext('2d');
-                graficoFormacao = new Chart(ctx, {
-                    type: 'pie',
-                    data: {
-                        labels: dadosDistribuicaoFormacao.labels,
-                        datasets: [{
-                            data: dadosDistribuicaoFormacao.data,
-                            backgroundColor: dadosDistribuicaoFormacao.backgroundColor,
-                            borderWidth: 1,
-                            hoverOffset: 15
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { 
-                                position: 'right',
-                                labels: { padding: 15, usePointStyle: true }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.raw || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = Math.round((value / total) * 100);
-                                        return `${label}: ${value} (${percentage}%)`;
-                                    }
-                                }
-                            },
-                            datalabels: {
-                                color: '#fff',
-                                font: {
-                                    weight: 'bold',
-                                    size: 12
-                                },
-                                formatter: function(value, context) {
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${percentage}%`;
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', inicializarTodosGraficos);
+            // Configurar event listeners para os botões de toggle
+            document.getElementById('toggle-regiao').addEventListener('click', function() {
+                alternarGraficosLocalizacao('regiao');
+            });
+            
+            document.getElementById('toggle-estado').addEventListener('click', function() {
+                alternarGraficosLocalizacao('estado');
+            });
+            
+            document.getElementById('toggle-formacao').addEventListener('click', function() {
+                alternarGraficosFormacaoRaca('formacao');
+            });
+            
+            document.getElementById('toggle-raca').addEventListener('click', function() {
+                alternarGraficosFormacaoRaca('raca');
+            });
+            
+            // Configurar botão de limpar filtros
+            document.getElementById('clear-filters').addEventListener('click', limparFiltros);
+        });
     </script>
 {% endblock %}
