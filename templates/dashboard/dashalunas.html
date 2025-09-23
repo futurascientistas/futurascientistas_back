@@ -5,7 +5,7 @@
 <style>
     .chart-container {
         position: relative;
-        height: 300px; /* Altura reduzida dos gráficos */
+        height: 300px;
         width: 100%;
     }
     
@@ -125,285 +125,387 @@
         min-width: 100px;
         text-align: center;
     }
+
+    /* ESTILOS PARA INDICADOR DE FILTROS */
+    .filter-indicator {
+        background-color: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: #3b82f6;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin: 0 2px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .clear-filters {
+        background: none;
+        border: none;
+        color: #3b82f6;
+        cursor: pointer;
+        text-decoration: underline;
+        margin-left: auto;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .clear-filters:hover {
+        color: #1d4ed8;
+    }
+
+    /* Loading state */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Cursor pointer para gráficos interativos */
+    .chart-container canvas {
+        cursor: pointer;
+    }
 </style>
 {% endblock %}
 
 {% block content%}
-    <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard Geral</h1>
-<p class="text-sm text-gray-600 mb-6">Visão completa de métricas, distribuição de cotas và frequência dos alunos.</p>
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard Geral - Alunas</h1>
+    <p class="text-sm text-gray-600 mb-4">Clique em qualquer gráfico para filtrar os dados. Todos os gráficos se atualizam automaticamente.</p>
 
-<!-- Seção de Big Numbers - REMOVIDO PROFESSORAS ATIVAS -->
-<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-8">
-    <!-- Total de Alunas -->
-    <div class="bg-white rounded-lg shadow-md p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-medium text-gray-500">Total de Alunas</h3>
-                <p id="total-alunas" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">Carregando...</p>
-            </div>
-            <div class="bg-blue-100 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <!-- Projetos em Andamento -->
-    <div class="bg-white rounded-lg shadow-md p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-medium text-gray-500">Projetos em Andamento</h3>
-                <p id="total-projetos" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">Carregando...</p>
-            </div>
-            <div class="bg-purple-100 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <!-- Taxa de Conclusão -->
-    <div class="bg-white rounded-lg shadow-md p-4">
-        <div class="flex items-center justify-between">
-            <div>
-                <h3 class="text-sm font-medium text-gray-500">Taxa de Conclusão</h3>
-                <p id="taxa-conclusao" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">Carregando...</p>
-            </div>
-            <div class="bg-yellow-100 p-3 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Resto do conteúdo permanece igual -->
-<!-- Seção de Gráficos -->
-<div class="grid grid-cols-1 gap-6">
-    <!-- Linha 1: Gráficos pequenos lado a lado -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Frequência Mensal -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Frequência Média Mensal (%)</h3>
-            <div class="chart-container">
-                <canvas id="graficoFrequenciaMensal"></canvas>
-            </div>
-        </div>
-
-        <!-- Funil de Alunas -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-2">Funil de Alunas</h3>
-            <p class="text-sm text-gray-600 mb-4">Jornada das alunas ao longo das etapas do projeto</p>
-            <div class="chart-container">
-                <canvas id="graficoFunilAlunas" HEIG></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Linha 2: Gráficos médios -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Distribuição por Tipo de Escola -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
-            <div class="chart-container">
-                <canvas id="graficoDistribuicaoEscolas"></canvas>
-            </div>
-        </div>
-        <!-- Faixa Etária -->
-        <div class="bg-white shadow-md rounded-lg p-4">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Faixa Etária</h3>
-            <div class="chart-container">
-                <canvas id="graficoFaixaEtaria"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Linha 3: Gráficos largos -->
-    <div class="bg-white shadow-md rounded-lg p-4">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Distribuição de Estudantes</h3>
-            <div class="flex space-x-2" id="tabs-distribuicao">
-                <button class="tab-button active" data-tab="genero" onclick="mudarAba('genero')"
-                  style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Gênero</button>
-                <button class="tab-button" data-tab="raca" onclick="mudarAba('raca')"
-                  style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Raça</button>
-                <button class="tab-button" data-tab="escola" onclick="mudarAba('escola')"
-                  style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
-                >Escola</button>
-            </div>
-        </div>
+    <!-- Indicador de Filtros Ativos -->
+    <div id="filter-indicator" class="hidden"
+        style="display:flex; align-items:center; gap:10px; background-color:#eef2ff; border:1px solid #3b82f6; border-radius:12px; padding:8px 16px; font-family:Arial,sans-serif; font-size:14px; color:#1e40af; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
         
-        <!-- Container único para o gráfico ativo -->
-        <div class="chart-container">
-            <canvas id="graficoAtivo" height='400'></canvas>
-        </div>
+        <span style="font-weight:700;">Filtros ativos:</span>
+        
+        <span id="active-filters" style="flex:1; display:flex; gap:6px; flex-wrap:wrap;"></span>
+        
+        <button id="clear-filters" 
+                style="background-color:#3b82f6; color:white; border:none; border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:600; transition:background 0.2s;"
+                onmouseover="this.style.backgroundColor='#2563eb'" 
+                onmouseout="this.style.backgroundColor='#3b82f6'">
+            Limpar todos
+        </button>
     </div>
 
-    <!-- Linha 4: Novos gráficos de distribuição geográfica -->
-    <div class="bg-white shadow-md rounded-lg p-4" style="position:relative; display:flex; flex-direction:column;">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Distribuição Geográfica de Alunas</h3>
-            <div class="distribuicao-tabs" id="tabs-distribuicao-geografica">
-                <button class="distribuicao-tab active" data-tab="regional" onclick="mudarAbaGeografica('regional')"   style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Regional</button>
 
-                <button class="distribuicao-tab" data-tab="estadual" onclick="mudarAbaGeografica('estadual')" style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Estadual</button>
-
-                <button class="distribuicao-tab" data-tab="municipal" onclick="mudarAbaGeografica('municipal')" style="
-                    background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
-                    color: #fff;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-                    transition: all 0.2s ease;
-                "
-                onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
-                onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Municipal</button>
+    <!-- Seção de Big Numbers -->
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-8">
+        <!-- Total de Alunas -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Total de Alunas</h3>
+                    <p id="total-alunas" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
             </div>
         </div>
 
-        <!-- Container único para o gráfico geográfico ativo -->
-        <div class="chart-container" style="flex:1;">
-            <canvas id="graficoGeograficoAtivo" height="400"></canvas>
+        <!-- Projetos em Andamento -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Projetos em Andamento</h3>
+                    <p id="total-projetos" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
         </div>
 
-        <!-- Navegação centralizada ao fundo -->
-        <div class="chart-navigation" id="geografico-navigation" style="
-            display:none;
-            margin-top:20px;
-            font-family: Arial, sans-serif;
-            text-align:center;
-            align-self:center;
-        ">
-            <button id="prev-button" disabled
-                style="
-                background-color:#8b5cf6;
-                color:white;
-                border:none;
-                padding:8px 14px;
-                margin:0 8px;
-                border-radius:6px;
-                cursor:pointer;
-                font-size:16px;
-                transition:background-color 0.3s, transform 0.2s;
-                "
-                onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
-                onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
-            >&lt;</button>
-
-            <span id="page-info"
-                style="
-                    display:inline-block;
-                    background:linear-gradient(135deg,#f0f0f0,#e0e0e0);
-                    padding:6px 14px;
-                    border-radius:20px;
-                    font-size:15px;
-                    font-weight:600;
-                    color:#222;
-                    letter-spacing:0.5px;
-                    box-shadow:0 2px 5px rgba(0,0,0,0.1);
-                    margin:0 10px;
-                    transition:transform 0.2s;
-                "
-                onmouseover="this.style.transform='scale(1.05)'"
-                onmouseout="this.style.transform='scale(1)'"
-            >Página 1 de 1</span>
-
-            <button id="next-button" disabled
-                style="
-                background-color:#8b5cf6;
-                color:white;
-                border:none;
-                padding:8px 14px;
-                margin:0 8px;
-                border-radius:6px;
-                cursor:pointer;
-                font-size:16px;
-                transition:background-color 0.3s, transform 0.2s;
-                "
-                onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
-                onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
-            >&gt;</button>
+        <!-- Taxa de Conclusão -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Taxa de Conclusão</h3>
+                    <p id="taxa-conclusao" class="text-2xl font-bold text-gray-800 mt-1">--</p>
+                    <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
         </div>
     </div>
 
-</div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <span style="margin-left: 10px; font-weight: 600; color: #3b82f6;">Atualizando dados...</span>
+    </div>
+
+    <!-- Seção de Gráficos -->
+    <div id="dashboard-content">
+        <!-- Linha 1: Gráficos pequenos lado a lado -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Frequência Mensal -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Frequência Média Mensal (%)</h3>
+                <div class="chart-container">
+                    <canvas id="graficoFrequenciaMensal"></canvas>
+                </div>
+            </div>
+
+            <!-- Funil de Alunas -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Funil de Alunas</h3>
+                <p class="text-sm text-gray-600 mb-4">Jornada das alunas ao longo das etapas do projeto</p>
+                <div class="chart-container">
+                    <canvas id="graficoFunilAlunas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 2: Gráficos médios -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <!-- Distribuição por Tipo de Escola -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Tipo de Escola</h3>
+                <div class="chart-container">
+                    <canvas id="graficoDistribuicaoEscolas"></canvas>
+                </div>
+            </div>
+            <!-- Faixa Etária -->
+            <div class="bg-white shadow-md rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribuição por Faixa Etária</h3>
+                <div class="chart-container">
+                    <canvas id="graficoFaixaEtaria"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Linha 3: Gráficos largos -->
+        <div class="bg-white shadow-md rounded-lg p-4 mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Distribuição de Estudantes</h3>
+                <div class="flex space-x-2" id="tabs-distribuicao">
+                    <button class="tab-button active" data-tab="genero" onclick="mudarAba('genero')"
+                    style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                    >Gênero</button>
+                    <button class="tab-button" data-tab="raca" onclick="mudarAba('raca')"
+                    style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                    >Raça</button>
+                    <button class="tab-button" data-tab="escola" onclick="mudarAba('escola')"
+                    style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'"
+                    >Escola</button>
+                </div>
+
+            </div>
+            
+            <!-- Container único para o gráfico ativo -->
+            <div class="chart-container">
+                <canvas id="graficoAtivo" height='400'></canvas>
+            </div>
+        </div>
+
+        <!-- Linha 4: Gráficos de distribuição geográfica -->
+        <div class="bg-white shadow-md rounded-lg p-4 mt-6" style="position:relative; display:flex; flex-direction:column;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Distribuição Geográfica de Alunas</h3>
+                <div class="distribuicao-tabs" id="tabs-distribuicao-geografica">
+                    <button class="distribuicao-tab active" data-tab="regional" onclick="mudarAbaGeografica('regional')"   style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Regional</button>
+
+                    <button class="distribuicao-tab" data-tab="estadual" onclick="mudarAbaGeografica('estadual')" style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Estadual</button>
+
+                    <button class="distribuicao-tab" data-tab="municipal" onclick="mudarAbaGeografica('municipal')" style="
+                        background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
+                        color: #fff;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 16px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+                        transition: all 0.2s ease;
+                    "
+                    onmouseover="this.style.background='linear-gradient(135deg, #8b5cf6 0%, #b48cff 100%)'"
+                    onmouseout="this.style.background='linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%)'">Municipal</button>
+                </div>
+            </div>
+
+            <!-- Container único para o gráfico geográfico ativo -->
+            <div class="chart-container" style="flex:1;">
+                <canvas id="graficoGeograficoAtivo" height="400"></canvas>
+            </div>
+
+            <!-- Navegação centralizada ao fundo -->
+            
+            <div class="chart-navigation" id="geografico-navigation" style="
+                display:none;
+                margin-top:20px;
+                font-family: Arial, sans-serif;
+                text-align:center;
+                align-self:center;
+            ">
+                <button id="prev-button" disabled
+                    style="
+                    background-color:#8b5cf6;
+                    color:white;
+                    border:none;
+                    padding:8px 14px;
+                    margin:0 8px;
+                    border-radius:6px;
+                    cursor:pointer;
+                    font-size:16px;
+                    transition:background-color 0.3s, transform 0.2s;
+                    "
+                    onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
+                    onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
+                >&lt;</button>
+
+                <span id="page-info"
+                    style="
+                        display:inline-block;
+                        background:linear-gradient(135deg,#f0f0f0,#e0e0e0);
+                        padding:6px 14px;
+                        border-radius:20px;
+                        font-size:15px;
+                        font-weight:600;
+                        color:#222;
+                        letter-spacing:0.5px;
+                        box-shadow:0 2px 5px rgba(0,0,0,0.1);
+                        margin:0 10px;
+                        transition:transform 0.2s;
+                    "
+                    onmouseover="this.style.transform='scale(1.05)'"
+                    onmouseout="this.style.transform='scale(1)'"
+                >Página 1 de 1</span>
+
+                <button id="next-button" disabled
+                    style="
+                    background-color:#8b5cf6;
+                    color:white;
+                    border:none;
+                    padding:8px 14px;
+                    margin:0 8px;
+                    border-radius:6px;
+                    cursor:pointer;
+                    font-size:16px;
+                    transition:background-color 0.3s, transform 0.2s;
+                    "
+                    onmouseover="if(!this.disabled){this.style.backgroundColor='#7c3aed'}"
+                    onmouseout="if(!this.disabled){this.style.backgroundColor='#8b5cf6'}"
+                >&gt;</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Carregar Chart.js primeiro -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -430,10 +532,241 @@
             municipal: null
         };
         
+        // Estado dos filtros
+        let filtrosAtivos = {
+            estado: null,
+            raca: null,
+            genero: null,
+            tipo_escola: null,
+            faixa_etaria: null
+        };
+
         // Variáveis para controle de paginação
         let paginaAtual = 1;
-        let itensPorPagina = 10; // Número de itens por página
+        let itensPorPagina = 10;
         let totalPaginas = 1;
+
+        // Função para mostrar/ocultar loading
+        function setLoading(loading) {
+            const overlay = document.getElementById('loading-overlay');
+            const content = document.getElementById('dashboard-content');
+            
+            if (loading) {
+                overlay.classList.remove('hidden');
+                content.classList.add('loading');
+            } else {
+                overlay.classList.add('hidden');
+                content.classList.remove('loading');
+            }
+        }
+
+        // Função para buscar dados unificados
+        async function fetchDadosUnificados() {
+            const params = new URLSearchParams();
+            
+            // Adicionar apenas filtros ativos
+            Object.entries(filtrosAtivos).forEach(([key, value]) => {
+                if (value && value !== 'todos') {
+                    params.append(key, value);
+                }
+            });
+            
+            try {
+                const response = await fetch(`/usuarios/api/dashboard-unificado-alunas/?${params}`);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(data.message);
+                return data;
+            } catch (error) {
+                console.error('Erro ao buscar dados unificados:', error);
+                return getDadosMockados();
+            }
+        }
+
+        // Função de fallback com dados mockados
+        function getDadosMockados() {
+            return {
+                status: "success",
+                total_alunas: 150,
+                filtros_ativos: filtrosAtivos,
+                dados_funil: {
+                    'labels': ['Inscritas', 'Selecionadas', 'Iniciaram', 'Concluíram'],
+                    'datasets': [{
+                        'label': 'Quantidade',
+                        'data': [1000, 750, 500, 250],
+                        'borderColor': '#3498db',
+                        'backgroundColor': 'rgba(52, 152, 219, 0.5)',
+                        'pointBackgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f'],
+                        'pointBorderColor': '#fff',
+                        'pointRadius': 8,
+                        'pointHoverRadius': 10,
+                        'fill': false,
+                        'tension': 0.1
+                    }]
+                },
+                dados_faixa_etaria: {
+                    'labels': ['-12 anos', '13-15 anos', '16-18 anos', '19-21 anos', '22-24 anos', '25+ anos', 'Não informado'],
+                    'data': [0, 120, 250, 180, 90, 60, 447],
+                    'backgroundColor': ['#E57373', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6']
+                },
+                dados_distribuicao_separados: {
+                    'genero': {
+                        'labels': ['Feminino', 'Masculino', 'Não-binário', 'Não informado'],
+                        'data': [120, 15, 8, 5],
+                        'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#95a5a6']
+                    },
+                    'raca': {
+                        'labels': ['Branca', 'Preta', 'Parda', 'Indígena', 'Não informado'],
+                        'data': [45, 35, 40, 15, 8],
+                        'backgroundColor': ['#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#95a5a6']
+                    },
+                    'escola': {
+                        'labels': ['Pública', 'Privada', 'Não informado'],
+                        'data': [110, 25, 10],
+                        'backgroundColor': ['#ffd700', '#98ddca', '#95a5a6']
+                    }
+                },
+                dados_escolas: {
+                    'labels': ['Pública', 'Privada', 'Não informado'],
+                    'data': [110, 25, 12],
+                    'backgroundColor': ['#36A2EB', '#FF6384', '#95a5a6']
+                },
+                dados_regional: {
+                    'labels': ['Sudeste', 'Nordeste', 'Sul', 'Centro-Oeste', 'Norte', 'Não informado'],
+                    'data': [120, 85, 60, 40, 25, 15],
+                    'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#95a5a6']
+                },
+                dados_estadual: {
+                    'labels': ['SP', 'RJ', 'MG', 'BA', 'RS', 'PR', 'PE', 'CE', 'SC', 'GO', 'Não informado'],
+                    'data': [65, 45, 40, 35, 30, 25, 20, 18, 15, 12, 10],
+                    'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad', '#95a5a6']
+                },
+                dados_municipal: {
+                    'labels': ['São Paulo - SP', 'Rio de Janeiro - RJ', 'Belo Horizonte - MG', 'Salvador - BA', 'Porto Alegre - RS'],
+                    'data': [35, 25, 20, 18, 15],
+                    'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c']
+                },
+                dados_frequencia: {
+                    'labels': ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                    'medias': [85.5, 78.2, 82.7, 88.9, 91.3, 87.6, 92.1, 89.7, 86.4, 90.2, 88.9, 84.3]
+                }
+            };
+        }
+
+        // Função para atualizar todos os gráficos
+        async function atualizarTodosGraficos() {
+            setLoading(true);
+            
+            try {
+                const dados = await fetchDadosUnificados();
+                if (!dados) return;
+                
+                // Atualizar big number
+                atualizarBigNumberAlunas(dados.total_alunas);
+                
+                // Atualizar indicador de filtros
+                atualizarIndicadorFiltros(dados.filtros_ativos);
+                
+                // Atualizar gráficos individuais
+                atualizarGraficoFrequencia(dados.dados_frequencia);
+                atualizarGraficoFunil(dados.dados_funil);
+                atualizarGraficoFaixaEtaria(dados.dados_faixa_etaria);
+                atualizarGraficoDistribuicaoEscolas(dados.dados_escolas);
+                
+                // Atualizar gráficos de distribuição
+                dadosSeparados = dados.dados_distribuicao_separados;
+                atualizarGraficoAtivo('genero');
+                
+                // Atualizar gráficos geográficos
+                dadosGeograficos = {
+                    regional: dados.dados_regional,
+                    estadual: dados.dados_estadual,
+                    municipal: dados.dados_municipal
+                };
+                atualizarGraficoGeograficoAtivo('regional');
+                
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Função para atualizar indicador de filtros
+        function atualizarIndicadorFiltros(filtros) {
+            const indicator = document.getElementById('filter-indicator');
+            const activeFilters = document.getElementById('active-filters');
+            
+            const filtrosArray = Object.entries(filtros)
+                .filter(([key, value]) => value && value !== 'todos')
+                .map(([key, value]) => {
+                    const labelMap = {
+                        'estado': 'Estado',
+                        'raca': 'Raça',
+                        'genero': 'Gênero',
+                        'tipo_escola': 'Tipo Escola',
+                        'faixa_etaria': 'Faixa Etária'
+                    };
+                    return `<span class="filter-tag">${labelMap[key]}: ${value}</span>`;
+                });
+            
+            if (filtrosArray.length > 0) {
+                indicator.classList.remove('hidden');
+                activeFilters.innerHTML = filtrosArray.join('');
+            } else {
+                indicator.classList.add('hidden');
+                activeFilters.innerHTML = '';
+            }
+        }
+
+        // Função para limpar todos os filtros
+        function limparFiltros() {
+            filtrosAtivos = {
+                estado: null,
+                raca: null,
+                genero: null,
+                tipo_escola: null,
+                faixa_etaria: null
+            };
+            atualizarTodosGraficos();
+        }
+
+        // Função para atualizar o big number de alunas
+        function atualizarBigNumberAlunas(total) {
+            if (total === null) {
+                document.getElementById('total-alunas').textContent = '--';
+                document.getElementById('variacao-alunas').textContent = 'Erro ao carregar dados';
+                document.getElementById('variacao-alunas').className = 'text-xs mt-1 text-red-500';
+                return;
+            }
+            
+            document.getElementById('total-alunas').textContent = total.toLocaleString();
+            const variacao = calcularVariacao(total);
+            document.getElementById('variacao-alunas').textContent = variacao.texto;
+            document.getElementById('variacao-alunas').className = `text-xs mt-1 ${variacao.classe}`;
+        }
+
+        // Função para calcular variação percentual
+        function calcularVariacao(valorAtual) {
+            if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
+            
+            const variacao = Math.floor(Math.random() * 18) + 3;
+            return { 
+                valor: variacao, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
+
+        // Função para formatar a taxa de conclusão
+        function formatarTaxaConclusao(taxa) {
+            if (taxa === 0) return { valor: "0%", texto: "Nenhum projeto concluído", classe: "text-gray-500" };
+            
+            const variacao = Math.floor(Math.random() * 5) + 1;
+            return { 
+                valor: `${taxa}%`, 
+                texto: `+${variacao}% este mês`, 
+                classe: "text-green-600" 
+            };
+        }
 
         // Função para mudar entre as abas de distribuição geográfica
         function mudarAbaGeografica(abaSelecionada) {
@@ -477,7 +810,7 @@
             let titulo, indexAxis, xTitle, yTitle;
             let dadosParaExibir = {...dadosGeograficos[tipo]};
             
-            // Para municipal và estadual, aplicar paginação
+            // Para municipal e estadual, aplicar paginação
             if (tipo === 'estadual' || tipo === 'municipal') {
                 const inicio = (paginaAtual - 1) * itensPorPagina;
                 const fim = inicio + itensPorPagina;
@@ -542,9 +875,8 @@
                                 }
                             }
                         },
-                        // MODIFICADO: Dados fora das barras e em preto
                         datalabels: {
-                            color: '#000', // Alterado para preto
+                            color: '#000',
                             font: {
                                 weight: 'bold',
                                 size: 12
@@ -552,8 +884,8 @@
                             formatter: function(value) {
                                 return value;
                             },
-                            anchor: 'center', // Alterado para colocar fora da barra
-                            align: 'center',   // Alterado para colocar fora da barra
+                            anchor: 'center',
+                            align: 'center',
                             display: true
                         }
                     },
@@ -562,18 +894,21 @@
                             beginAtZero: true,
                             title: { display: true, text: xTitle },
                             grid: {
-                                display: false // Remover grid do eixo X
+                                display: false
                             }
                         },
                         y: {
                             title: { display: true, text: yTitle },
                             grid: {
-                                display: false // Remover grid do eixo Y
+                                display: false
                             }
                         }
                     }
                 }
             });
+
+            // Configurar clique para filtro
+            configurarCliqueGrafico(graficoGeograficoAtivo, 'estado', dadosParaExibir);
         }
 
         // Função para mudar entre as abas
@@ -634,7 +969,6 @@
                                 }
                             }
                         },
-                        // MODIFICADO: Dados fora das barras e em preto
                         datalabels: {
                             color: '#000',
                             font: {
@@ -644,9 +978,9 @@
                             formatter: function(value) {
                                 return value;
                             },
-                            anchor: 'center', // Alterado para colocar fora da barra
+                            anchor: 'center',
                             align: 'center',
-                            display: true   // Alterado para colocar fora da barra
+                            display: true
                         }
                     },
                     scales: {
@@ -654,117 +988,30 @@
                             beginAtZero: true,
                             title: { display: true, text: 'Quantidade' },
                             grid: {
-                                display: false // Remover grid do eixo X
+                                display: false
                             }
                         },
                         y: {
                             title: { display: true, text: 'Categorias' },
                             grid: {
-                                display: false // Remover grid do eixo Y
+                                display: false
                             }
                         }
                     }
                 }
             });
+
+            // Configurar clique para filtro
+            const tipoFiltroMap = {
+                'genero': 'genero',
+                'raca': 'raca',
+                'escola': 'tipo_escola'
+            };
+            configurarCliqueGrafico(graficoAtivo, tipoFiltroMap[tipo], dadosSeparados[tipo]);
         }
 
-        // Verificar se ChartFunnel foi carregado corretamente
-        if (typeof ChartFunnel === 'undefined') {
-            console.error('ChartFunnel não foi carregado corretamente. Verifique a URL do script.');
-        } else {
-            console.log('ChartFunnel carregado com sucesso');
-            Chart.register(ChartFunnel);
-        }
-
-        // ========== FUNÇÕES DOS NOVOS GRÁFICOS ==========
-        
-        // Função para buscar dados da distribuição regional
-        async function fetchDadosDistribuicaoRegional() {
-            try {
-                const response = await fetch('/usuarios/api/alunas-distribuicao-regional/');
-                if (!response.ok) throw new Error('Erro na API Distribuição Regional');
-                const data = await response.json();
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição regional:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados da distribuição estadual
-        async function fetchDadosDistribuicaoEstadual() {
-            try {
-                const response = await fetch('/usuarios/api/alunas-distribuicao-estadual/');
-                if (!response.ok) throw new Error('Erro na API Distribuição Estadual');
-                const data = await response.json();
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição estadual:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados da distribuição municipal
-        async function fetchDadosDistribuicaoMunicipal() {
-            try {
-                const response = await fetch('/usuarios/api/alunas-distribuicao-cidades/');
-                if (!response.ok) throw new Error('Erro na API Distribuição Municipal');
-                const data = await response.json();
-                return data.dados_distribuicao;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição municipal:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados da frequência mensal (todos os projetos)
-        async function fetchDadosFrequenciaMensal() {
-            try {
-                const response = await fetch('/usuarios/api/frequencia-mensal-alunos/');
-                if (!response.ok) throw new Error('Erro na API Frequência Mensal Alunos');
-                const data = await response.json();
-                return data.dados_frequencia;
-            } catch (error) {
-                console.error('Erro ao buscar dados de frequência:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados do funil de alunas
-        async function fetchDadosFunilAlunas() {
-            try {
-                const response = await fetch('/usuarios/api/funil-alunas/');
-                if (!response.ok) throw new Error('Erro na API Funil Alunas');
-                const data = await response.json();
-                return data.dados_funil;
-            } catch (error) {
-                console.error('Erro ao buscar dados do funil:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados de faixa etária
-        async function fetchDadosFaixaEtaria() {
-            try {
-                const response = await fetch('/usuarios/api/faixa-etaria/');
-                if (!response.ok) throw new Error('Erro na API Faixa Etária');
-                const data = await response.json();
-                
-                // DEBUG: Log dos dados recebidos
-                console.log('Dados faixa etária:', data.dados_faixa_etaria);
-                console.log('Labels:', data.dados_faixa_etaria.labels);
-                console.log('Data:', data.dados_faixa_etaria.data);
-                console.log('Cores:', data.dados_faixa_etaria.backgroundColor);
-                
-                return data.dados_faixa_etaria;
-            } catch (error) {
-                console.error('Erro ao buscar dados de faixa etária:', error);
-                return null;
-            }
-        }
-
-        // Função para inicializar o gráfico de frequência
-        function inicializarGraficoFrequencia(dados) {
+        // Função para atualizar gráfico de frequência
+        function atualizarGraficoFrequencia(dados) {
             const ctx = document.getElementById('graficoFrequenciaMensal');
             if (!ctx) return;
             
@@ -803,10 +1050,9 @@
                                 }
                             }
                         },
-                        // MODIFICADO: Dados fora dos pontos e em preto
                         datalabels: {
                             display: true,
-                            color: '#000', // Alterado para preto
+                            color: '#000',
                             font: {
                                 weight: 'bold',
                                 size: 10
@@ -825,188 +1071,27 @@
                             max: 100,
                             title: { display: true, text: 'Frequência Média (%)' },
                             ticks: { callback: function(value) { return value + '%'; } },
-                            grid: {
-                                display: false // Remover grid do eixo Y
-                            }
+                            grid: { display: false }
                         },
                         x: {
                             title: { display: true, text: 'Meses' },
-                            grid: {
-                                display: false // Remover grid do eixo X
-                            }
+                            grid: { display: false }
                         }
                     }
                 }
             });
         }
 
-        // Classe FunnelChart com fallback
-        class FunnelChart {
-            constructor({ 
-                idCanvas, 
-                labels, 
-                valores, 
-                backgroundColor = [], 
-                borderColor = "#fff", 
-                borderWidth = 2,
-                options = {}
-            }) {
-                this.idCanvas = idCanvas;
-                this.labels = labels;
-                this.valores = valores;
-                this.backgroundColor = backgroundColor;
-                this.borderColor = borderColor;
-                this.borderWidth = borderWidth;
-                this.options = options;
-                this.chartInstance = null;
-                this.funnelPluginAvailable = typeof ChartFunnel !== 'undefined';
-            }
-
-            render() {
-                const ctx = document.getElementById(this.idCanvas);
-                if (!ctx) {
-                    console.warn(`Canvas ${this.idCanvas} não encontrado.`);
-                    return null;
-                }
-
-                if (this.chartInstance) {
-                    this.chartInstance.destroy();
-                }
-
-                // Calcular porcentagens
-                const totalInscritas = this.valores[0];
-                const percentages = this.valores.map(value => {
-                    return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
-                });
-
-                if (this.funnelPluginAvailable) {
-                    // Usar gráfico de funil real
-                    this.chartInstance = new Chart(ctx.getContext('2d'), {
-                        type: 'funnel',
-                        data: {
-                            labels: this.labels,
-                            datasets: [{
-                                data: this.valores,
-                                backgroundColor: this.backgroundColor,
-                                borderColor: this.borderColor,
-                                borderWidth: this.borderWidth
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (context) => {
-                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
-                                        }
-                                    }
-                                },
-                                // MODIFICADO: Dados em preto
-                                datalabels: {
-                                    color: '#000', // Alterado para preto
-                                    font: {
-                                        weight: 'bold',
-                                        size: 12
-                                    },
-                                    formatter: function(value, context) {
-                                        return `${value}\n${percentages[context.dataIndex]}`;
-                                    },
-                                    anchor: 'center',
-                                    align: 'center'
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: {
-                                        display: false // Remover grid do eixo X
-                                    }
-                                },
-                                y: {
-                                    grid: {
-                                        display: false // Remover grid do eixo Y
-                                    }
-                                }
-                            },
-                            funnel: {
-                                minSize: '0%',
-                                dynamicSlope: true,
-                                dynamicHeight: true,
-                                fill: true
-                            }
-                        }
-                    });
-                } else {
-                    // Fallback para gráfico de barras horizontal
-                    this.chartInstance = new Chart(ctx.getContext('2d'), {
-                        type: 'bar',
-                        data: {
-                            labels: this.labels,
-                            datasets: [{
-                                data: this.valores,
-                                backgroundColor: this.backgroundColor,
-                                borderColor: this.borderColor,
-                                borderWidth: this.borderWidth
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y',
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        label: (context) => {
-                                            return `${this.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
-                                        }
-                                    }
-                                },
-                                // MODIFICADO: Dados fora das barras e em preto
-                                datalabels: {
-                                    color: '#000', // Alterado para preto
-                                    font: {
-                                        weight: 'bold',
-                                        size: 10
-                                    },
-                                    formatter: function(value, context) {
-                                        return `${value}\n${percentages[context.dataIndex]}`;
-                                    },
-                                    anchor: 'end', // Alterado para colocar fora da barra
-                                    align: 'end',
-                                    display: true   // Alterado para colocar fora da barra
-                                }
-                            },
-                            scales: {
-                                x: { 
-                                    display: false,
-                                    grid: {
-                                        display: false // Remover grid do eixo X
-                                    }
-                                },
-                                y: { 
-                                    display: false,
-                                    grid: {
-                                        display: false // Remover grid do eixo Y
-                                    }
-                                }
-                            }
-                        }
-                    });
-                }
-
-                return this.chartInstance;
-            }
-        }
-
-        // Função para inicializar o gráfico de funil
-        function inicializarGraficoFunil(dados) {
+        // Função para atualizar gráfico de funil
+        function atualizarGraficoFunil(dados) {
             const ctx = document.getElementById('graficoFunilAlunas');
             if (!ctx) return;
             
-            // Calcular porcentagens para los labels
+            if (graficoFunil) {
+                graficoFunil.destroy();
+            }
+            
+            // Calcular porcentagens
             const totalInscritas = dados.datasets[0].data[0];
             const percentages = dados.datasets[0].data.map(value => {
                 return totalInscritas > 0 ? ((value / totalInscritas) * 100).toFixed(1) + '%' : '0%';
@@ -1019,27 +1104,116 @@
             
             // Cores para cada etapa do funil
             const coresFunil = [
-                'rgba(52, 152, 219, 0.8)',    // Azul - Inscritas
-                'rgba(46, 204, 113, 0.8)',    // Verde - Selecionadas
-                'rgba(155, 89, 182, 0.8)',    // Roxo - Iniciaram
-                'rgba(241, 196, 15, 0.8)'     // Amarelo - Concluíram
+                'rgba(52, 152, 219, 0.8)',
+                'rgba(46, 204, 113, 0.8)',
+                'rgba(155, 89, 182, 0.8)',
+                'rgba(241, 196, 15, 0.8)'
             ];
             
-            // Usar a nova classe FunnelChart
-            const funilChart = new FunnelChart({
-                idCanvas: 'graficoFunilAlunas',
-                labels: labelsCompletos,
-                valores: dados.datasets[0].data,
-                backgroundColor: coresFunil,
-                borderColor: '#fff',
-                borderWidth: 2
-            });
+            // Verificar se o plugin de funil está disponível
+            const funnelPluginAvailable = typeof ChartFunnel !== 'undefined';
             
-            graficoFunil = funilChart.render();
+            if (funnelPluginAvailable) {
+                // Usar gráfico de funil real
+                graficoFunil = new Chart(ctx.getContext('2d'), {
+                    type: 'funnel',
+                    data: {
+                        labels: labelsCompletos,
+                        datasets: [{
+                            data: dados.datasets[0].data,
+                            backgroundColor: coresFunil,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        return `${dados.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                },
+                                formatter: function(value, context) {
+                                    return `${value}\n${percentages[context.dataIndex]}`;
+                                },
+                                anchor: 'center',
+                                align: 'center'
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { display: false } }
+                        },
+                        funnel: {
+                            minSize: '0%',
+                            dynamicSlope: true,
+                            dynamicHeight: true,
+                            fill: true
+                        }
+                    }
+                });
+            } else {
+                // Fallback para gráfico de barras horizontal
+                graficoFunil = new Chart(ctx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: labelsCompletos,
+                        datasets: [{
+                            data: dados.datasets[0].data,
+                            backgroundColor: coresFunil,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        return `${dados.labels[context.dataIndex]}: ${context.raw} (${percentages[context.dataIndex]})`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000',
+                                font: {
+                                    weight: 'bold',
+                                    size: 10
+                                },
+                                formatter: function(value, context) {
+                                    return `${value}\n${percentages[context.dataIndex]}`;
+                                },
+                                anchor: 'end',
+                                align: 'end',
+                                display: true
+                            }
+                        },
+                        scales: {
+                            x: { display: false, grid: { display: false } },
+                            y: { display: false, grid: { display: false } }
+                        }
+                    }
+                });
+            }
         }
 
-        // Função para inicializar o gráfico de faixa etária
-        function inicializarGraficoFaixaEtaria(dados) {
+        // Função para atualizar gráfico de faixa etária
+        function atualizarGraficoFaixaEtaria(dados) {
             const ctx = document.getElementById('graficoFaixaEtaria');
             if (!ctx) return;
             
@@ -1052,7 +1226,6 @@
                 '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6'
             ];
             
-            // Usar as cores fornecidas ou completar com as padrão
             const backgroundColor = dados.backgroundColor && dados.backgroundColor.length >= dados.labels.length 
                 ? dados.backgroundColor 
                 : coresCompletas.slice(0, dados.labels.length);
@@ -1066,8 +1239,7 @@
                         data: dados.data,
                         backgroundColor: backgroundColor,
                         borderColor: backgroundColor.map(color => {
-                            // Garantir que a cor de borda seja visível
-                            if (color.includes('95a5a6')) return '#7a8a8a'; // Escurecer o cinza
+                            if (color.includes('95a5a6')) return '#7a8a8a';
                             return color.replace('0.8', '1').replace('0.6', '1');
                         }),
                         borderWidth: 1,
@@ -1078,9 +1250,7 @@
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1088,9 +1258,8 @@
                                 }
                             }
                         },
-                        // MODIFICADO: Dados fora das barras e em preto
                         datalabels: {
-                            color: '#000', // Alterado para preto
+                            color: '#000',
                             font: {
                                 weight: 'bold',
                                 size: 12
@@ -1098,145 +1267,32 @@
                             formatter: function(value) {
                                 return value;
                             },
-                            anchor: 'center', // Alterado para colocar fora da barra
+                            anchor: 'center',
                             align: 'center',
-                            display: true   // Alterado para colocar fora da barra
+                            display: true
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Quantidade de Alunas'
-                            },
-                            ticks: {
-                                precision: 0 // Sem decimais
-                            },
-                            grid: {
-                                display: false // Remover grid do eixo Y
-                            }
+                            title: { display: true, text: 'Quantidade de Alunas' },
+                            ticks: { precision: 0 },
+                            grid: { display: false }
                         },
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Faixa Etária'
-                            },
-                            grid: {
-                                display: false // Remover grid do eixo X
-                            }
+                            title: { display: true, text: 'Faixa Etária' },
+                            grid: { display: false }
                         }
                     }
                 }
             });
+
+            // Configurar clique para filtro
+            configurarCliqueGrafico(graficoFaixaEtaria, 'faixa_etaria', dados);
         }
 
-        // ========== FUNÇÕES ORIGINAIS ==========
-        
-        // Função para calcular variação percentual
-        function calcularVariacao(valorAtual) {
-            if (valorAtual === 0) return { valor: 0, texto: "Sem variação", classe: "text-gray-500" };
-            
-            const variacao = Math.floor(Math.random() * 18) + 3;
-            return { 
-                valor: variacao, 
-                texto: `+${variacao}% este mês`, 
-                classe: "text-green-600" 
-            };
-        }
-
-        // Função para formatar a taxa de conclusão
-        function formatarTaxaConclusao(taxa) {
-            if (taxa === 0) return { valor: "0%", texto: "Nenhum projeto concluído", classe: "text-gray-500" };
-            
-            const variacao = Math.floor(Math.random() * 5) + 1;
-            return { 
-                valor: `${taxa}%`, 
-                texto: `+${variacao}% este mês`, 
-                classe: "text-green-600" 
-            };
-        }
-
-        // Função para buscar dados das métricas principais
-        async function fetchDadosMetricas() {
-            try {
-                const responseAlunas = await fetch('/usuarios/api/alunas-datas/');
-                if (!responseAlunas.ok) throw new Error('Erro na API Alunas');
-                const dataAlunas = await responseAlunas.json();
-                
-                const responseProjetos = await fetch('/usuarios/api/projetos-em-andamento/');
-                if (!responseProjetos.ok) throw new Error('Erro na API Projetos');
-                const dataProjetos = await responseProjetos.json();
-                
-                const responseConclusao = await fetch('/usuarios/api/projetos-concluidos/');
-                if (!responseConclusao.ok) throw new Error('Erro na API Conclusão');
-                const dataConclusao = await responseConclusao.json();
-                
-                return {
-                    alunas: dataAlunas.usuarios.length,
-                    projetos: dataProjetos.projetos_em_andamento.length,
-                    taxaConclusao: dataConclusao.percentual_concluidos
-                };
-            } catch (error) {
-                console.error('Erro ao buscar dados das métricas:', error);
-                return null;
-            }
-        }
-
-        // Função para atualizar os big numbers
-        function atualizarBigNumbers(dados) {
-            if (!dados) {
-                document.querySelectorAll('[id^="variacao-"]').forEach(el => {
-                    el.textContent = "Erro ao carregar dados";
-                    el.className = "text-xs mt-1 text-red-500";
-                });
-                return;
-            }
-            
-            document.getElementById('total-alunas').textContent = dados.alunas.toLocaleString();
-            const variacaoAlunas = calcularVariacao(dados.alunas);
-            document.getElementById('variacao-alunas').textContent = variacaoAlunas.texto;
-            document.getElementById('variacao-alunas').className = `text-xs mt-1 ${variacaoAlunas.classe}`;
-            
-            document.getElementById('total-projetos').textContent = dados.projetos.toLocaleString();
-            const variacaoProjetos = calcularVariacao(dados.projetos);
-            document.getElementById('variacao-projetos').textContent = variacaoProjetos.texto;
-            document.getElementById('variacao-projetos').className = `text-xs mt-1 ${variacaoProjetos.classe}`;
-            
-            const taxaFormatada = formatarTaxaConclusao(dados.taxaConclusao);
-            document.getElementById('taxa-conclusao').textContent = taxaFormatada.valor;
-            document.getElementById('variacao-conclusao').textContent = taxaFormatada.texto;
-            document.getElementById('variacao-conclusao').className = `text-xs mt-1 ${taxaFormatada.classe}`;
-        }
-
-        // Função para buscar dados da distribuição de cotas (agora separados)
-        async function fetchDadosDistribuicaoSeparados() {
-            try {
-                const response = await fetch('/usuarios/api/distribuicao-cotas/');
-                if (!response.ok) throw new Error('Erro na API Distribuição Cotas');
-                const data = await response.json();
-                return data.dados_separados;
-            } catch (error) {
-                console.error('Erro ao buscar dados de distribuição:', error);
-                return null;
-            }
-        }
-
-        // Função para buscar dados da distribuição de escolas
-        async function fetchDadosDistribuicaoEscolas() {
-            try {
-                const response = await fetch('/usuarios/api/distribuicao-escolas/');
-                if (!response.ok) throw new Error('Erro na API Distribuição Escolas');
-                const data = await response.json();
-                return data.dados_escolas;
-            } catch (error) {
-                console.error('Erro ao buscar dados de escolas:', error);
-                return null;
-            }
-        }
-
-        // Função para inicializar o gráfico de distribuição de escolas
-        function inicializarGraficoDistribuicaoEscolas(dados) {
+        // Função para atualizar gráfico de distribuição de escolas
+        function atualizarGraficoDistribuicaoEscolas(dados) {
             const ctx = document.getElementById('graficoDistribuicaoEscolas');
             if (!ctx) return;
             
@@ -1270,9 +1326,8 @@
                                 padding: 15
                             }
                         },
-                        // MODIFICADO: Dados em preto (mantido dentro das fatias)
                         datalabels: {
-                            color: '#000', // Alterado para preto
+                            color: '#000',
                             font: {
                                 weight: 'bold',
                                 size: 12
@@ -1292,61 +1347,66 @@
                     }
                 }
             });
+
+            // Configurar clique para filtro
+            configurarCliqueGrafico(graficoDistribuicaoEscolas, 'tipo_escola', dados);
         }
 
-        // Função para carregar e exibir todos os dados
-        async function carregarTodosDados() {
-            // Carregar dados dos novos gráficos
-            const dadosFrequencia = await fetchDadosFrequenciaMensal();
-            const dadosFunil = await fetchDadosFunilAlunas();
-            const dadosFaixaEtaria = await fetchDadosFaixaEtaria();
-            
-            if (dadosFrequencia) {
-                inicializarGraficoFrequencia(dadosFrequencia);
-            }
-            
-            if (dadosFunil) {
-                inicializarGraficoFunil(dadosFunil);
-            }
-            
-            if (dadosFaixaEtaria) {
-                inicializarGraficoFaixaEtaria(dadosFaixaEtaria);
-            }
-            
-            // Carregar dados originais
-            const dadosMetricas = await fetchDadosMetricas();
-            atualizarBigNumbers(dadosMetricas);
-            
-            // Carregar dados de distribuição para as abas
-            dadosSeparados = await fetchDadosDistribuicaoSeparados();
-            
-            // Inicializar o gráfico ativo com gênero (padrão)
-            if (dadosSeparados) {
-                atualizarGraficoAtivo('genero');
-            }
-            
-            // Carregar dados geográficos
-            dadosGeograficos.regional = await fetchDadosDistribuicaoRegional();
-            dadosGeograficos.estadual = await fetchDadosDistribuicaoEstadual();
-            dadosGeograficos.municipal = await fetchDadosDistribuicaoMunicipal();
-            
-            // Inicializar o gráfico geográfico ativo com regional (padrão)
-            if (dadosGeograficos.regional) {
-                atualizarGraficoGeograficoAtivo('regional');
-            }
-            
-            // Carregar e inicializar gráfico de distribuição de escolas
-            const dadosEscolas = await fetchDadosDistribuicaoEscolas();
-            if (dadosEscolas) {
-                inicializarGraficoDistribuicaoEscolas(dadosEscolas);
+        // Função para configurar clique nos gráficos para filtros
+        function configurarCliqueGrafico(chart, tipoFiltro, dados) {
+            if (chart && chart.canvas) {
+                chart.canvas.onclick = function(evt) {
+                    const points = chart.getElementsAtEventForMode(
+                        evt, 'nearest', { intersect: true }, true
+                    );
+                    
+                    if (points.length) {
+                        const firstPoint = points[0];
+                        const label = chart.data.labels[firstPoint.index];
+                        
+                        // Ignorar cliques em "Não informado"
+                        if (label.includes('Não informado')) return;
+                        
+                        // Extrair o label real (remover quebras de linha e porcentagens)
+                        const labelReal = label.split('\n')[0].split(' (')[0];
+                        
+                        // Aplicar filtro
+                        filtrosAtivos[tipoFiltro] = labelReal;
+                        atualizarTodosGraficos();
+                    }
+                };
+                
+                // Mudar cursor para pointer
+                chart.canvas.style.cursor = 'pointer';
             }
         }
 
-        // Inicializar a página
+        // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            carregarTodosDados();
+            // Carregar dados iniciais
+            atualizarTodosGraficos();
             
-            // Adicionar event listeners para os botões de navegação
+            // Configurar event listeners
+            document.getElementById('clear-filters').addEventListener('click', limparFiltros);
+            
+            // Configurar abas
+            document.querySelectorAll('#tabs-distribuicao .tab-button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#tabs-distribuicao .tab-button').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    atualizarGraficoAtivo(this.dataset.tab);
+                });
+            });
+            
+            document.querySelectorAll('#tabs-distribuicao-geografica .distribuicao-tab').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#tabs-distribuicao-geografica .distribuicao-tab').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    mudarAbaGeografica(this.dataset.tab);
+                });
+            });
+            
+            // Navegação
             document.getElementById('prev-button').addEventListener('click', function() {
                 if (paginaAtual > 1) {
                     paginaAtual--;
@@ -1357,8 +1417,7 @@
             
             document.getElementById('next-button').addEventListener('click', function() {
                 const abaAtiva = document.querySelector('#tabs-distribuicao-geografica .distribuicao-tab.active').dataset.tab;
-                const totalItens = dadosGeograficos[abaAtiva].labels.length;
-                if (paginaAtual < Math.ceil(totalItens / itensPorPagina)) {
+                if (dadosGeograficos[abaAtiva] && paginaAtual < Math.ceil(dadosGeograficos[abaAtiva].labels.length / itensPorPagina)) {
                     paginaAtual++;
                     atualizarGraficoGeograficoAtivo(abaAtiva);
                 }

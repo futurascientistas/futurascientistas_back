@@ -55,6 +55,7 @@ urlpatterns = [
     path('api/professoras-distribuicao-raca/', ApiDistribuicaoRacaProfessoras.as_view(), name='api_professoras_distribuicao_raca'),
     path('api/professoras-distribuicao-regional/', ApiProfessorasDistribuicaoRegional.as_view(), name='professoras-distribuicao-regional'),
     path('api/professoras-distribuicao-estadual/', ApiProfessorasDistribuicaoEstadual.as_view(), name='api_professoras_distribuicao_estadual'),
+    path('api/dashboard-unificado-alunas/', ApiDashboardUnificadoAlunas.as_view(), name='dashboard-unificado-alunas'),
     path('api/professoras-distribuicao-tipo-ensino/', ApiProfessorasDistribuicaoTipoEnsino.as_view(), name='professoras-distribuicao-tipo-ensino'),
     path('api/dashboard-unificado/', ApiDashboardUnificado.as_view(), name='dashboard-unificado'),
     path('api/distribuicao-cotas/', ApiDistribuicaoCotas.as_view(), name='api-distribuicao-cotas'),
