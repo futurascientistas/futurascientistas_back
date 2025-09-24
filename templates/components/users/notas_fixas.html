@@ -26,7 +26,11 @@
 
                     {% for form in disciplina.list %}
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {% render_field form.valor class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" %}
+                            {# Campo tipo de conceito #}
+                            {% render_field form.tipo_conceito class="mt-1 block w-full rounded border border-gray-300 px-3 py-2 mb-1" %}
+
+                            {# Campo valor #}
+                            {% render_field form.nota_original class="mt-1 block w-full rounded border border-gray-300 px-3 py-2" %}
 
                             {{ form.id }}
                             {{ form.disciplina.as_hidden }}

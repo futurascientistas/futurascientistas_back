@@ -422,7 +422,7 @@ function validateAndAdvance(event) {
         let isValidStep = true;
 
         notaRows.forEach(row => {
-            const valorInput = row.querySelector('input[name$="-valor"]');
+            const valorInput = row.querySelector('input[name$="-nota_original"]');
             if (valorInput && !valorInput.value.trim()) {
                 valorInput.classList.add('border-red-500');
                 isValidStep = false;
