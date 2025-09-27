@@ -1623,67 +1623,79 @@ class ApiDashboardUnificado(APIView):
 
             # Obter parâmetros de filtro da query string
             estado_filter = request.GET.get('estado')
+            regiao_filter = request.GET.get('regiao')
             raca_filter = request.GET.get('raca')
             formacao_filter = request.GET.get('formacao')
             tipo_ensino_filter = request.GET.get('tipo_ensino')
 
             print(f"📊 Filtros recebidos:")
-            print(f"   - Estado/Região: {estado_filter}")
+            print(f"   - Estado: {estado_filter}")
+            print(f"   - Região: {regiao_filter}")
             print(f"   - Raça: {raca_filter}")
             print(f"   - Formação: {formacao_filter}")
             print(f"   - Tipo Ensino: {tipo_ensino_filter}")
 
-            # Base queryset para professoras (User)
+            # BASE PRINCIPAL: sempre começa com as professoras (Users)
             professoras = User.objects.filter(funcao='professora')
             print(f"👩‍🏫 Total de professoras inicial: {professoras.count()}")
 
-            # Aplicar filtros que são da model User
+            # APLICAR FILTROS PRINCIPAIS NAS PROFESSORAS (exceto formação)
             if estado_filter and estado_filter != 'todos':
-                professoras = professoras.filter(endereco__estado__regiao__nome=estado_filter)
-                print(f"📍 Filtro estado/região aplicado: {estado_filter}")
+                if self._is_regiao(estado_filter):
+                    professoras = professoras.filter(endereco__estado__regiao__nome__icontains=estado_filter)
+                    print(f"🌎 Filtro REGIÃO aplicado via estado: {estado_filter}")
+                else:
+                    estado_uf = self._get_estado_uf(estado_filter)
+                    if estado_uf:
+                        professoras = professoras.filter(endereco__estado__uf=estado_uf)
+                        print(f"📍 Filtro ESTADO aplicado (UF: {estado_uf}): {estado_filter}")
+                    else:
+                        professoras = professoras.filter(endereco__estado__nome__icontains=estado_filter)
+                        print(f"📍 Filtro ESTADO aplicado (nome): {estado_filter}")
+
+            if regiao_filter and regiao_filter != 'todos':
+                regiao_nome = self._get_regiao_nome(regiao_filter)
+                if regiao_nome:
+                    professoras = professoras.filter(endereco__estado__regiao__nome=regiao_nome)
+                    print(f"🌎 Filtro REGIÃO aplicado: {regiao_nome}")
+                else:
+                    professoras = professoras.filter(endereco__estado__regiao__nome__icontains=regiao_filter)
+                    print(f"🌎 Filtro REGIÃO aplicado (parcial): {regiao_filter}")
 
             if raca_filter and raca_filter != 'todos':
-                professoras = professoras.filter(raca__nome=raca_filter)
+                professoras = professoras.filter(raca__nome__icontains=raca_filter)
                 print(f"🎨 Filtro raça aplicado: {raca_filter}")
 
             if tipo_ensino_filter and tipo_ensino_filter != 'todos':
-                professoras = professoras.filter(escola__tipo_ensino__nome=tipo_ensino_filter)
+                professoras = professoras.filter(escola__tipo_ensino__nome__icontains=tipo_ensino_filter)
                 print(f"🏫 Filtro tipo ensino aplicado: {tipo_ensino_filter}")
 
-            print(f"👩‍🏫 Total de professoras após filtros User: {professoras.count()}")
+            print(f"👩‍🏫 Total de professoras após filtros principais: {professoras.count()}")
 
-            # Para formação, usamos a model Application separadamente
-            aplicacoes_filtradas = Application.objects.filter(usuario__funcao='professora')
-            print(f"📝 Total de aplicações inicial: {aplicacoes_filtradas.count()}")
-
-            # Aplicar filtros nas applications
-            if estado_filter and estado_filter != 'todos':
-                aplicacoes_filtradas = aplicacoes_filtradas.filter(
-                    usuario__endereco__estado__regiao__nome=estado_filter
-                )
-                print(f"📍 Filtro estado/região aplicado nas applications: {estado_filter}")
-
-            if raca_filter and raca_filter != 'todos':
-                aplicacoes_filtradas = aplicacoes_filtradas.filter(usuario__raca__nome=raca_filter)
-                print(f"🎨 Filtro raça aplicado nas applications: {raca_filter}")
-
-            if tipo_ensino_filter and tipo_ensino_filter != 'todos':
-                aplicacoes_filtradas = aplicacoes_filtradas.filter(
-                    usuario__escola__tipo_ensino__nome=tipo_ensino_filter
-                )
-                print(f"🏫 Filtro tipo ensino aplicado nas applications: {tipo_ensino_filter}")
-
+            # FILTRO DE FORMAÇÃO: se houver filtro de formação, aplica nas professoras via applications
             if formacao_filter and formacao_filter != 'todos':
-                aplicacoes_filtradas = aplicacoes_filtradas.filter(grau_formacao=formacao_filter)
+                # Busca as professoras que têm applications com a formação selecionada
+                professoras_com_formacao = professoras.filter(
+                    application__grau_formacao__icontains=formacao_filter
+                ).distinct()
+                
                 print(f"🎓 Filtro formação aplicado: {formacao_filter}")
+                print(f"👩‍🏫 Professoras com formação '{formacao_filter}': {professoras_com_formacao.count()}")
+                
+                # Substitui o queryset pelas professoras que têm a formação
+                professoras = professoras_com_formacao
 
-            print(f"📝 Total de aplicações após filtros: {aplicacoes_filtradas.count()}")
+            print(f"👩‍🏫 Total de professoras após TODOS os filtros: {professoras.count()}")
+
+            # BASE PARA APLICAÇÕES: filtra applications baseado nas professoras finais
+            aplicacoes_filtradas = Application.objects.filter(usuario__in=professoras)
+            print(f"📝 Total de aplicações filtradas: {aplicacoes_filtradas.count()}")
 
             # Gerar os dados para os gráficos
             distribuicao_formacao = self._get_distribuicao_formacao(aplicacoes_filtradas)
             distribuicao_raca = self._get_distribuicao_raca(professoras)
-            distribuicao_regional = self._get_distribuicao_regional(professoras)
-            distribuicao_estadual = self._get_distribuicao_estadual(professoras, estado_filter)
+            distribuicao_regional = self._get_distribuicao_regional(professoras, estado_filter, regiao_filter)
+            distribuicao_estadual = self._get_distribuicao_estadual(professoras, estado_filter, regiao_filter)
             distribuicao_tipo_ensino = self._get_distribuicao_tipo_ensino(professoras)
 
             total_professoras = professoras.count()
@@ -1693,6 +1705,7 @@ class ApiDashboardUnificado(APIView):
                 "status": "success",
                 "filtros_ativos": {
                     "estado": estado_filter,
+                    "regiao": regiao_filter,
                     "raca": raca_filter,
                     "formacao": formacao_filter,
                     "tipo_ensino": tipo_ensino_filter
@@ -1714,10 +1727,73 @@ class ApiDashboardUnificado(APIView):
             logger.error(f"Erro na API Dashboard Unificado: {str(e)}")
             return Response({"status": "error", "message": str(e)}, status=500)
 
-    # ---------- MÉTODOS AUXILIARES ----------
+    # ---------- MÉTODOS AUXILIARES (MANTIDOS OS MESMOS) ----------
+
+    def _is_regiao(self, nome):
+        """Verifica se o input é uma região"""
+        regioes = ['norte', 'nordeste', 'centro-oeste', 'sudeste', 'sul']
+        nome_clean = re.sub(r'\([^)]*\)', '', nome).strip().lower()
+        return nome_clean in regioes
+
+    def _get_estado_uf(self, estado_input):
+        """Tenta extrair a UF do input do estado"""
+        # Mapeamento de nomes completos para UFs
+        estado_map = {
+            'acre': 'AC', 'ac': 'AC',
+            'alagoas': 'AL', 'al': 'AL',
+            'amapa': 'AP', 'amapá': 'AP', 'ap': 'AP',
+            'amazonas': 'AM', 'am': 'AM',
+            'bahia': 'BA', 'ba': 'BA',
+            'ceara': 'CE', 'ceará': 'CE', 'ce': 'CE',
+            'distrito federal': 'DF', 'df': 'DF',
+            'espirito santo': 'ES', 'espírito santo': 'ES', 'es': 'ES',
+            'goias': 'GO', 'goiás': 'GO', 'go': 'GO',
+            'maranhao': 'MA', 'maranhão': 'MA', 'ma': 'MA',
+            'mato grosso': 'MT', 'mt': 'MT',
+            'mato grosso do sul': 'MS', 'ms': 'MS',
+            'minas gerais': 'MG', 'mg': 'MG',
+            'para': 'PA', 'pará': 'PA', 'pa': 'PA',
+            'paraiba': 'PB', 'paraíba': 'PB', 'pb': 'PB',
+            'parana': 'PR', 'paraná': 'PR', 'pr': 'PR',
+            'pernambuco': 'PE', 'pe': 'PE',
+            'piaui': 'PI', 'piauí': 'PI', 'pi': 'PI',
+            'rio de janeiro': 'RJ', 'rj': 'RJ',
+            'rio grande do norte': 'RN', 'rn': 'RN',
+            'rio grande do sul': 'RS', 'rs': 'RS',
+            'rondonia': 'RO', 'rondônia': 'RO', 'ro': 'RO',
+            'roraima': 'RR', 'rr': 'RR',
+            'santa catarina': 'SC', 'sc': 'SC',
+            'sao paulo': 'SP', 'são paulo': 'SP', 'sp': 'SP',
+            'sergipe': 'SE', 'se': 'SE',
+            'tocantins': 'TO', 'to': 'TO'
+        }
+        
+        # Remove parênteses e conteúdo dentro deles, e espaços extras
+        estado_clean = re.sub(r'\([^)]*\)', '', estado_input).strip().lower()
+        
+        return estado_map.get(estado_clean)
+
+    def _get_regiao_nome(self, regiao_input):
+        """Tenta encontrar o nome exato da região"""
+        regioes_exatas = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul']
+        regiao_lower = regiao_input.strip().lower()
+        
+        for regiao in regioes_exatas:
+            if regiao.lower() == regiao_lower:
+                return regiao
+        return None
 
     def _get_distribuicao_formacao(self, aplicacoes):
-        distribuicao = aplicacoes.values('grau_formacao').annotate(total=Count('id')).order_by('grau_formacao')
+        # Conta todas as aplicações (incluindo as sem formação informada)
+        total_aplicacoes = aplicacoes.count()
+        
+        # Busca aplicações com formação informada
+        distribuicao = aplicacoes.exclude(grau_formacao__isnull=True)\
+                                .exclude(grau_formacao='')\
+                                .values('grau_formacao')\
+                                .annotate(total=Count('id'))\
+                                .order_by('grau_formacao')
+        
         label_map = {
             'graduacao': 'Graduação', 'licenciatura': 'Licenciatura',
             'bacharelado': 'Bacharelado', 'tecnologo': 'Tecnólogo',
@@ -1725,8 +1801,10 @@ class ApiDashboardUnificado(APIView):
             'doutorado': 'Doutorado', 'pos_doutorado': 'Pós-doutorado',
             'outro': 'Outro'
         }
+        
         labels, data = [], []
-        nao_informado_count = 0
+        total_com_formacao = 0
+        
         for item in distribuicao:
             grau_formacao = item['grau_formacao']
             total = item['total']
@@ -1734,71 +1812,727 @@ class ApiDashboardUnificado(APIView):
                 label = label_map.get(grau_formacao, grau_formacao.capitalize())
                 labels.append(label)
                 data.append(total)
-            else:
-                nao_informado_count += total
+                total_com_formacao += total
+        
+        # Calcula não informados
+        nao_informado_count = total_aplicacoes - total_com_formacao
+        
+        # Adiciona "Não informado" se houver
         if nao_informado_count > 0:
             labels.append('Não informado')
             data.append(nao_informado_count)
-        return {'labels': labels, 'data': data, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(labels)]}
+        
+        return {
+            'labels': labels, 
+            'data': data, 
+            'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(labels)]
+        }
 
     def _get_distribuicao_raca(self, professoras):
-        raca_counts = professoras.values('raca__nome').annotate(total=Count('id')).order_by('raca__nome')
+        # Conta total de professoras
+        total_professoras = professoras.count()
+        
+        # Busca professoras com raça informada
+        raca_counts = professoras.exclude(raca__isnull=True)\
+                                .exclude(raca__nome__isnull=True)\
+                                .exclude(raca__nome='')\
+                                .values('raca__nome')\
+                                .annotate(total=Count('id'))\
+                                .order_by('raca__nome')
+        
         labels, data = [], []
-        nao_informado_count = 0
+        total_com_raca = 0
+        
         for item in raca_counts:
             raca_nome = item['raca__nome']
             total = item['total']
             if raca_nome and raca_nome.strip():
                 labels.append(raca_nome)
                 data.append(total)
-            else:
-                nao_informado_count += total
+                total_com_raca += total
+        
+        # Calcula não informados
+        nao_informado_count = total_professoras - total_com_raca
+        
+        # Adiciona "Não informado" se houver
         if nao_informado_count > 0:
             labels.append('Não informado')
             data.append(nao_informado_count)
-        return {'labels': labels, 'data': data, 'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5', '#95a5a6'][:len(labels)]}
+        
+        return {
+            'labels': labels, 
+            'data': data, 
+            'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5', '#95a5a6'][:len(labels)]
+        }
 
-    def _get_distribuicao_regional(self, professoras):
-        distribuicao = professoras.filter(endereco__estado__regiao__nome__isnull=False)\
-            .values('endereco__estado__regiao__nome').annotate(total=Count('id')).order_by('endereco__estado__regiao__nome')
-        regioes, quantidades = [], []
-        for item in distribuicao:
-            regioes.append(item['endereco__estado__regiao__nome'])
-            quantidades.append(item['total'])
-        # Adiciona regiões sem professoras
-        todas_regioes = Regiao.objects.values_list('nome', flat=True)
-        for regiao in todas_regioes:
-            if regiao not in regioes:
-                regioes.append(regiao)
-                quantidades.append(0)
-        return {'labels': regioes, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(regioes)]}
-
-    def _get_distribuicao_estadual(self, professoras, estado_filter=None):
+    def _get_distribuicao_regional(self, professoras, estado_filter=None, regiao_filter=None):
         queryset = professoras
-        if estado_filter and estado_filter != 'todos':
-            # Se for filtro por região, restringe aos estados dessa região
-            queryset = queryset.filter(endereco__estado__regiao__nome=estado_filter)
-        distribuicao = queryset.filter(endereco__estado__uf__isnull=False)\
-            .values('endereco__estado__uf').annotate(total=Count('id')).order_by('-total')
-        estados = [item['endereco__estado__uf'] for item in distribuicao]
-        quantidades = [item['total'] for item in distribuicao]
-        return {'labels': estados, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(estados)]}
+        
+        # Se há filtro por estado, não faz sentido mostrar distribuição regional
+        if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter):
+            # Se for um estado, retorna apenas a região desse estado
+            try:
+                estado_uf = self._get_estado_uf(estado_filter)
+                if estado_uf:
+                    estado_obj = Estado.objects.filter(uf=estado_uf).first()
+                else:
+                    estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                
+                if estado_obj and estado_obj.regiao:
+                    return {
+                        'labels': [estado_obj.regiao.nome], 
+                        'data': [professoras.count()], 
+                        'backgroundColor': ['#3498db']
+                    }
+            except Exception as e:
+                print(f"⚠️ Erro ao buscar região do estado: {e}")
+            
+            return {'labels': ['Região do estado'], 'data': [professoras.count()], 'backgroundColor': ['#3498db']}
+        
+        # Conta total de professoras
+        total_professoras = queryset.count()
+        
+        # Busca professoras com região informada
+        distribuicao = queryset.exclude(endereco__estado__regiao__isnull=True)\
+                                 .exclude(endereco__estado__regiao__nome__isnull=True)\
+                                 .values('endereco__estado__regiao__nome')\
+                                 .annotate(total=Count('id'))\
+                                 .order_by('endereco__estado__regiao__nome')
+        
+        regioes, quantidades = [], []
+        total_com_regiao = 0
+        
+        for item in distribuicao:
+            regiao_nome = item['endereco__estado__regiao__nome']
+            total = item['total']
+            if regiao_nome and regiao_nome.strip():
+                regioes.append(regiao_nome)
+                quantidades.append(total)
+                total_com_regiao += total
+        
+        # Adiciona regiões sem professoras (apenas se não há filtro de região específico)
+        if (not regiao_filter or regiao_filter == 'todos') and (not estado_filter or estado_filter == 'todos' or self._is_regiao(estado_filter)):
+            todas_regioes = Regiao.objects.values_list('nome', flat=True)
+            for regiao in todas_regioes:
+                if regiao not in regioes:
+                    regioes.append(regiao)
+                    quantidades.append(0)
+        
+        # Calcula não informados
+        nao_informado_count = total_professoras - total_com_regiao
+        
+        # Adiciona "Não informado" se houver
+        if nao_informado_count > 0:
+            regioes.append('Não informado')
+            quantidades.append(nao_informado_count)
+        
+        return {
+            'labels': regioes, 
+            'data': quantidades, 
+            'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(regioes)]
+        }
+
+    def _get_distribuicao_estadual(self, professoras, estado_filter=None, regiao_filter=None):
+        queryset = professoras
+        
+        # Se há filtro por estado específico (e não é uma região), mostra apenas esse estado
+        if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter):
+            try:
+                estado_uf = self._get_estado_uf(estado_filter)
+                if estado_uf:
+                    estado_obj = Estado.objects.filter(uf=estado_uf).first()
+                else:
+                    estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                
+                estado_nome = estado_obj.nome if estado_obj else estado_filter
+                return {
+                    'labels': [estado_nome], 
+                    'data': [professoras.count()], 
+                    'backgroundColor': ['#3498db']
+                }
+            except Exception as e:
+                print(f"⚠️ Erro ao buscar estado: {e}")
+            
+            return {'labels': [estado_filter], 'data': [professoras.count()], 'backgroundColor': ['#3498db']}
+        
+        # Se há filtro por região (via regiao_filter ou estado_filter que é uma região)
+        regiao_para_filtro = None
+        if regiao_filter and regiao_filter != 'todos':
+            regiao_para_filtro = regiao_filter
+        elif estado_filter and estado_filter != 'todos' and self._is_regiao(estado_filter):
+            regiao_para_filtro = estado_filter
+        
+        if regiao_para_filtro:
+            regiao_nome = self._get_regiao_nome(regiao_para_filtro)
+            if regiao_nome:
+                queryset = queryset.filter(endereco__estado__regiao__nome=regiao_nome)
+            else:
+                queryset = queryset.filter(endereco__estado__regiao__nome__icontains=regiao_para_filtro)
+        
+        # Conta total de professoras no queryset filtrado
+        total_professoras = queryset.count()
+        
+        # Busca professoras com estado informado
+        distribuicao = queryset.exclude(endereco__estado__isnull=True)\
+                              .exclude(endereco__estado__uf__isnull=True)\
+                              .values('endereco__estado__uf', 'endereco__estado__nome')\
+                              .annotate(total=Count('id'))\
+                              .order_by('-total')
+        
+        estados, quantidades = [], []
+        total_com_estado = 0
+        
+        for item in distribuicao:
+            estado_uf = item['endereco__estado__uf']
+            estado_nome = item['endereco__estado__nome']
+            total = item['total']
+            if estado_uf and estado_uf.strip():
+                # Usa o nome do estado para melhor legibilidade
+                label = f"{estado_nome} ({estado_uf})" if estado_nome else estado_uf
+                estados.append(label)
+                quantidades.append(total)
+                total_com_estado += total
+        
+        # Calcula não informados
+        nao_informado_count = total_professoras - total_com_estado
+        
+        # Adiciona "Não informado" se houver
+        if nao_informado_count > 0:
+            estados.append('Não informado')
+            quantidades.append(nao_informado_count)
+        
+        return {
+            'labels': estados, 
+            'data': quantidades, 
+            'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(estados)]
+        }
 
     def _get_distribuicao_tipo_ensino(self, professoras):
-        distribuicao = professoras.filter(escola__tipo_ensino__nome__isnull=False)\
-            .values('escola__tipo_ensino__nome').annotate(total=Count('id')).order_by('escola__tipo_ensino__nome')
+        # Conta total de professoras
+        total_professoras = professoras.count()
+        
+        # Busca professoras com tipo de ensino informado
+        distribuicao = professoras.exclude(escola__tipo_ensino__isnull=True)\
+                                 .exclude(escola__tipo_ensino__nome__isnull=True)\
+                                 .values('escola__tipo_ensino__nome')\
+                                 .annotate(total=Count('id'))\
+                                 .order_by('escola__tipo_ensino__nome')
+        
         tipos, quantidades = [], []
+        total_com_tipo_ensino = 0
+        
         for item in distribuicao:
-            tipos.append(item['escola__tipo_ensino__nome'])
-            quantidades.append(item['total'])
+            tipo_nome = item['escola__tipo_ensino__nome']
+            total = item['total']
+            if tipo_nome and tipo_nome.strip():
+                tipos.append(tipo_nome)
+                quantidades.append(total)
+                total_com_tipo_ensino += total
+        
         # Adiciona tipos sem professoras
         todos_tipos = TipoEnsino.objects.values_list('nome', flat=True)
         for tipo in todos_tipos:
             if tipo not in tipos:
                 tipos.append(tipo)
                 quantidades.append(0)
-        return {'labels': tipos, 'data': quantidades, 'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(tipos)]}
-    
+        
+        # Calcula não informados
+        nao_informado_count = total_professoras - total_com_tipo_ensino
+        
+        # Adiciona "Não informado" se houver
+        if nao_informado_count > 0:
+            tipos.append('Não informado')
+            quantidades.append(nao_informado_count)
+        
+        return {
+            'labels': tipos, 
+            'data': quantidades, 
+            'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(tipos)]
+        }
+        
+#Filtrando a partir de application
+# class ApiDashboardUnificado(APIView):
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             print("=== INÍCIO API DASHBOARD UNIFICADO ===")
+
+#             # Obter parâmetros de filtro da query string
+#             estado_filter = request.GET.get('estado')
+#             regiao_filter = request.GET.get('regiao')
+#             raca_filter = request.GET.get('raca')
+#             formacao_filter = request.GET.get('formacao')
+#             tipo_ensino_filter = request.GET.get('tipo_ensino')
+
+#             print(f"📊 Filtros recebidos:")
+#             print(f"   - Estado: {estado_filter}")
+#             print(f"   - Região: {regiao_filter}")
+#             print(f"   - Raça: {raca_filter}")
+#             print(f"   - Formação: {formacao_filter}")
+#             print(f"   - Tipo Ensino: {tipo_ensino_filter}")
+
+#             # Base queryset para professoras (User)
+#             professoras = User.objects.filter(funcao='professora')
+#             print(f"👩‍🏫 Total de professoras inicial: {professoras.count()}")
+
+#             # Base queryset para aplicações
+#             aplicacoes = Application.objects.filter(usuario__funcao='professora')
+#             print(f"📝 Total de aplicações inicial: {aplicacoes.count()}")
+
+#             # APLICAR FILTROS NAS APLICAÇÕES PRIMEIRO (para formação)
+#             if formacao_filter and formacao_filter != 'todos':
+#                 aplicacoes = aplicacoes.filter(grau_formacao__icontains=formacao_filter)
+#                 print(f"🎓 Filtro formação aplicado nas applications: {formacao_filter}")
+
+#             # Aplicar outros filtros nas applications
+#             if estado_filter and estado_filter != 'todos':
+#                 if self._is_regiao(estado_filter):
+#                     aplicacoes = aplicacoes.filter(
+#                         usuario__endereco__estado__regiao__nome__icontains=estado_filter
+#                     )
+#                     print(f"🌎 Filtro REGIÃO aplicado nas applications via estado: {estado_filter}")
+#                 else:
+#                     estado_uf = self._get_estado_uf(estado_filter)
+#                     if estado_uf:
+#                         aplicacoes = aplicacoes.filter(
+#                             usuario__endereco__estado__uf=estado_uf
+#                         )
+#                         print(f"📍 Filtro ESTADO aplicado nas applications (UF: {estado_uf}): {estado_filter}")
+#                     else:
+#                         aplicacoes = aplicacoes.filter(
+#                             usuario__endereco__estado__nome__icontains=estado_filter
+#                         )
+#                         print(f"📍 Filtro ESTADO aplicado nas applications (nome): {estado_filter}")
+
+#             if regiao_filter and regiao_filter != 'todos':
+#                 regiao_nome = self._get_regiao_nome(regiao_filter)
+#                 if regiao_nome:
+#                     aplicacoes = aplicacoes.filter(
+#                         usuario__endereco__estado__regiao__nome=regiao_nome
+#                     )
+#                     print(f"🌎 Filtro REGIÃO aplicado nas applications: {regiao_nome}")
+#                 else:
+#                     aplicacoes = aplicacoes.filter(
+#                         usuario__endereco__estado__regiao__nome__icontains=regiao_filter
+#                     )
+#                     print(f"🌎 Filtro REGIÃO aplicado nas applications (parcial): {regiao_filter}")
+
+#             if raca_filter and raca_filter != 'todos':
+#                 aplicacoes = aplicacoes.filter(usuario__raca__nome__icontains=raca_filter)
+#                 print(f"🎨 Filtro raça aplicado nas applications: {raca_filter}")
+
+#             if tipo_ensino_filter and tipo_ensino_filter != 'todos':
+#                 aplicacoes = aplicacoes.filter(
+#                     usuario__escola__tipo_ensino__nome__icontains=tipo_ensino_filter
+#                 )
+#                 print(f"🏫 Filtro tipo ensino aplicado nas applications: {tipo_ensino_filter}")
+
+#             print(f"📝 Total de aplicações após filtros: {aplicacoes.count()}")
+
+#             # AGORA FILTRAR AS PROFESSORAS COM BASE NAS APLICAÇÕES FILTRADAS
+#             # Obtém os IDs das professoras que têm aplicações que passaram nos filtros
+#             professoras_ids = aplicacoes.values_list('usuario_id', flat=True).distinct()
+#             professoras = professoras.filter(id__in=professoras_ids)
+#             print(f"👩‍🏫 Total de professoras após filtro por aplicações: {professoras.count()}")
+
+#             # Aplicar filtros adicionais diretamente nas professoras (para casos onde não há application)
+#             # Mas como a formação só existe na Application, o filtro principal já foi feito acima
+
+#             # Aplicar filtros adicionais nas professoras para garantir consistência
+#             if estado_filter and estado_filter != 'todos':
+#                 if self._is_regiao(estado_filter):
+#                     professoras = professoras.filter(endereco__estado__regiao__nome__icontains=estado_filter)
+#                     print(f"🌎 Filtro REGIÃO aplicado via estado: {estado_filter}")
+#                 else:
+#                     estado_uf = self._get_estado_uf(estado_filter)
+#                     if estado_uf:
+#                         professoras = professoras.filter(endereco__estado__uf=estado_uf)
+#                         print(f"📍 Filtro ESTADO aplicado (UF: {estado_uf}): {estado_filter}")
+#                     else:
+#                         professoras = professoras.filter(endereco__estado__nome__icontains=estado_filter)
+#                         print(f"📍 Filtro ESTADO aplicado (nome): {estado_filter}")
+
+#             if regiao_filter and regiao_filter != 'todos':
+#                 regiao_nome = self._get_regiao_nome(regiao_filter)
+#                 if regiao_nome:
+#                     professoras = professoras.filter(endereco__estado__regiao__nome=regiao_nome)
+#                     print(f"🌎 Filtro REGIÃO aplicado: {regiao_nome}")
+#                 else:
+#                     professoras = professoras.filter(endereco__estado__regiao__nome__icontains=regiao_filter)
+#                     print(f"🌎 Filtro REGIÃO aplicado (parcial): {regiao_filter}")
+
+#             if raca_filter and raca_filter != 'todos':
+#                 professoras = professoras.filter(raca__nome__icontains=raca_filter)
+#                 print(f"🎨 Filtro raça aplicado: {raca_filter}")
+
+#             if tipo_ensino_filter and tipo_ensino_filter != 'todos':
+#                 professoras = professoras.filter(escola__tipo_ensino__nome__icontains=tipo_ensino_filter)
+#                 print(f"🏫 Filtro tipo ensino aplicado: {tipo_ensino_filter}")
+
+#             print(f"👩‍🏫 Total de professoras após todos os filtros: {professoras.count()}")
+
+#             # Atualizar as aplicações para refletir os filtros finais das professoras
+#             aplicacoes_filtradas = aplicacoes.filter(usuario__in=professoras)
+
+#             # Gerar os dados para os gráficos
+#             distribuicao_formacao = self._get_distribuicao_formacao(aplicacoes_filtradas)
+#             distribuicao_raca = self._get_distribuicao_raca(professoras)
+#             distribuicao_regional = self._get_distribuicao_regional(professoras, estado_filter, regiao_filter)
+#             distribuicao_estadual = self._get_distribuicao_estadual(professoras, estado_filter, regiao_filter)
+#             distribuicao_tipo_ensino = self._get_distribuicao_tipo_ensino(professoras)
+
+#             total_professoras = professoras.count()
+#             print(f"👩‍🏫 Total final de professoras: {total_professoras}")
+
+#             resultado = {
+#                 "status": "success",
+#                 "filtros_ativos": {
+#                     "estado": estado_filter,
+#                     "regiao": regiao_filter,
+#                     "raca": raca_filter,
+#                     "formacao": formacao_filter,
+#                     "tipo_ensino": tipo_ensino_filter
+#                 },
+#                 "total_professoras": total_professoras,
+#                 "dados_formacao": distribuicao_formacao,
+#                 "dados_raca": distribuicao_raca,
+#                 "dados_regional": distribuicao_regional,
+#                 "dados_estadual": distribuicao_estadual,
+#                 "dados_tipo_ensino": distribuicao_tipo_ensino
+#             }
+
+#             print("✅ API executada com sucesso!")
+#             return Response(resultado)
+
+#         except Exception as e:
+#             print("❌ ERRO NA API DASHBOARD UNIFICADO")
+#             print(f"💥 Erro: {str(e)}")
+#             logger.error(f"Erro na API Dashboard Unificado: {str(e)}")
+#             return Response({"status": "error", "message": str(e)}, status=500)
+
+#     # ---------- MÉTODOS AUXILIARES PARA FLEXIBILIDADE ----------
+
+#     def _is_regiao(self, nome):
+#         """Verifica se o input é uma região"""
+#         regioes = ['norte', 'nordeste', 'centro-oeste', 'sudeste', 'sul']
+#         nome_clean = re.sub(r'\([^)]*\)', '', nome).strip().lower()
+#         return nome_clean in regioes
+
+#     def _get_estado_uf(self, estado_input):
+#         """Tenta extrair a UF do input do estado"""
+#         # Mapeamento de nomes completos para UFs
+#         estado_map = {
+#             'acre': 'AC', 'ac': 'AC',
+#             'alagoas': 'AL', 'al': 'AL',
+#             'amapa': 'AP', 'amapá': 'AP', 'ap': 'AP',
+#             'amazonas': 'AM', 'am': 'AM',
+#             'bahia': 'BA', 'ba': 'BA',
+#             'ceara': 'CE', 'ceará': 'CE', 'ce': 'CE',
+#             'distrito federal': 'DF', 'df': 'DF',
+#             'espirito santo': 'ES', 'espírito santo': 'ES', 'es': 'ES',
+#             'goias': 'GO', 'goiás': 'GO', 'go': 'GO',
+#             'maranhao': 'MA', 'maranhão': 'MA', 'ma': 'MA',
+#             'mato grosso': 'MT', 'mt': 'MT',
+#             'mato grosso do sul': 'MS', 'ms': 'MS',
+#             'minas gerais': 'MG', 'mg': 'MG',
+#             'para': 'PA', 'pará': 'PA', 'pa': 'PA',
+#             'paraiba': 'PB', 'paraíba': 'PB', 'pb': 'PB',
+#             'parana': 'PR', 'paraná': 'PR', 'pr': 'PR',
+#             'pernambuco': 'PE', 'pe': 'PE',
+#             'piaui': 'PI', 'piauí': 'PI', 'pi': 'PI',
+#             'rio de janeiro': 'RJ', 'rj': 'RJ',
+#             'rio grande do norte': 'RN', 'rn': 'RN',
+#             'rio grande do sul': 'RS', 'rs': 'RS',
+#             'rondonia': 'RO', 'rondônia': 'RO', 'ro': 'RO',
+#             'roraima': 'RR', 'rr': 'RR',
+#             'santa catarina': 'SC', 'sc': 'SC',
+#             'sao paulo': 'SP', 'são paulo': 'SP', 'sp': 'SP',
+#             'sergipe': 'SE', 'se': 'SE',
+#             'tocantins': 'TO', 'to': 'TO'
+#         }
+        
+#         # Remove parênteses e conteúdo dentro deles, e espaços extras
+#         estado_clean = re.sub(r'\([^)]*\)', '', estado_input).strip().lower()
+        
+#         return estado_map.get(estado_clean)
+
+#     def _get_regiao_nome(self, regiao_input):
+#         """Tenta encontrar o nome exato da região"""
+#         regioes_exatas = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul']
+#         regiao_lower = regiao_input.strip().lower()
+        
+#         for regiao in regioes_exatas:
+#             if regiao.lower() == regiao_lower:
+#                 return regiao
+#         return None
+
+#     # ---------- MÉTODOS AUXILIARES PARA DISTRIBUIÇÃO ----------
+
+#     def _get_distribuicao_formacao(self, aplicacoes):
+#         # Conta todas as aplicações (incluindo as sem formação informada)
+#         total_aplicacoes = aplicacoes.count()
+        
+#         # Busca aplicações com formação informada
+#         distribuicao = aplicacoes.exclude(grau_formacao__isnull=True)\
+#                                 .exclude(grau_formacao='')\
+#                                 .values('grau_formacao')\
+#                                 .annotate(total=Count('id'))\
+#                                 .order_by('grau_formacao')
+        
+#         label_map = {
+#             'graduacao': 'Graduação', 'licenciatura': 'Licenciatura',
+#             'bacharelado': 'Bacharelado', 'tecnologo': 'Tecnólogo',
+#             'especializacao': 'Especialização', 'mestrado': 'Mestrado',
+#             'doutorado': 'Doutorado', 'pos_doutorado': 'Pós-doutorado',
+#             'outro': 'Outro'
+#         }
+        
+#         labels, data = [], []
+#         total_com_formacao = 0
+        
+#         for item in distribuicao:
+#             grau_formacao = item['grau_formacao']
+#             total = item['total']
+#             if grau_formacao and grau_formacao.strip():
+#                 label = label_map.get(grau_formacao, grau_formacao.capitalize())
+#                 labels.append(label)
+#                 data.append(total)
+#                 total_com_formacao += total
+        
+#         # Calcula não informados
+#         nao_informado_count = total_aplicacoes - total_com_formacao
+        
+#         # Adiciona "Não informado" se houver
+#         if nao_informado_count > 0:
+#             labels.append('Não informado')
+#             data.append(nao_informado_count)
+        
+#         return {
+#             'labels': labels, 
+#             'data': data, 
+#             'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(labels)]
+#         }
+
+#     def _get_distribuicao_raca(self, professoras):
+#         # Conta total de professoras
+#         total_professoras = professoras.count()
+        
+#         # Busca professoras com raça informada
+#         raca_counts = professoras.exclude(raca__isnull=True)\
+#                                 .exclude(raca__nome__isnull=True)\
+#                                 .exclude(raca__nome='')\
+#                                 .values('raca__nome')\
+#                                 .annotate(total=Count('id'))\
+#                                 .order_by('raca__nome')
+        
+#         labels, data = [], []
+#         total_com_raca = 0
+        
+#         for item in raca_counts:
+#             raca_nome = item['raca__nome']
+#             total = item['total']
+#             if raca_nome and raca_nome.strip():
+#                 labels.append(raca_nome)
+#                 data.append(total)
+#                 total_com_raca += total
+        
+#         # Calcula não informados
+#         nao_informado_count = total_professoras - total_com_raca
+        
+#         # Adiciona "Não informado" se houver
+#         if nao_informado_count > 0:
+#             labels.append('Não informado')
+#             data.append(nao_informado_count)
+        
+#         return {
+#             'labels': labels, 
+#             'data': data, 
+#             'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#a5dee5', '#95a5a6'][:len(labels)]
+#         }
+
+#     def _get_distribuicao_regional(self, professoras, estado_filter=None, regiao_filter=None):
+#         queryset = professoras
+        
+#         # Se há filtro por estado, não faz sentido mostrar distribuição regional
+#         if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter):
+#             # Se for um estado, retorna apenas a região desse estado
+#             try:
+#                 estado_uf = self._get_estado_uf(estado_filter)
+#                 if estado_uf:
+#                     estado_obj = Estado.objects.filter(uf=estado_uf).first()
+#                 else:
+#                     estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                
+#                 if estado_obj and estado_obj.regiao:
+#                     return {
+#                         'labels': [estado_obj.regiao.nome], 
+#                         'data': [professoras.count()], 
+#                         'backgroundColor': ['#3498db']
+#                     }
+#             except Exception as e:
+#                 print(f"⚠️ Erro ao buscar região do estado: {e}")
+            
+#             return {'labels': ['Região do estado'], 'data': [professoras.count()], 'backgroundColor': ['#3498db']}
+        
+#         # Conta total de professoras
+#         total_professoras = queryset.count()
+        
+#         # Busca professoras com região informada
+#         distribuicao = queryset.exclude(endereco__estado__regiao__isnull=True)\
+#                                  .exclude(endereco__estado__regiao__nome__isnull=True)\
+#                                  .values('endereco__estado__regiao__nome')\
+#                                  .annotate(total=Count('id'))\
+#                                  .order_by('endereco__estado__regiao__nome')
+        
+#         regioes, quantidades = [], []
+#         total_com_regiao = 0
+        
+#         for item in distribuicao:
+#             regiao_nome = item['endereco__estado__regiao__nome']
+#             total = item['total']
+#             if regiao_nome and regiao_nome.strip():
+#                 regioes.append(regiao_nome)
+#                 quantidades.append(total)
+#                 total_com_regiao += total
+        
+#         # Adiciona regiões sem professoras (apenas se não há filtro de região específico)
+#         if (not regiao_filter or regiao_filter == 'todos') and (not estado_filter or estado_filter == 'todos' or self._is_regiao(estado_filter)):
+#             todas_regioes = Regiao.objects.values_list('nome', flat=True)
+#             for regiao in todas_regioes:
+#                 if regiao not in regioes:
+#                     regioes.append(regiao)
+#                     quantidades.append(0)
+        
+#         # Calcula não informados
+#         nao_informado_count = total_professoras - total_com_regiao
+        
+#         # Adiciona "Não informado" se houver
+#         if nao_informado_count > 0:
+#             regioes.append('Não informado')
+#             quantidades.append(nao_informado_count)
+        
+#         return {
+#             'labels': regioes, 
+#             'data': quantidades, 
+#             'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(regioes)]
+#         }
+
+#     def _get_distribuicao_estadual(self, professoras, estado_filter=None, regiao_filter=None):
+#         queryset = professoras
+        
+#         # Se há filtro por estado específico (e não é uma região), mostra apenas esse estado
+#         if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter):
+#             try:
+#                 estado_uf = self._get_estado_uf(estado_filter)
+#                 if estado_uf:
+#                     estado_obj = Estado.objects.filter(uf=estado_uf).first()
+#                 else:
+#                     estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                
+#                 estado_nome = estado_obj.nome if estado_obj else estado_filter
+#                 return {
+#                     'labels': [estado_nome], 
+#                     'data': [professoras.count()], 
+#                     'backgroundColor': ['#3498db']
+#                 }
+#             except Exception as e:
+#                 print(f"⚠️ Erro ao buscar estado: {e}")
+            
+#             return {'labels': [estado_filter], 'data': [professoras.count()], 'backgroundColor': ['#3498db']}
+        
+#         # Se há filtro por região (via regiao_filter ou estado_filter que é uma região)
+#         regiao_para_filtro = None
+#         if regiao_filter and regiao_filter != 'todos':
+#             regiao_para_filtro = regiao_filter
+#         elif estado_filter and estado_filter != 'todos' and self._is_regiao(estado_filter):
+#             regiao_para_filtro = estado_filter
+        
+#         if regiao_para_filtro:
+#             regiao_nome = self._get_regiao_nome(regiao_para_filtro)
+#             if regiao_nome:
+#                 queryset = queryset.filter(endereco__estado__regiao__nome=regiao_nome)
+#             else:
+#                 queryset = queryset.filter(endereco__estado__regiao__nome__icontains=regiao_para_filtro)
+        
+#         # Conta total de professoras no queryset filtrado
+#         total_professoras = queryset.count()
+        
+#         # Busca professoras com estado informado
+#         distribuicao = queryset.exclude(endereco__estado__isnull=True)\
+#                               .exclude(endereco__estado__uf__isnull=True)\
+#                               .values('endereco__estado__uf', 'endereco__estado__nome')\
+#                               .annotate(total=Count('id'))\
+#                               .order_by('-total')
+        
+#         estados, quantidades = [], []
+#         total_com_estado = 0
+        
+#         for item in distribuicao:
+#             estado_uf = item['endereco__estado__uf']
+#             estado_nome = item['endereco__estado__nome']
+#             total = item['total']
+#             if estado_uf and estado_uf.strip():
+#                 # Usa o nome do estado para melhor legibilidade
+#                 label = f"{estado_nome} ({estado_uf})" if estado_nome else estado_uf
+#                 estados.append(label)
+#                 quantidades.append(total)
+#                 total_com_estado += total
+        
+#         # Calcula não informados
+#         nao_informado_count = total_professoras - total_com_estado
+        
+#         # Adiciona "Não informado" se houver
+#         if nao_informado_count > 0:
+#             estados.append('Não informado')
+#             quantidades.append(nao_informado_count)
+        
+#         return {
+#             'labels': estados, 
+#             'data': quantidades, 
+#             'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'][:len(estados)]
+#         }
+
+#     def _get_distribuicao_tipo_ensino(self, professoras):
+#         # Conta total de professoras
+#         total_professoras = professoras.count()
+        
+#         # Busca professoras com tipo de ensino informado
+#         distribuicao = professoras.exclude(escola__tipo_ensino__isnull=True)\
+#                                  .exclude(escola__tipo_ensino__nome__isnull=True)\
+#                                  .values('escola__tipo_ensino__nome')\
+#                                  .annotate(total=Count('id'))\
+#                                  .order_by('escola__tipo_ensino__nome')
+        
+#         tipos, quantidades = [], []
+#         total_com_tipo_ensino = 0
+        
+#         for item in distribuicao:
+#             tipo_nome = item['escola__tipo_ensino__nome']
+#             total = item['total']
+#             if tipo_nome and tipo_nome.strip():
+#                 tipos.append(tipo_nome)
+#                 quantidades.append(total)
+#                 total_com_tipo_ensino += total
+        
+#         # Adiciona tipos sem professoras
+#         todos_tipos = TipoEnsino.objects.values_list('nome', flat=True)
+#         for tipo in todos_tipos:
+#             if tipo not in tipos:
+#                 tipos.append(tipo)
+#                 quantidades.append(0)
+        
+#         # Calcula não informados
+#         nao_informado_count = total_professoras - total_com_tipo_ensino
+        
+#         # Adiciona "Não informado" se houver
+#         if nao_informado_count > 0:
+#             tipos.append('Não informado')
+#             quantidades.append(nao_informado_count)
+        
+#         return {
+#             'labels': tipos, 
+#             'data': quantidades, 
+#             'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(tipos)]
+#         }
 
 class ApiFunilAlunasApplicationLog(APIView):
     def get(self, request, *args, **kwargs):
@@ -2474,6 +3208,7 @@ from django.db.models import Count, Q
 from django.utils.timezone import now
 
 
+
 class ApiDashboardUnificadoAlunas(APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -2481,13 +3216,17 @@ class ApiDashboardUnificadoAlunas(APIView):
             
             # Obter parâmetros de filtro da query string
             estado_filter = request.GET.get('estado')
+            regiao_filter = request.GET.get('regiao')
+            cidade_filter = request.GET.get('cidade')
             raca_filter = request.GET.get('raca')
             genero_filter = request.GET.get('genero')
             tipo_escola_filter = request.GET.get('tipo_escola')
             faixa_etaria_filter = request.GET.get('faixa_etaria')
             
             print(f"📊 Filtros recebidos:")
-            print(f"   - Estado/Região: {estado_filter}")
+            print(f"   - Estado: {estado_filter}")
+            print(f"   - Região: {regiao_filter}")
+            print(f"   - Cidade: {cidade_filter}")
             print(f"   - Raça: {raca_filter}")
             print(f"   - Gênero: {genero_filter}")
             print(f"   - Tipo Escola: {tipo_escola_filter}")
@@ -2501,25 +3240,138 @@ class ApiDashboardUnificadoAlunas(APIView):
             aplicacoes = Application.objects.filter(usuario__funcao='estudante')
             print(f"📝 Total de aplicações inicial: {aplicacoes.count()}")
 
-            # Aplicar filtros que são da model User
+            # PRIMEIRO: Verificar se o filtro estado é na verdade uma cidade
             if estado_filter and estado_filter != 'todos':
-                alunas = alunas.filter(endereco__estado__regiao__nome=estado_filter)
-                aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome=estado_filter)
-                print(f"📍 Filtro estado/região aplicado: {estado_filter}")
+                # Verificar se o formato é "Cidade - UF" (ex: "Recife - PE")
+                if self._is_cidade_format(estado_filter):
+                    try:
+                        # Tentar separar cidade e UF
+                        cidade_nome, estado_uf = self._extrair_cidade_uf(estado_filter)
+                        
+                        if cidade_nome and estado_uf:
+                            # Aplicar filtro de cidade
+                            alunas = alunas.filter(
+                                endereco__cidade__nome__icontains=cidade_nome,
+                                endereco__estado__uf=estado_uf
+                            )
+                            aplicacoes = aplicacoes.filter(
+                                usuario__endereco__cidade__nome__icontains=cidade_nome,
+                                usuario__endereco__estado__uf=estado_uf
+                            )
+                            print(f"🏙️ Filtro CIDADE aplicado via estado: {cidade_nome} - {estado_uf}")
+                            
+                            # Pular outros filtros geográficos pois já filtramos por cidade
+                            estado_filter = None
+                            regiao_filter = None
+                            cidade_filter = None
+                        else:
+                            # Se não conseguir extrair, tratar como estado normal
+                            if self._is_regiao(estado_filter):
+                                alunas = alunas.filter(endereco__estado__regiao__nome__icontains=estado_filter)
+                                aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome__icontains=estado_filter)
+                                print(f"🌎 Filtro REGIÃO aplicado via estado: {estado_filter}")
+                            else:
+                                estado_uf = self._get_estado_uf(estado_filter)
+                                if estado_uf:
+                                    alunas = alunas.filter(endereco__estado__uf=estado_uf)
+                                    aplicacoes = aplicacoes.filter(usuario__endereco__estado__uf=estado_uf)
+                                    print(f"📍 Filtro ESTADO aplicado (UF: {estado_uf}): {estado_filter}")
+                                else:
+                                    alunas = alunas.filter(endereco__estado__nome__icontains=estado_filter)
+                                    aplicacoes = aplicacoes.filter(usuario__endereco__estado__nome__icontains=estado_filter)
+                                    print(f"📍 Filtro ESTADO aplicado (nome): {estado_filter}")
+                    
+                    except Exception as e:
+                        print(f"⚠️ Erro ao processar filtro de cidade via estado: {e}")
+                        # Continuar com a lógica normal
+                        if self._is_regiao(estado_filter):
+                            alunas = alunas.filter(endereco__estado__regiao__nome__icontains=estado_filter)
+                            aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome__icontains=estado_filter)
+                            print(f"🌎 Filtro REGIÃO aplicado via estado: {estado_filter}")
+                        else:
+                            estado_uf = self._get_estado_uf(estado_filter)
+                            if estado_uf:
+                                alunas = alunas.filter(endereco__estado__uf=estado_uf)
+                                aplicacoes = aplicacoes.filter(usuario__endereco__estado__uf=estado_uf)
+                                print(f"📍 Filtro ESTADO aplicado (UF: {estado_uf}): {estado_filter}")
+                            else:
+                                alunas = alunas.filter(endereco__estado__nome__icontains=estado_filter)
+                                aplicacoes = aplicacoes.filter(usuario__endereco__estado__nome__icontains=estado_filter)
+                                print(f"📍 Filtro ESTADO aplicado (nome): {estado_filter}")
+                else:
+                    # Não é formato de cidade, tratar como estado/região normal
+                    if self._is_regiao(estado_filter):
+                        alunas = alunas.filter(endereco__estado__regiao__nome__icontains=estado_filter)
+                        aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome__icontains=estado_filter)
+                        print(f"🌎 Filtro REGIÃO aplicado via estado: {estado_filter}")
+                    else:
+                        estado_uf = self._get_estado_uf(estado_filter)
+                        if estado_uf:
+                            alunas = alunas.filter(endereco__estado__uf=estado_uf)
+                            aplicacoes = aplicacoes.filter(usuario__endereco__estado__uf=estado_uf)
+                            print(f"📍 Filtro ESTADO aplicado (UF: {estado_uf}): {estado_filter}")
+                        else:
+                            alunas = alunas.filter(endereco__estado__nome__icontains=estado_filter)
+                            aplicacoes = aplicacoes.filter(usuario__endereco__estado__nome__icontains=estado_filter)
+                            print(f"📍 Filtro ESTADO aplicado (nome): {estado_filter}")
 
+            # APLICAR FILTROS GEOGRÁFICOS RESTANTES (se ainda não foram aplicados)
+            if regiao_filter and regiao_filter != 'todos':
+                regiao_nome = self._get_regiao_nome(regiao_filter)
+                if regiao_nome:
+                    alunas = alunas.filter(endereco__estado__regiao__nome=regiao_nome)
+                    aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome=regiao_nome)
+                    print(f"🌎 Filtro REGIÃO aplicado: {regiao_nome}")
+                else:
+                    alunas = alunas.filter(endereco__estado__regiao__nome__icontains=regiao_filter)
+                    aplicacoes = aplicacoes.filter(usuario__endereco__estado__regiao__nome__icontains=regiao_filter)
+                    print(f"🌎 Filtro REGIÃO aplicado (parcial): {regiao_filter}")
+
+            if cidade_filter and cidade_filter != 'todos':
+                # Verificar se o formato é "Cidade - UF"
+                if self._is_cidade_format(cidade_filter):
+                    try:
+                        cidade_nome, estado_uf = self._extrair_cidade_uf(cidade_filter)
+                        
+                        if cidade_nome and estado_uf:
+                            alunas = alunas.filter(
+                                endereco__cidade__nome__icontains=cidade_nome,
+                                endereco__estado__uf=estado_uf
+                            )
+                            aplicacoes = aplicacoes.filter(
+                                usuario__endereco__cidade__nome__icontains=cidade_nome,
+                                usuario__endereco__estado__uf=estado_uf
+                            )
+                            print(f"🏙️ Filtro CIDADE aplicado: {cidade_nome} - {estado_uf}")
+                        else:
+                            # Se não conseguir extrair, buscar apenas pelo nome da cidade
+                            alunas = alunas.filter(endereco__cidade__nome__icontains=cidade_filter)
+                            aplicacoes = aplicacoes.filter(usuario__endereco__cidade__nome__icontains=cidade_filter)
+                            print(f"🏙️ Filtro CIDADE aplicado (apenas nome): {cidade_filter}")
+                    except Exception as e:
+                        print(f"⚠️ Erro ao processar filtro de cidade: {e}")
+                        alunas = alunas.filter(endereco__cidade__nome__icontains=cidade_filter)
+                        aplicacoes = aplicacoes.filter(usuario__endereco__cidade__nome__icontains=cidade_filter)
+                else:
+                    # Buscar apenas pelo nome da cidade
+                    alunas = alunas.filter(endereco__cidade__nome__icontains=cidade_filter)
+                    aplicacoes = aplicacoes.filter(usuario__endereco__cidade__nome__icontains=cidade_filter)
+                    print(f"🏙️ Filtro CIDADE aplicado (apenas nome): {cidade_filter}")
+
+            # APLICAR OUTROS FILTROS
             if raca_filter and raca_filter != 'todos':
-                alunas = alunas.filter(raca__nome=raca_filter)
-                aplicacoes = aplicacoes.filter(usuario__raca__nome=raca_filter)
+                alunas = alunas.filter(raca__nome__icontains=raca_filter)
+                aplicacoes = aplicacoes.filter(usuario__raca__nome__icontains=raca_filter)
                 print(f"🎨 Filtro raça aplicado: {raca_filter}")
 
             if genero_filter and genero_filter != 'todos':
-                alunas = alunas.filter(genero__nome=genero_filter)
-                aplicacoes = aplicacoes.filter(usuario__genero__nome=genero_filter)
+                alunas = alunas.filter(genero__nome__icontains=genero_filter)
+                aplicacoes = aplicacoes.filter(usuario__genero__nome__icontains=genero_filter)
                 print(f"🚻 Filtro gênero aplicado: {genero_filter}")
 
             if tipo_escola_filter and tipo_escola_filter != 'todos':
-                alunas = alunas.filter(escola__tipo_ensino__nome=tipo_escola_filter)
-                aplicacoes = aplicacoes.filter(usuario__escola__tipo_ensino__nome=tipo_escola_filter)
+                alunas = alunas.filter(escola__tipo_ensino__nome__icontains=tipo_escola_filter)
+                aplicacoes = aplicacoes.filter(usuario__escola__tipo_ensino__nome__icontains=tipo_escola_filter)
                 print(f"🏫 Filtro tipo escola aplicado: {tipo_escola_filter}")
 
             # Filtro especial para faixa etária
@@ -2568,9 +3420,9 @@ class ApiDashboardUnificadoAlunas(APIView):
             dados_faixa_etaria = self._get_dados_faixa_etaria(alunas)
             dados_distribuicao_separados = self._get_dados_distribuicao_separados(alunas)
             dados_escolas = self._get_dados_escolas(alunas)
-            dados_regional = self._get_dados_regional(alunas)
-            dados_estadual = self._get_dados_estadual(alunas)
-            dados_municipal = self._get_dados_municipal(alunas)
+            dados_regional = self._get_dados_regional(alunas, estado_filter, regiao_filter)
+            dados_estadual = self._get_dados_estadual(alunas, estado_filter, regiao_filter)
+            dados_municipal = self._get_dados_municipal(alunas, estado_filter, regiao_filter, cidade_filter)
             dados_frequencia = self._get_dados_frequencia()
 
             total_alunas = alunas.count()
@@ -2579,6 +3431,8 @@ class ApiDashboardUnificadoAlunas(APIView):
                 "status": "success",
                 "filtros_ativos": {
                     "estado": estado_filter,
+                    "regiao": regiao_filter,
+                    "cidade": cidade_filter,
                     "raca": raca_filter,
                     "genero": genero_filter,
                     "tipo_escola": tipo_escola_filter,
@@ -2604,7 +3458,82 @@ class ApiDashboardUnificadoAlunas(APIView):
             logger.error(f"Erro na API Dashboard Unificado Alunas: {str(e)}")
             return Response({"status": "error", "message": str(e)}, status=500)
 
-    # ---------- MÉTODOS AUXILIARES ----------
+    # ---------- MÉTODOS AUXILIARES GEOGRÁFICOS ----------
+
+    def _is_regiao(self, nome):
+        """Verifica se o input é uma região"""
+        regioes = ['norte', 'nordeste', 'centro-oeste', 'sudeste', 'sul']
+        nome_clean = re.sub(r'\([^)]*\)', '', nome).strip().lower()
+        return nome_clean in regioes
+
+    def _get_estado_uf(self, estado_input):
+        """Tenta extrair a UF do input do estado"""
+        # Mapeamento de nomes completos para UFs
+        estado_map = {
+            'acre': 'AC', 'ac': 'AC',
+            'alagoas': 'AL', 'al': 'AL',
+            'amapa': 'AP', 'amapá': 'AP', 'ap': 'AP',
+            'amazonas': 'AM', 'am': 'AM',
+            'bahia': 'BA', 'ba': 'BA',
+            'ceara': 'CE', 'ceará': 'CE', 'ce': 'CE',
+            'distrito federal': 'DF', 'df': 'DF',
+            'espirito santo': 'ES', 'espírito santo': 'ES', 'es': 'ES',
+            'goias': 'GO', 'goiás': 'GO', 'go': 'GO',
+            'maranhao': 'MA', 'maranhão': 'MA', 'ma': 'MA',
+            'mato grosso': 'MT', 'mt': 'MT',
+            'mato grosso do sul': 'MS', 'ms': 'MS',
+            'minas gerais': 'MG', 'mg': 'MG',
+            'para': 'PA', 'pará': 'PA', 'pa': 'PA',
+            'paraiba': 'PB', 'paraíba': 'PB', 'pb': 'PB',
+            'parana': 'PR', 'paraná': 'PR', 'pr': 'PR',
+            'pernambuco': 'PE', 'pe': 'PE',
+            'piaui': 'PI', 'piauí': 'PI', 'pi': 'PI',
+            'rio de janeiro': 'RJ', 'rj': 'RJ',
+            'rio grande do norte': 'RN', 'rn': 'RN',
+            'rio grande do sul': 'RS', 'rs': 'RS',
+            'rondonia': 'RO', 'rondônia': 'RO', 'ro': 'RO',
+            'roraima': 'RR', 'rr': 'RR',
+            'santa catarina': 'SC', 'sc': 'SC',
+            'sao paulo': 'SP', 'são paulo': 'SP', 'sp': 'SP',
+            'sergipe': 'SE', 'se': 'SE',
+            'tocantins': 'TO', 'to': 'TO'
+        }
+        
+        estado_clean = re.sub(r'\([^)]*\)', '', estado_input).strip().lower()
+        return estado_map.get(estado_clean)
+
+    def _get_regiao_nome(self, regiao_input):
+        """Tenta encontrar o nome exato da região"""
+        regioes_exatas = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul']
+        regiao_lower = regiao_input.strip().lower()
+        
+        for regiao in regioes_exatas:
+            if regiao.lower() == regiao_lower:
+                return regiao
+        return None
+
+    def _is_cidade_format(self, texto):
+        """Verifica se o texto está no formato 'Cidade - UF'"""
+        if not texto:
+            return False
+        if ' - ' in texto:
+            partes = texto.split(' - ')
+            if len(partes) == 2 and len(partes[1].strip()) == 2:
+                return True
+        return False
+
+    def _extrair_cidade_uf(self, texto):
+        """Extrai cidade e UF de um texto no formato 'Cidade - UF'"""
+        if not self._is_cidade_format(texto):
+            return None, None
+        
+        partes = texto.split(' - ')
+        cidade_nome = partes[0].strip()
+        estado_uf = partes[1].strip().upper()
+        
+        return cidade_nome, estado_uf
+
+    # ---------- MÉTODOS AUXILIARES DE DADOS ----------
 
     def _get_dados_funil(self, aplicacoes):
         try:
@@ -2728,11 +3657,7 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro na faixa etária: {str(e)}")
-            return {
-                'labels': ['-12 anos', '13-15 anos', '16-18 anos', '19-21 anos', '22-24 anos', '25+ anos', 'Não informado'],
-                'data': [0, 120, 250, 180, 90, 60, 447],
-                'backgroundColor': ['#E57373', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#95a5a6']
-            }
+            return 
 
     def _get_dados_distribuicao_separados(self, alunas):
         try:
@@ -2773,23 +3698,7 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro na distribuição separada: {str(e)}")
-            return {
-                'genero': {
-                    'labels': ['Feminino', 'Masculino', 'Não-binário', 'Não informado'],
-                    'data': [120, 15, 8, 5],
-                    'backgroundColor': ['#FF6384', '#36A2EB', '#FFCE56', '#95a5a6']
-                },
-                'raca': {
-                    'labels': ['Branca', 'Preta', 'Parda', 'Indígena', 'Não informado'],
-                    'data': [45, 35, 40, 15, 8],
-                    'backgroundColor': ['#9966FF', '#FF9F40', '#8ac6d1', '#ff6b6b', '#95a5a6']
-                },
-                'escola': {
-                    'labels': ['Pública', 'Privada', 'Não informado'],
-                    'data': [110, 25, 10],
-                    'backgroundColor': ['#ffd700', '#98ddca', '#95a5a6']
-                }
-            }
+            return 
 
     def _processar_dados_categoria(self, queryset, campo):
         labels, data = [], []
@@ -2840,38 +3749,73 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro nas escolas: {str(e)}")
-            return {
-                'labels': ['Pública', 'Privada', 'Não informado'],
-                'data': [110, 25, 12],
-                'backgroundColor': ['#36A2EB', '#FF6384', '#95a5a6']
-            }
+            return 
 
-    def _get_dados_regional(self, alunas):
+    def _get_dados_regional(self, alunas, estado_filter=None, regiao_filter=None):
         try:
             print("🔄 Gerando dados regionais...")
             
-            distribuicao = alunas.filter(
-                endereco__estado__regiao__nome__isnull=False
-            ).values('endereco__estado__regiao__nome').annotate(total=Count('id'))
+            queryset = alunas
+            
+            # Se há filtro por estado, não faz sentido mostrar distribuição regional completa
+            if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter) and not self._is_cidade_format(estado_filter):
+                # Se for um estado, retorna apenas a região desse estado
+                try:
+                    estado_uf = self._get_estado_uf(estado_filter)
+                    if estado_uf:
+                        estado_obj = Estado.objects.filter(uf=estado_uf).first()
+                    else:
+                        estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                    
+                    if estado_obj and estado_obj.regiao:
+                        return {
+                            'labels': [estado_obj.regiao.nome], 
+                            'data': [alunas.count()], 
+                            'backgroundColor': ['#3498db']
+                        }
+                except Exception as e:
+                    print(f"⚠️ Erro ao buscar região do estado: {e}")
+                
+                return {'labels': ['Região do estado'], 'data': [alunas.count()], 'backgroundColor': ['#3498db']}
+            
+            # Busca alunas com região informada
+            distribuicao = queryset.exclude(endereco__estado__regiao__isnull=True)\
+                                 .exclude(endereco__estado__regiao__nome__isnull=True)\
+                                 .values('endereco__estado__regiao__nome')\
+                                 .annotate(total=Count('id'))\
+                                 .order_by('endereco__estado__regiao__nome')
             
             regioes, quantidades = [], []
+            total_com_regiao = 0
             
             for item in distribuicao:
-                if item['endereco__estado__regiao__nome']:
-                    regioes.append(item['endereco__estado__regiao__nome'])
-                    quantidades.append(item['total'])
+                regiao_nome = item['endereco__estado__regiao__nome']
+                total = item['total']
+                if regiao_nome and regiao_nome.strip():
+                    regioes.append(regiao_nome)
+                    quantidades.append(total)
+                    total_com_regiao += total
             
-            # Adicionar regiões faltantes
-            todas_regioes = Regiao.objects.values_list('nome', flat=True)
-            for regiao in todas_regioes:
-                if regiao not in regioes:
-                    regioes.append(regiao)
-                    quantidades.append(0)
+            # Adiciona regiões sem alunas (apenas se não há filtro de região específico)
+            if (not regiao_filter or regiao_filter == 'todos') and (not estado_filter or estado_filter == 'todos' or self._is_regiao(estado_filter)):
+                todas_regioes = Regiao.objects.values_list('nome', flat=True)
+                for regiao in todas_regioes:
+                    if regiao not in regioes:
+                        regioes.append(regiao)
+                        quantidades.append(0)
+            
+            # Calcula não informados
+            nao_informado_count = queryset.count() - total_com_regiao
+            
+            # Adiciona "Não informado" se houver
+            if nao_informado_count > 0:
+                regioes.append('Não informado')
+                quantidades.append(nao_informado_count)
             
             dados = {
-                'labels': regioes,
-                'data': quantidades,
-                'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6']
+                'labels': regioes, 
+                'data': quantidades, 
+                'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#95a5a6'][:len(regioes)]
             }
             
             print(f"🌎 Regional: {len(regioes)} regiões, {sum(quantidades)} total")
@@ -2879,34 +3823,95 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro no regional: {str(e)}")
-            return {
-                'labels': ['Sudeste', 'Nordeste', 'Sul', 'Centro-Oeste', 'Norte', 'Não informado'],
-                'data': [120, 85, 60, 40, 25, 15],
-                'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#95a5a6']
-            }
+            return 
 
-    def _get_dados_estadual(self, alunas):
+    def _get_dados_estadual(self, alunas, estado_filter=None, regiao_filter=None):
         try:
             print("🔄 Gerando dados estaduais...")
             
-            distribuicao = alunas.filter(
-                endereco__estado__uf__isnull=False
-            ).values('endereco__estado__uf').annotate(total=Count('id')).order_by('-total')
+            queryset = alunas
+            
+            # Se há filtro por estado específico (e não é uma região ou cidade), mostra apenas esse estado
+            if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter) and not self._is_cidade_format(estado_filter):
+                try:
+                    estado_uf = self._get_estado_uf(estado_filter)
+                    if estado_uf:
+                        estado_obj = Estado.objects.filter(uf=estado_uf).first()
+                    else:
+                        estado_obj = Estado.objects.filter(nome__icontains=estado_filter).first()
+                    
+                    estado_nome = estado_obj.nome if estado_obj else estado_filter
+                    return {
+                        'labels': [estado_nome], 
+                        'data': [alunas.count()], 
+                        'backgroundColor': ['#3498db']
+                    }
+                except Exception as e:
+                    print(f"⚠️ Erro ao buscar estado: {e}")
+                
+                return {'labels': [estado_filter], 'data': [alunas.count()], 'backgroundColor': ['#3498db']}
+            
+            # Se há filtro por região (via regiao_filter ou estado_filter que é uma região)
+            regiao_para_filtro = None
+            if regiao_filter and regiao_filter != 'todos':
+                regiao_para_filtro = regiao_filter
+            elif estado_filter and estado_filter != 'todos' and self._is_regiao(estado_filter):
+                regiao_para_filtro = estado_filter
+            
+            if regiao_para_filtro:
+                regiao_nome = self._get_regiao_nome(regiao_para_filtro)
+                if regiao_nome:
+                    queryset = queryset.filter(endereco__estado__regiao__nome=regiao_nome)
+                else:
+                    queryset = queryset.filter(endereco__estado__regiao__nome__icontains=regiao_para_filtro)
+            
+            # Conta total de alunas no queryset filtrado
+            total_alunas = queryset.count()
+            
+            # Busca alunas com estado informada
+            distribuicao = queryset.exclude(endereco__estado__isnull=True)\
+                                  .exclude(endereco__estado__uf__isnull=True)\
+                                  .values('endereco__estado__uf', 'endereco__estado__nome')\
+                                  .annotate(total=Count('id'))\
+                                  .order_by('-total')
             
             estados, quantidades = [], []
+            total_com_estado = 0
             
             for item in distribuicao:
-                if item['endereco__estado__uf']:
-                    estados.append(item['endereco__estado__uf'])
-                    quantidades.append(item['total'])
+                estado_uf = item['endereco__estado__uf']
+                estado_nome = item['endereco__estado__nome']
+                total = item['total']
+                if estado_uf and estado_uf.strip():
+                    # Usa o nome do estado para melhor legibilidade
+                    label = f"{estado_nome} ({estado_uf})" if estado_nome else estado_uf
+                    estados.append(label)
+                    quantidades.append(total)
+                    total_com_estado += total
+            
+            # Calcula não informados
+            nao_informado_count = total_alunas - total_com_estado
+            
+            # Adiciona "Não informado" se houver
+            if nao_informado_count > 0:
+                estados.append('Não informado')
+                quantidades.append(nao_informado_count)
+                
+            import colorsys
+            
+            def gerar_cores(qtd):
+                cores = []
+                for i in range(qtd):
+                    # hue vai de 0 a 1, espaçado conforme a quantidade
+                    h = i / qtd
+                    r, g, b = colorsys.hsv_to_rgb(h, 0.7, 0.9)  # s=0.7, v=0.9 para cores vivas
+                    cores.append(f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}")
+                return cores
             
             dados = {
-                'labels': estados,
-                'data': quantidades,
-                'backgroundColor': [
-                    '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c',
-                    '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
-                ][:len(estados)]
+                'labels': estados, 
+                'data': quantidades, 
+                'backgroundColor': gerar_cores(len(estados))
             }
             
             print(f"📍 Estadual: {len(estados)} estados, {sum(quantidades)} total")
@@ -2914,35 +3919,98 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro no estadual: {str(e)}")
-            return {
-                'labels': ['SP', 'RJ', 'MG', 'BA', 'RS', 'PR', 'PE', 'CE', 'SC', 'GO', 'Não informado'],
-                'data': [65, 45, 40, 35, 30, 25, 20, 18, 15, 12, 10],
-                'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c', '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad', '#95a5a6']
-            }
+            return 
 
-    def _get_dados_municipal(self, alunas):
+    def _get_dados_municipal(self, alunas, estado_filter=None, regiao_filter=None, cidade_filter=None):
         try:
             print("🔄 Gerando dados municipais...")
             
-            distribuicao = alunas.filter(
-                endereco__cidade__nome__isnull=False
-            ).values('endereco__cidade__nome', 'endereco__estado__uf').annotate(total=Count('id')).order_by('-total')
+            queryset = alunas
+            
+            # Se há filtro por cidade específica, mostra apenas essa cidade
+            if cidade_filter and cidade_filter != 'todos':
+                try:
+                    if self._is_cidade_format(cidade_filter):
+                        cidade_nome, estado_uf = self._extrair_cidade_uf(cidade_filter)
+                        cidade_formatada = f"{cidade_nome} - {estado_uf}" if cidade_nome and estado_uf else cidade_filter
+                    else:
+                        cidade_formatada = cidade_filter
+                    
+                    return {
+                        'labels': [cidade_formatada], 
+                        'data': [alunas.count()], 
+                        'backgroundColor': ['#3498db']
+                    }
+                except Exception as e:
+                    print(f"⚠️ Erro ao processar filtro de cidade: {e}")
+                
+                return {'labels': [cidade_filter], 'data': [alunas.count()], 'backgroundColor': ['#3498db']}
+            
+            # Se há filtro por estado específico (e não é uma região), mostra cidades desse estado
+            if estado_filter and estado_filter != 'todos' and not self._is_regiao(estado_filter) and not self._is_cidade_format(estado_filter):
+                estado_uf = self._get_estado_uf(estado_filter)
+                if estado_uf:
+                    queryset = queryset.filter(endereco__estado__uf=estado_uf)
+                else:
+                    queryset = queryset.filter(endereco__estado__nome__icontains=estado_filter)
+            
+            # Se há filtro por região, mostra cidades da região
+            regiao_para_filtro = None
+            if regiao_filter and regiao_filter != 'todos':
+                regiao_para_filtro = regiao_filter
+            elif estado_filter and estado_filter != 'todos' and self._is_regiao(estado_filter):
+                regiao_para_filtro = estado_filter
+            
+            if regiao_para_filtro:
+                regiao_nome = self._get_regiao_nome(regiao_para_filtro)
+                if regiao_nome:
+                    queryset = queryset.filter(endereco__estado__regiao__nome=regiao_nome)
+                else:
+                    queryset = queryset.filter(endereco__estado__regiao__nome__icontains=regiao_para_filtro)
+            
+            # Busca alunas com cidade informada - REMOVIDO O LIMITE DE 10
+            distribuicao = queryset.exclude(endereco__cidade__isnull=True)\
+                                  .exclude(endereco__cidade__nome__isnull=True)\
+                                  .values('endereco__cidade__nome', 'endereco__estado__uf')\
+                                  .annotate(total=Count('id'))\
+                                  .order_by('-total')  # SEM LIMITE
             
             cidades, quantidades = [], []
+            total_com_cidade = 0
             
             for item in distribuicao:
-                if item['endereco__cidade__nome'] and item['endereco__estado__uf']:
-                    cidade_formatada = f"{item['endereco__cidade__nome']} - {item['endereco__estado__uf']}"
+                cidade_nome = item['endereco__cidade__nome']
+                estado_uf = item['endereco__estado__uf']
+                total = item['total']
+                if cidade_nome and cidade_nome.strip():
+                    cidade_formatada = f"{cidade_nome} - {estado_uf}" if estado_uf else cidade_nome
                     cidades.append(cidade_formatada)
-                    quantidades.append(item['total'])
+                    quantidades.append(total)
+                    total_com_cidade += total
             
+            # Calcula não informados
+            nao_informado_count = queryset.count() - total_com_cidade
+            
+            # Adiciona "Não informado" se houver
+            if nao_informado_count > 0:
+                cidades.append('Não informado')
+                quantidades.append(nao_informado_count)
+                
+            import colorsys
+
+            def gerar_cores(qtd):
+                cores = []
+                for i in range(qtd):
+                    # hue vai de 0 a 1, espaçado conforme a quantidade
+                    h = i / qtd
+                    r, g, b = colorsys.hsv_to_rgb(h, 0.7, 0.9)  # s=0.7, v=0.9 para cores vivas
+                    cores.append(f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}")
+                return cores
+
             dados = {
-                'labels': cidades,
-                'data': quantidades,
-                'backgroundColor': [
-                    '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c',
-                    '#1abc9c', '#34495e', '#95a5a6', '#d35400', '#8e44ad'
-                ][:len(cidades)]
+                "labels": cidades,
+                "data": quantidades,
+                "backgroundColor": gerar_cores(len(cidades)),
             }
             
             print(f"🏙️ Municipal: {len(cidades)} cidades, {sum(quantidades)} total")
@@ -2950,11 +4018,7 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro no municipal: {str(e)}")
-            return {
-                'labels': ['São Paulo - SP', 'Rio de Janeiro - RJ', 'Belo Horizonte - MG', 'Salvador - BA', 'Porto Alegre - RS'],
-                'data': [35, 25, 20, 18, 15],
-                'backgroundColor': ['#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e74c3c']
-            }
+            return 
 
     def _get_dados_frequencia(self):
         try:
@@ -3000,12 +4064,7 @@ class ApiDashboardUnificadoAlunas(APIView):
             
         except Exception as e:
             print(f"❌ Erro na frequência: {str(e)}")
-            return {
-                'labels': ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                'medias': [85.5, 78.2, 82.7, 88.9, 91.3, 87.6, 92.1, 89.7, 86.4, 90.2, 88.9, 84.3]
-            }
-
-
+            return 
 
 class Dashboard1(TemplateView):
     template_name = "dashboard/dashboardgeral.html"
