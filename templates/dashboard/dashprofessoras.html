@@ -3,12 +3,6 @@
 
 {% block extra_css %}
 <style>
-    .chart-container {
-        position: relative;
-        height: 300px;
-        width: 100%;
-    }
-    
     /* Estilos melhorados para os botões de alternância */
     .chart-toggle {
         display: flex;
@@ -207,8 +201,8 @@
             <div class="w-full md:w-1/2 px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-2">Professoras por Tipo de Ensino</h2>
                 <div class="bg-white shadow-md rounded-lg p-4 relative">
-                    <div class="chart-container">
-                        <canvas id="graficoProfessorasTipoEnsino" height='416'></canvas>
+                    <div class="chart-container" style="height: 315px;">
+                        <canvas id="graficoProfessorasTipoEnsino"></canvas>
                     </div>
                 </div>
             </div>
@@ -224,11 +218,11 @@
                             background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                             color: #fff;
                             border: none;
-                            padding: 10px 20px;
+                            padding: 5px 10px;
                             border-radius: 8px;
                             cursor: pointer;
-                            font-weight: 600;
-                            font-size: 16px;
+                            font-weight: 500;
+                            font-size: 10px;
                             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
                             transition: all 0.2s ease;
                         "
@@ -240,11 +234,11 @@
                             background: linear-gradient(135deg, #7e3ff2 0%, #a066ff 100%);
                             color: #fff;
                             border: none;
-                            padding: 10px 20px;
+                            padding: 5px 10px;
                             border-radius: 8px;
                             cursor: pointer;
-                            font-weight: 600;
-                            font-size: 16px;
+                            font-weight: 500;
+                            font-size: 10px;
                             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
                             transition: all 0.2s ease;
                         "
@@ -254,13 +248,13 @@
                 </div>
                 <div class="bg-white shadow-md rounded-lg p-4 relative">
                     <!-- Container para o gráfico de formação -->
-                    <div id="container-formacao" class="chart-container">
-                        <canvas id="graficoDistribuicaoFormacao" height='400'></canvas>
+                    <div id="container-formacao" class="chart-container" style="height: 315px;">
+                        <canvas id="graficoDistribuicaoFormacao" ></canvas>
                     </div>
                     
                     <!-- Container para o gráfico de raça -->
-                    <div id="container-raca" class="chart-container hidden" style="height:400px; width:400px; position:relative; left: 20px;">
-                        <canvas id="graficoDistribuicaoRaca" height='400'></canvas>
+                    <div id="container-raca" class="chart-container hidden" style="height: 315px;">
+                        <canvas id="graficoDistribuicaoRaca" ></canvas>
                     </div>
                 </div>
             </div>
@@ -874,6 +868,13 @@
                 containerRaca.classList.remove('hidden');
                 btnFormacao.classList.remove('active');
                 btnRaca.classList.add('active');
+                
+                // Forçar redesenho do gráfico de raça quando se torna visível
+                setTimeout(() => {
+                    if (graficoRaca) {
+                        graficoRaca.resize();
+                    }
+                }, 100);
             }
         }
 
