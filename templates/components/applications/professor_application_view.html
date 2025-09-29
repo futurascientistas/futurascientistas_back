@@ -66,28 +66,42 @@
       </button>
    </div>
    {% endif %}
-   <!-- Exibindo os campos como texto somente leitura -->
+    <!-- Exibindo os campos como texto somente leitura -->
    <div class="space-y-6">
-      <div>
-         <label class="readonly-label">{{ form.project.label }}</label>
-         <div class="readonly-field">{{ form.instance.project }}</div>
-      </div>
-      {% for field in form %}
-      {% if field.name != 'project' %}
-        <div>
-         <label class="readonly-label"><strong>{{ field.label }}</strong></label>
-         <div class="readonly-field">
-            {% with val=form.instance|attr:field.name %}
-              {% if val is not None and val != "" %}
-                {{ form.instance|get_display:field.name }}
-              {% else %}
-                <span class="text-gray-400 italic">Não informado</span>
-              {% endif %}
-            {% endwith %}
-         </div>
-      </div>
-      {% endif %}
-      {% endfor %}
+         {% for field in form %}
+            {% if "__upload" not in field.name and "__clear" not in field.name and field.name not in form.DRIVE_UPLOAD_FIELDS %}
+               <div>
+                  <label class="readonly-label"><strong>{{ field.label }}</strong></label>
+                  <div class="readonly-field">
+                     {% with val=form.instance|attr:field.name %}
+                        {% if val %}
+                           {{ form.instance|get_display:field.name }}
+                        {% else %}
+                           <span class="text-gray-400 italic">Não informado</span>
+                        {% endif %}
+                     {% endwith %}
+                  </div>
+               </div>
+            {% endif %}
+         {% endfor %}
+
+         {% for field_name, label in form.DRIVE_UPLOAD_FIELDS.items %}
+            <div>
+               <label class="readonly-label"><strong>{{ label }}</strong></label>
+               <div class="readonly-field">
+                     {% with file_id=form.instance|attr:field_name %}
+                        {% if file_id %}
+                           <a href="https://drive.google.com/file/d/{{ file_id }}/view" target="_blank"
+                              class="text-blue-600 underline">
+                                 Ver no Drive
+                           </a>
+                        {% else %}
+                           <span class="text-gray-400 italic">Não enviado</span>
+                        {% endif %}
+                     {% endwith %}
+               </div>
+            </div>
+         {% endfor %}
    </div>
    <!-- Comentários -->
    </form>

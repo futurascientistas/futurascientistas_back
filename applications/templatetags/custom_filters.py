@@ -3,6 +3,18 @@ from django.core.exceptions import FieldDoesNotExist
 
 register = template.Library()
 
+
+@register.filter(name='get_field')
+def get_field(form, field_name):
+    """
+    Permite acessar um campo de um Form pelo nome dinâmico no template.
+    Ex: {{ form|get_field:"meu_campo" }}
+    """
+    try:
+        return form[field_name]
+    except KeyError:
+        return None
+    
 @register.filter(name='get_item')
 def get_item(dictionary, key):
     """

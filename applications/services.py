@@ -25,6 +25,7 @@ def validar_e_retornar_inscricao(user, pk):
     return inscricao
 
 def validar_unica_inscricao_no_ciclo(user, projeto):
+    print("Validando inscrição única no ciclo para o usuário:", user, "e projeto:", projeto)
     existe = Application.objects.filter(
         usuario=user,
         projeto__inicio_inscricoes=projeto.inicio_inscricoes,
