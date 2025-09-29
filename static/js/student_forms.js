@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
     formData.append(fieldName, fileInput.files[0]);
 
     try {
+
+      showLoading();
+
       const response = await fetch(window.location.href, {
         method: 'POST',
         headers: { 'X-CSRFToken': csrfToken },
@@ -45,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Erro no upload:', err);
       alert('Erro inesperado ao enviar o arquivo. Verifique sua conexão e tente novamente.');
+    }finally {
+      hideLoading();
     }
   });
 
@@ -60,6 +65,9 @@ document.addEventListener('DOMContentLoaded', () => {
       formData.append('auto_clear_field', clearFieldName);
 
       try {
+
+        showLoading();
+
         const response = await fetch(window.location.href, {
           method: 'POST',
           headers: { 'X-CSRFToken': csrfToken },
@@ -84,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error('Erro no auto-clear:', err);
         alert('Erro inesperado ao remover o arquivo. Verifique sua conexão.');
+      }finally {
+        hideLoading();
       }
     }
   });
@@ -93,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cep.length !== 8) return;
 
     try {
+      showLoading();
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       if (!response.ok) throw new Error('Erro na consulta do CEP');
 
@@ -128,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error(error);
       alert('Não foi possível buscar o endereço pelo CEP. Por favor, preencha manualmente.');
+    }finally {
+      hideLoading();
     }
   };
 
@@ -169,4 +182,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Chamada inicial
   filtrarProjetos();
+
+  formEl.addEventListener('submit', () => {
+    showLoading();
+  });
+  
 });
+
+function showLoading() {
+    document.getElementById('loading-overlay')?.classList.remove('hidden');
+}
+function hideLoading() {
+    document.getElementById('loading-overlay')?.classList.add('hidden');
+}
