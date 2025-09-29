@@ -39,10 +39,9 @@ class NotaForm(forms.ModelForm):
 
     class Meta:
         model = Nota
-        fields = ['disciplina', 'bimestre', 'valor']
+        fields = ['disciplina', 'bimestre',  "tipo_conceito",  "nota_original"]
         widgets = {
             'bimestre': forms.Select(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2'}),
-            'valor': forms.NumberInput(attrs={'class': 'mt-1 block w-full rounded border border-gray-300 px-3 py-2', 'step': '0.01'}),
         }
 
 # class HistoricoEscolarForm(forms.ModelForm):
@@ -61,7 +60,7 @@ HistoricoNotaFormSet = inlineformset_factory(
     HistoricoEscolar,
     Nota,
     form=NotaForm,
-    fields=['disciplina', 'bimestre', 'valor'],
+    fields=['disciplina', 'bimestre', "tipo_conceito",  "nota_original"],
     extra=0, 
     can_delete=False
 )
