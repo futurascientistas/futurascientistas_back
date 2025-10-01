@@ -236,7 +236,7 @@
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Total de Alunas</h3>
                     <p id="total-alunas" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                    <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                    <p id="variacao-alunas" class="text-xs mt-1 text-gray-500">-</p>
                 </div>
                 <div class="bg-blue-100 p-3 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,7 +252,7 @@
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Projetos em Andamento</h3>
                     <p id="total-projetos" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                    <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                    <p id="variacao-projetos" class="text-xs mt-1 text-gray-500">-</p>
                 </div>
                 <div class="bg-purple-100 p-3 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -268,7 +268,7 @@
                 <div>
                     <h3 class="text-sm font-medium text-gray-500">Taxa de Conclusão</h3>
                     <p id="taxa-conclusao" class="text-2xl font-bold text-gray-800 mt-1">--</p>
-                    <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">Carregando...</p>
+                    <p id="variacao-conclusao" class="text-xs mt-1 text-gray-500">-</p>
                 </div>
                 <div class="bg-yellow-100 p-3 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -661,8 +661,8 @@
                 const dados = await fetchDadosUnificados();
                 if (!dados) return;
                 
-                // Atualizar big number
-                atualizarBigNumberAlunas(dados.total_alunas);
+                // CORREÇÃO: Usar total_aplicacoes em vez de total_alunas
+                atualizarBigNumberAlunas(dados.total_aplicacoes);
                 
                 // Atualizar indicador de filtros
                 atualizarIndicadorFiltros(dados.filtros_ativos);
@@ -731,15 +731,27 @@
 
         // Função para atualizar o big number de alunas
         function atualizarBigNumberAlunas(total) {
-            if (total === null) {
+            // Verificar se total é undefined ou null
+            if (total === undefined || total === null) {
+                console.error('Total de aplicações é undefined ou null:', total);
                 document.getElementById('total-alunas').textContent = '--';
                 document.getElementById('variacao-alunas').textContent = 'Erro ao carregar dados';
                 document.getElementById('variacao-alunas').className = 'text-xs mt-1 text-red-500';
                 return;
             }
             
-            document.getElementById('total-alunas').textContent = total.toLocaleString();
-            const variacao = calcularVariacao(total);
+            // Garantir que total é um número
+            const totalNum = Number(total);
+            if (isNaN(totalNum)) {
+                console.error('Total de aplicações não é um número:', total);
+                document.getElementById('total-alunas').textContent = '--';
+                document.getElementById('variacao-alunas').textContent = 'Dados inválidos';
+                document.getElementById('variacao-alunas').className = 'text-xs mt-1 text-red-500';
+                return;
+            }
+            
+            document.getElementById('total-alunas').textContent = totalNum.toLocaleString();
+            const variacao = calcularVariacao(totalNum);
             document.getElementById('variacao-alunas').textContent = variacao.texto;
             document.getElementById('variacao-alunas').className = `text-xs mt-1 ${variacao.classe}`;
         }
