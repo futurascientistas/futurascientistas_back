@@ -303,6 +303,17 @@
             .then(data => console.log(`Dados de ${url}:`, data))
             .catch(error => console.error(`Erro ao buscar ${url}:`, error));
     });
+    document.addEventListener('DOMContentLoaded', () => {
+        const notaInputs = document.querySelectorAll('#step-5 input[name$="-nota_original"]');
+
+        notaInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                input.value = input.value.replace(',', '.');
+            });
+        });
+    });
+
+
 </script>
 
 
