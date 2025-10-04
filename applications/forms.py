@@ -309,6 +309,9 @@ class ApplicationAlunoForm(forms.ModelForm):
         for field in self.fields.values():
             field.required = False
 
+        # lista de campos que NÃO devem ser obrigatórios
+        campos_opcionais = ["necessita_material_especial", "tipo_material_necessario"]
+
         # marca como obrigatórios apenas os do passo atual
         for field_name in self.step_fields.get(self.current_step, []):
             if field_name.endswith("__upload"):
@@ -320,7 +323,9 @@ class ApplicationAlunoForm(forms.ModelForm):
                 #     self.fields[field_name].required = True
             else:
                 if field_name in self.fields:
-                    self.fields[field_name].required = True
+                    if field_name not in campos_opcionais:
+                        self.fields[field_name].required = True
+
 
         # popula os campos com valores iniciais do instance
         for field_name in self.fields:
@@ -371,21 +376,26 @@ class ApplicationAlunoForm(forms.ModelForm):
         #     self.instance.refresh_from_db()
 
         if self.current_step == 4:
-           
+
             upload_model_fields_in_step = [
                 f.replace("__upload", "")
                 for f in self.step_fields.get(4, [])
                 if f.endswith("__upload")
             ]
+
+            campos_opcionais = ["necessita_material_especial", "tipo_material_necessario", "drive_declaracao_inclusao"]
+
             for field_name in upload_model_fields_in_step:
+                if field_name in campos_opcionais:
+                    continue  # pula os opcionais
+
                 upload_field = f"{field_name}__upload"
                 file_sent = self.files.get(upload_field)
-                # file_saved = getattr(self.instance, field_name, None)
-
                 file_saved = getattr(self.instance, field_name, None) or getattr(self.user, field_name, None)
-                
+
                 if not file_sent and not file_saved:
                     self.add_error(upload_field, "Este arquivo é obrigatório.")
+
 
         return cleaned_data
 
@@ -750,19 +760,26 @@ class ApplicationProfessorForm(forms.ModelForm):
         # torna todos os campos opcionais de início
         for field in self.fields.values():
             field.required = False
+        
+        # lista de campos que NÃO devem ser obrigatórios
+        campos_opcionais = ["necessita_material_especial", "tipo_material_necessario", "drive_declaracao_inclusao"]
 
         # marca como obrigatórios apenas os do passo atual
         for field_name in self.step_fields.get(self.current_step, []):
             if field_name.endswith("__upload"):
+                print(field_name)
+
                 model_field = field_name.replace("__upload", "")
+                print(model_field)
                 file_saved = getattr(self.instance, model_field, None) or getattr(self.user, model_field, None)
-                if not file_saved:
+                if not file_saved and model_field not in campos_opcionais:
                     self.fields[field_name].required = True
                 # if not getattr(self.instance, model_field, None):
                 #     self.fields[field_name].required = True
             else:
                 if field_name in self.fields:
-                    self.fields[field_name].required = True
+                    if field_name not in campos_opcionais:
+                        self.fields[field_name].required = True
 
         # popula os campos com valores iniciais do instance
         for field_name in self.fields:
@@ -812,21 +829,23 @@ class ApplicationProfessorForm(forms.ModelForm):
         #     self.instance.refresh_from_db()
 
         if self.current_step == 4:
-           
             upload_model_fields_in_step = [
                 f.replace("__upload", "")
                 for f in self.step_fields.get(4, [])
                 if f.endswith("__upload")
             ]
-            for field_name in upload_model_fields_in_step:
-                upload_field = f"{field_name}__upload"
-                file_sent = self.files.get(upload_field)
-                # file_saved = getattr(self.instance, field_name, None)
 
-                file_saved = getattr(self.instance, field_name, None) or getattr(self.user, field_name, None)
-                
-                if not file_sent and not file_saved:
-                    self.add_error(upload_field, "Este arquivo é obrigatório.")
+            campos_opcionais = ["drive_declaracao_inclusao"]
+
+            for field_name in upload_model_fields_in_step:
+                if field_name not in campos_opcionais:
+                    upload_field = f"{field_name}__upload"
+                    file_sent = self.files.get(upload_field)
+                    file_saved = getattr(self.instance, field_name, None) or getattr(self.user, field_name, None)
+
+                    if not file_sent and not file_saved:
+                        self.add_error(upload_field, "Este arquivo é obrigatório.")
+
 
         return cleaned_data
 
