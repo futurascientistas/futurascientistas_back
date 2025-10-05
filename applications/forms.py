@@ -18,20 +18,16 @@ import logging
 import traceback
 
 logger = logging.getLogger(__name__)
+
 class ApplicationAlunoForm(forms.ModelForm):
-    # BINARY_FILE_FIELDS = [
-    #     'rg_frente',
-    #     'rg_verso',
-    #     'cpf_anexo',
-    #     'declaracao_inclusao'
-    # ]
-    
+
     DRIVE_UPLOAD_FIELDS = {
         'drive_rg_frente': "RG Frente",
         'drive_rg_verso': "RG Verso", 
         'drive_cpf_anexo': "CPF",
         'drive_declaracao_inclusao': 'Autodeclaração para cotas'
     }
+
     endereco_fields = ['rua', 'cidade', 'estado', 'cep']
 
     rua = forms.CharField(label="Rua", required=True)
@@ -88,33 +84,6 @@ class ApplicationAlunoForm(forms.ModelForm):
         })
     )
 
-    # for field_name in BINARY_FILE_FIELDS:
-
-    #     display_label = display_label = get_binary_field_display_name(field_name)
-
-    #     locals()[f"{field_name}__upload"] = forms.FileField(
-    #         label=f"Enviar arquivo para {display_label}",
-    #         required=False,
-    #         help_text="Deixe em branco para manter o arquivo atual."
-    #     )
-    #     locals()[f"{field_name}__clear"] = forms.BooleanField(
-    #         label=f"Remover arquivo atual de {display_label}",
-    #         required=False
-    #     )
-    # del field_name
-    
-    for field_name, label in DRIVE_UPLOAD_FIELDS.items():
-        locals()[f"{field_name}__upload"] = forms.FileField(
-            required=True,
-            label=f"Enviar {label} para o Drive",
-            help_text="O arquivo será salvo apenas no Google Drive"
-        )
-        locals()[f"{field_name}__clear"] = forms.BooleanField(
-            required=False,
-            label=f"Remover arquivo atual do Drive"
-        )
-    del field_name, label
-
     class Meta:
         model = Application
         fields = [
@@ -133,65 +102,43 @@ class ApplicationAlunoForm(forms.ModelForm):
             'aceite_requisitos_tecnicos': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
         
-    def _apply_binary_uploads(self, instance):
-        for field_name in self.BINARY_FILE_FIELDS:
-            upload_field_name = f"{field_name}__upload"
-            clear_field_name = f"{field_name}__clear"
-            
-            if self.cleaned_data.get(clear_field_name):
-                setattr(instance, field_name, None)
-            
-            uploaded_file = self.files.get(upload_field_name)
-            if uploaded_file:
-                setattr(instance, field_name, uploaded_file.read())
-
-    # def save(self, commit=True):
-    #     instance = super().save(commit=False)
-    #     # self._apply_binary_uploads(instance)
-    #     self._upload_to_drive(instance)
-    #     if commit:
-    #         instance.save()
-    #     return instance
-
-    def _upload_documents_to_drive(self, instance):
+    def _upload_documents_to_drive(self, instance, drive_service=None, only_field=None):
         try:
-            drive_service = DriveService()
-            
-            # Verifica acesso antes de criar pasta
+            if not drive_service:
+                drive_service = DriveService()
+
+            # Verifica acesso à pasta raiz
             if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
-                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                logger.error("Falha ao acessar a pasta raiz. Verifique ID/credenciais.")
                 raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
 
-            
             logger.info("Iniciando upload para o Drive")
             
-            # Primeiro cria a pasta do projeto (se não existir)
-            projeto_folder_name = instance.projeto.nome
-            logger.info(f"Verificando/Criando pasta do projeto: {projeto_folder_name}")
-            
+            # Pasta do projeto
             projeto_folder_id = drive_service.find_or_create_folder(
-                folder_name=projeto_folder_name,
+                folder_name=instance.projeto.nome,
                 parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
             )
-            logger.info(f"Pasta do projeto ID: {projeto_folder_id}")
-            
-            # Depois cria a pasta do usuário (CPF) dentro da pasta do projeto
-            user_folder_name = instance.user.cpf
-            logger.info(f"Criando pasta do usuário: {user_folder_name}")
-            
-            user_folder_id = drive_service.create_folder(
-                folder_name=user_folder_name,
+
+            # Pasta do usuário
+            user_folder_id = drive_service.find_or_create_folder(
+                folder_name=instance.usuario.cpf,
                 parent_folder_id=projeto_folder_id
             )
-            logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
 
-            # Faz upload dos arquivos para a pasta do usuário
-            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+            # Upload de arquivos
+            for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
+                if only_field and field_name != only_field:
+                    continue
+
                 upload_field = f"{field_name}__upload"
                 if upload_field in self.files:
                     file = self.files[upload_field]
+                    if not file:
+                        continue
+
                     logger.info(f"Processando arquivo: {file.name}")
-                    
+
                     file_id = drive_service.upload_file(
                         file_name=file.name,
                         file_content=file.read(),
@@ -200,88 +147,218 @@ class ApplicationAlunoForm(forms.ModelForm):
                     )
                     logger.info(f"Arquivo {file.name} uploadado com ID: {file_id}")
                     setattr(instance, field_name, file_id)
-                    
+
         except Exception as e:
             logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
-        
-    def save(self, commit=True):
-        # Salva os dados do form sem commit primeiro
-        instance = super().save(commit=False)
 
-        # Associa o usuário logado ao instance
-        if self.user:
-            instance.user = self.user
-        
-        endereco = instance.user.endereco
+    def _clear_documents_from_drive(self, instance, drive_service=None):
 
-        if endereco is None:
-            endereco = Endereco.objects.create(
-                rua=self.cleaned_data.get('rua'),
-                cidade=self.cleaned_data.get('cidade'),
-                estado=self.cleaned_data.get('estado'),
-                cep=self.cleaned_data.get('cep')
-            )
-            instance.user.endereco = endereco
-            instance.user.save()
-        else:
-            endereco.rua = self.cleaned_data.get('rua')
-            endereco.cidade = self.cleaned_data.get('cidade')
-            endereco.estado = self.cleaned_data.get('estado')
-            endereco.cep = self.cleaned_data.get('cep')
-            endereco.save()
-
-        try:
-            # Faz upload para o Drive usando instance.user.cpf
-            self._upload_documents_to_drive(instance)
-        except forms.ValidationError:
-            raise  # Re-lança erros de validação
-        except Exception as e:
-            logger.error(f"Erro geral no save: {str(e)}")
-            if commit:
-                instance.save()  # Salva sem os dados do Drive
-            raise forms.ValidationError(
-                "Ocorreu um erro ao processar seus documentos. "
-                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
-            )
-
-        if commit:
-            instance.save()
-        return instance
-
-    def clean(self):
-        cleaned_data = super().clean()
-        
-        if not cleaned_data.get('projeto'):
-            self.add_error('projeto', 'O projeto é obrigatório.')
-        if not cleaned_data.get('aceite_declaracao_veracidade'):
-            self.add_error('aceite_declaracao_veracidade', 'É necessário aceitar a declaração de veracidade.')
-        if not cleaned_data.get('aceite_requisitos_tecnicos'):
-            self.add_error('aceite_requisitos_tecnicos', 'É necessário aceitar os requisitos técnicos.')
+        if not drive_service:
+            drive_service = DriveService()
             
-        necessita_material = cleaned_data.get('necessita_material_especial')
-        tipo_material = cleaned_data.get('tipo_material_necessario')
-        
-        if necessita_material and not tipo_material:
-            self.add_error('tipo_material_necessario', 'Por favor, indique o tipo de material necessário.')
+        for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
+            clear_field = f"{field_name}__clear"
+            if self.cleaned_data.get(clear_field):
+                file_id = getattr(instance, field_name, None)
+                print(f"Campo {field_name} marcado para remoção. ID atual: {file_id}")
+                if file_id:
+                    try:
+                        drive_service.delete_file(file_id)
+                        logger.info(f"Arquivo {field_name} removido do Drive (ID: {file_id})")
+                    except Exception as e:
+                        logger.error(f"Falha ao remover {field_name} do Drive: {str(e)}")
+                setattr(instance, field_name, None) 
+    
+    def save(self, commit=True, auto_upload_field=None):
 
-        return cleaned_data
+        instance = self.instance or Application(usuario=self.user)
+
+        if self.user:
+            instance.usuario = self.user
+
+        # for field in self.Meta.fields:
+        #     if field in self.cleaned_data:
+        #         setattr(instance, field, self.cleaned_data[field])
+
+        drive_service = DriveService()
+
+        # Fluxo de auto-upload: salva apenas o campo enviado
+        if auto_upload_field:
+            model_field_name = auto_upload_field.replace('__upload', '')
+
+            if not getattr(instance, "projeto_id", None) and instance.pk:
+                instance.refresh_from_db(fields=["projeto"])
+
+            if not getattr(instance, "projeto_id", None):
+                raise forms.ValidationError("Escolha um projeto antes de enviar documentos.")
+
+            # Faz upload apenas do campo enviado
+            self._upload_documents_to_drive(instance, drive_service, only_field=model_field_name)
+           
+            # Salva apenas o campo alterado
+            if commit:
+                # if instance.pk:
+                instance.save(update_fields=[model_field_name])
+                # else:
+                #     instance.save()
+                try:
+                    instance.refresh_from_db(fields=[model_field_name])
+                except Exception:
+                    instance = Application.objects.get(pk=instance.pk)
+            
+            logger.info(f"[SAVE] {model_field_name} depois do refresh -> {getattr(instance, model_field_name, None)}")
+
+            return instance
+
+        # Campos de arquivos do User -- tem que pegar a lista completa depois
+        if self.user:
+            for doc_field in ["drive_rg_frente", "drive_rg_verso", "drive_cpf_anexo"]:
+                if not getattr(instance, doc_field, None):
+                    user_file_id = getattr(self.user, doc_field, None)
+                    if user_file_id:
+                        setattr(instance, doc_field, user_file_id)
+
+        if not instance.projeto:
+            raise forms.ValidationError("Selecione um projeto antes de enviar os documentos.")
+    
+        self._clear_documents_from_drive(instance, drive_service)
+        self._upload_documents_to_drive(instance, drive_service)
+
+        # # Atualiza/Cria endereço do usuário
+        # endereco = getattr(instance.usuario, 'endereco', None)
+        # if endereco is None:
+        #     endereco = Endereco.objects.create(
+        #         rua=self.cleaned_data.get('rua'),
+        #         numero=self.cleaned_data.get('numero'),
+        #         cep=self.cleaned_data.get('cep')
+        #     )
+        #     instance.usuario.endereco = endereco
+        #     instance.usuario.save(update_fields=["endereco"])
+        # else:
+        #     endereco.rua = self.cleaned_data.get('rua')
+        #     endereco.numero = self.cleaned_data.get('numero')
+        #     endereco.cep = self.cleaned_data.get('cep')
+        #     endereco.save()
+
+        # Salva apenas os campos do step atual
+        if commit:
+            step_fields = self.step_fields.get(self.current_step, [])
+            valid_fields = [f for f in step_fields if f in [fld.name for fld in instance._meta.get_fields()]]
+            
+            valid_fields += [f for f in self.DRIVE_UPLOAD_FIELDS.keys() if getattr(instance, f)]
+
+            if valid_fields:
+                instance.save(update_fields=list(set(valid_fields)))
+            else:
+                instance.save()
+
+        return instance
+    
+    def clean_numero_edicoes_participadas(self):
+        num = self.cleaned_data.get('numero_edicoes_participadas')
+        if num is not None and num < 0:
+            raise forms.ValidationError("Número de participações anteriores não pode ser negativo.")
+        return num
     
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
+        self.current_step = int(kwargs.pop('current_step', 1))
+        self.step_fields = kwargs.pop('step_fields', {})
+
         super().__init__(*args, **kwargs)
 
+        for field_name, label in self.DRIVE_UPLOAD_FIELDS.items():
+            verbose_name = Application._meta.get_field(field_name).verbose_name
+
+            self.fields[f"{field_name}__upload"] = forms.FileField(
+                required=False,
+                label=f"Enviar {verbose_name}",
+                help_text="O arquivo será salvo apenas no Drive"
+            )
+            self.fields[f"{field_name}__upload"].friendly_label = label 
+            self.fields[f"{field_name}__upload"].drive_link = None 
+
+            self.fields[f"{field_name}__clear"] = forms.BooleanField(
+                required=False,
+                widget=forms.HiddenInput(),
+                label=f"Remover {verbose_name} atual do Drive"
+            )
+
+            file_id = getattr(self.instance, field_name, None)
+
+            if not file_id and self.user and hasattr(self.user, field_name):
+                file_id = getattr(self.user, field_name, None)
+                if file_id:
+                    setattr(self.instance, field_name, file_id)
+                    
+            link = ""
+            if file_id:
+                link = f"https://drive.google.com/file/d/{file_id}/view"
+                self.fields[f"{field_name}__upload"].drive_link = link
+                self.fields[f"{field_name}__upload"].help_text = (
+                    f"Arquivo já enviado: <a href='{link}' target='_blank'>ver no Drive</a>. "
+                    "Envie outro para substituir ou clique na lixeira para remover."
+                )
+            else:
+                self.fields[f"{field_name}__upload"].help_text = "Nenhum arquivo enviado ainda."
+
+            self.fields[f"{field_name}__upload"].widget.attrs['data_drive_link'] = link
+
+        # torna todos os campos opcionais de início
+        for field in self.fields.values():
+            field.required = False
+
+        # lista de campos que NÃO devem ser obrigatórios
+        campos_opcionais = ["necessita_material_especial", "tipo_material_necessario"]
+
+        # marca como obrigatórios apenas os do passo atual
+        for field_name in self.step_fields.get(self.current_step, []):
+            if field_name.endswith("__upload"):
+                model_field = field_name.replace("__upload", "")
+                file_saved = getattr(self.instance, model_field, None) or getattr(self.user, model_field, None)
+                if not file_saved:
+                    self.fields[field_name].required = True
+                # if not getattr(self.instance, model_field, None):
+                #     self.fields[field_name].required = True
+            else:
+                if field_name in self.fields:
+                    if field_name not in campos_opcionais:
+                        self.fields[field_name].required = True
+
+
+        # popula os campos com valores iniciais do instance
+        for field_name in self.fields:
+            if hasattr(self.instance, field_name):
+                value = getattr(self.instance, field_name)
+                if value is not None:
+                    self.fields[field_name].initial = value
+
+        # endereço do usuário
+        endereco = getattr(getattr(self.instance, "usuario", None), "endereco", None)
+        if not endereco and self.user:
+            endereco = getattr(self.user, 'endereco', None)
+
+        if endereco:
+            self.fields["rua"].initial = endereco.rua
+            self.fields["numero"].initial = endereco.numero
+            self.fields["cep"].initial = endereco.cep
+            self.fields["estado"].initial = endereco.estado
+            self.fields["cidade"].initial = endereco.cidade
+        else: # adição
+            self.fields["rua"].initial = ""
+            self.fields["numero"].initial = ""
+            self.fields["cep"].initial = ""
+            self.fields["estado"].initial = None
+            self.fields["cidade"].initial = None
+
+
+        # projeto inicial + queryset filtrado
+        if self.instance.projeto:
+            self.fields["projeto"].initial = self.instance.projeto
+
         projetos = Project.objects.all()
-
-        if self.user and hasattr(self.user, 'endereco') and self.user.endereco:
-            endereco = self.user.endereco
-
-            self.fields['rua'].initial = endereco.rua
-            self.fields['cidade'].initial = endereco.cidade
-            self.fields['estado'].initial = endereco.estado
-            self.fields['cep'].initial = endereco.cep
-            self.fields['numero'].initial = endereco.numero
-
+        if endereco:
             projetos = projetos.filter(
                 Q(estados_aceitos=endereco.estado) |
                 Q(cidades_aceitas=endereco.cidade) |
@@ -290,20 +367,49 @@ class ApplicationAlunoForm(forms.ModelForm):
         else:
             projetos = projetos.filter(eh_remoto=True)
 
-        self.fields['projeto'].queryset = projetos
+        self.fields["projeto"].queryset = projetos
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # if self.instance.pk:
+        #     self.instance.refresh_from_db()
+
+        if self.current_step == 4:
+
+            upload_model_fields_in_step = [
+                f.replace("__upload", "")
+                for f in self.step_fields.get(4, [])
+                if f.endswith("__upload")
+            ]
+
+            campos_opcionais = ["necessita_material_especial", "tipo_material_necessario", "drive_declaracao_inclusao"]
+
+            for field_name in upload_model_fields_in_step:
+                if field_name in campos_opcionais:
+                    continue  # pula os opcionais
+
+                upload_field = f"{field_name}__upload"
+                file_sent = self.files.get(upload_field)
+                file_saved = getattr(self.instance, field_name, None) or getattr(self.user, field_name, None)
+
+                if not file_sent and not file_saved:
+                    self.add_error(upload_field, "Este arquivo é obrigatório.")
+
+
+        return cleaned_data
 
 
 class ApplicationProfessorForm(forms.ModelForm):
 
-    DRIVE_UPLOAD_FIELDS = [
-        'drive_rg_frente',
-        'drive_declaracao_inclusao',
-        'drive_rg_verso',
-        'drive_cpf_anexo',
-        'drive_declaracao_vinculo',
-        'drive_documentacao_comprobatoria_lattes',
-        'drive_declaracao_inclusao'
-    ]
+    DRIVE_UPLOAD_FIELDS = {
+        'drive_rg_frente': "RG Frente",
+        'drive_rg_verso': "RG Verso", 
+        'drive_cpf_anexo': "CPF",
+        'drive_declaracao_inclusao': 'Autodeclaração para cotas',
+        'drive_declaracao_vinculo': 'Declaração de vínculo',
+        'drive_documentacao_comprobatoria_lattes' : 'Declaração comprobatória do currículo lattes'
+    }
 
     projeto = forms.ModelChoiceField(
         queryset=Project.objects.none(),  
@@ -381,21 +487,6 @@ class ApplicationProfessorForm(forms.ModelForm):
         
     }
 
-    for field_name in DRIVE_UPLOAD_FIELDS:
-
-        verbose_name = Application._meta.get_field(field_name).verbose_name
-        
-        locals()[f"{field_name}__upload"] = forms.FileField(
-            required=True,
-            label=f"Enviar {verbose_name}",
-            help_text="O arquivo será salvo apenas no Google Drive"
-        )
-        locals()[f"{field_name}__clear"] = forms.BooleanField(
-            required=False,
-            label=f"Remover {verbose_name} atual do Drive"
-        )
-
-
     class Meta:
         model = Application
         fields = [
@@ -409,7 +500,6 @@ class ApplicationProfessorForm(forms.ModelForm):
             'tipo_deficiencia',
             'necessita_material_especial',
             'tipo_material_necessario',
-            'curriculo_lattes_url',
 
             # --- Formação e perfil ---
             'grau_formacao',
@@ -464,45 +554,43 @@ class ApplicationProfessorForm(forms.ModelForm):
         }
         
 
-    def _upload_documents_to_drive(self, instance):
+    def _upload_documents_to_drive(self, instance, drive_service=None, only_field=None):
         try:
-            drive_service = DriveService()
-            
-            # Verifica acesso antes de criar pasta
+            if not drive_service:
+                drive_service = DriveService()
+
+            # Verifica acesso à pasta raiz
             if not drive_service.test_folder_access(settings.DRIVE_ROOT_FOLDER_ID):
-                logger.error("Falha ao acessar a pasta raiz. Verifique se o ID e as credenciais estão corretos.")
+                logger.error("Falha ao acessar a pasta raiz. Verifique ID/credenciais.")
                 raise forms.ValidationError("Falha no acesso ao Google Drive. Contate o administrador.")
 
-            
             logger.info("Iniciando upload para o Drive")
             
-            # Primeiro cria a pasta do projeto (se não existir)
-            projeto_folder_name = instance.projeto.nome
-            logger.info(f"Verificando/Criando pasta do projeto: {projeto_folder_name}")
-            
+            # Pasta do projeto
             projeto_folder_id = drive_service.find_or_create_folder(
-                folder_name=projeto_folder_name,
+                folder_name=instance.projeto.nome,
                 parent_folder_id=settings.DRIVE_ROOT_FOLDER_ID
             )
-            logger.info(f"Pasta do projeto ID: {projeto_folder_id}")
-            
-            # Depois cria a pasta do usuário (CPF) dentro da pasta do projeto
-            user_folder_name = instance.user.cpf
-            logger.info(f"Criando pasta do usuário: {user_folder_name}")
-            
-            user_folder_id = drive_service.create_folder(
-                folder_name=user_folder_name,
+
+            # Pasta do usuário
+            user_folder_id = drive_service.find_or_create_folder(
+                folder_name=instance.usuario.cpf,
                 parent_folder_id=projeto_folder_id
             )
-            logger.info(f"Pasta do usuário criada com ID: {user_folder_id}")
 
-            # Faz upload dos arquivos para a pasta do usuário
-            for field_name in ['drive_rg_frente', 'drive_rg_verso', 'drive_cpf_anexo']:
+            # Upload de arquivos
+            for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
+                if only_field and field_name != only_field:
+                    continue
+
                 upload_field = f"{field_name}__upload"
                 if upload_field in self.files:
                     file = self.files[upload_field]
+                    if not file:
+                        continue
+
                     logger.info(f"Processando arquivo: {file.name}")
-                    
+
                     file_id = drive_service.upload_file(
                         file_name=file.name,
                         file_content=file.read(),
@@ -511,56 +599,114 @@ class ApplicationProfessorForm(forms.ModelForm):
                     )
                     logger.info(f"Arquivo {file.name} uploadado com ID: {file_id}")
                     setattr(instance, field_name, file_id)
-                    
+
         except Exception as e:
             logger.error(f"Erro completo no upload:\n{traceback.format_exc()}")
             raise forms.ValidationError("Falha temporária no upload de documentos. Por favor, tente novamente mais tarde.")
-        
-    def save(self, commit=True):
-        # Salva os dados do form sem commit primeiro
-        instance = super().save(commit=False)
 
-        # Associa o usuário logado ao instance
+    def _clear_documents_from_drive(self, instance, drive_service=None):
+
+        if not drive_service:
+            drive_service = DriveService()
+            
+        for field_name in self.DRIVE_UPLOAD_FIELDS.keys():
+            clear_field = f"{field_name}__clear"
+            if self.cleaned_data.get(clear_field):
+                file_id = getattr(instance, field_name, None)
+                print(f"Campo {field_name} marcado para remoção. ID atual: {file_id}")
+                if file_id:
+                    try:
+                        drive_service.delete_file(file_id)
+                        logger.info(f"Arquivo {field_name} removido do Drive (ID: {file_id})")
+                    except Exception as e:
+                        logger.error(f"Falha ao remover {field_name} do Drive: {str(e)}")
+                setattr(instance, field_name, None) 
+    
+    def save(self, commit=True, auto_upload_field=None):
+
+        instance = self.instance or Application(usuario=self.user)
+
         if self.user:
-            instance.user = self.user
-        
-        endereco = instance.user.endereco
+            instance.usuario = self.user
 
-        if endereco is None:
-            endereco = Endereco.objects.create(
-                rua=self.cleaned_data.get('rua'),
-                cidade=self.cleaned_data.get('cidade'),
-                estado=self.cleaned_data.get('estado'),
-                cep=self.cleaned_data.get('cep')
-            )
-            instance.user.endereco = endereco
-            instance.user.save()
-        else:
-            endereco.rua = self.cleaned_data.get('rua')
-            endereco.cidade = self.cleaned_data.get('cidade')
-            endereco.estado = self.cleaned_data.get('estado')
-            endereco.cep = self.cleaned_data.get('cep')
-            endereco.save()
+        # for field in self.Meta.fields:
+        #     if field in self.cleaned_data:
+        #         setattr(instance, field, self.cleaned_data[field])
 
-        try:
-            # Faz upload para o Drive usando instance.user.cpf
-            self._upload_documents_to_drive(instance)
-        except forms.ValidationError:
-            raise  # Re-lança erros de validação
-        except Exception as e:
-            logger.error(f"Erro geral no save: {str(e)}")
+        drive_service = DriveService()
+
+        # Fluxo de auto-upload: salva apenas o campo enviado
+        if auto_upload_field:
+            model_field_name = auto_upload_field.replace('__upload', '')
+
+            if not getattr(instance, "projeto_id", None) and instance.pk:
+                instance.refresh_from_db(fields=["projeto"])
+
+            if not getattr(instance, "projeto_id", None):
+                raise forms.ValidationError("Escolha um projeto antes de enviar documentos.")
+
+            # Faz upload apenas do campo enviado
+            self._upload_documents_to_drive(instance, drive_service, only_field=model_field_name)
+           
+            # Salva apenas o campo alterado
             if commit:
-                instance.save()  # Salva sem os dados do Drive
-            raise forms.ValidationError(
-                "Ocorreu um erro ao processar seus documentos. "
-                "Seu formulário foi salvo, mas você pode precisar reenviar os arquivos."
-            )
+                # if instance.pk:
+                instance.save(update_fields=[model_field_name])
+                # else:
+                #     instance.save()
+                try:
+                    instance.refresh_from_db(fields=[model_field_name])
+                except Exception:
+                    instance = Application.objects.get(pk=instance.pk)
+            
+            logger.info(f"[SAVE] {model_field_name} depois do refresh -> {getattr(instance, model_field_name, None)}")
 
+            return instance
+
+        # Campos de arquivos do User -- tem que pegar a lista completa depois
+        if self.user:
+            for doc_field in ["drive_rg_frente", "drive_rg_verso", "drive_cpf_anexo"]:
+                if not getattr(instance, doc_field, None):
+                    user_file_id = getattr(self.user, doc_field, None)
+                    if user_file_id:
+                        setattr(instance, doc_field, user_file_id)
+
+        if not instance.projeto:
+            raise forms.ValidationError("Selecione um projeto antes de enviar os documentos.")
+    
+        self._clear_documents_from_drive(instance, drive_service)
+        self._upload_documents_to_drive(instance, drive_service)
+
+        # # Atualiza/Cria endereço do usuário
+        # endereco = getattr(instance.usuario, 'endereco', None)
+        # if endereco is None:
+        #     endereco = Endereco.objects.create(
+        #         rua=self.cleaned_data.get('rua'),
+        #         numero=self.cleaned_data.get('numero'),
+        #         cep=self.cleaned_data.get('cep')
+        #     )
+        #     instance.usuario.endereco = endereco
+        #     instance.usuario.save(update_fields=["endereco"])
+        # else:
+        #     endereco.rua = self.cleaned_data.get('rua')
+        #     endereco.numero = self.cleaned_data.get('numero')
+        #     endereco.cep = self.cleaned_data.get('cep')
+        #     endereco.save()
+
+        # Salva apenas os campos do step atual
         if commit:
-            instance.save()
+            step_fields = self.step_fields.get(self.current_step, [])
+            valid_fields = [f for f in step_fields if f in [fld.name for fld in instance._meta.get_fields()]]
+            
+            valid_fields += [f for f in self.DRIVE_UPLOAD_FIELDS.keys() if getattr(instance, f)]
+
+            if valid_fields:
+                instance.save(update_fields=list(set(valid_fields)))
+            else:
+                instance.save()
+
         return instance
-
-
+    
     def clean_numero_edicoes_participadas(self):
         num = self.cleaned_data.get('numero_edicoes_participadas')
         if num is not None and num < 0:
@@ -568,29 +714,140 @@ class ApplicationProfessorForm(forms.ModelForm):
         return num
     
     def __init__(self, *args, **kwargs):
-            self.user = kwargs.pop('user', None)
-            super().__init__(*args, **kwargs)
+        self.user = kwargs.pop('user', None)
+        self.current_step = int(kwargs.pop('current_step', 1))
+        self.step_fields = kwargs.pop('step_fields', {})
 
-            projetos = Project.objects.all()
+        super().__init__(*args, **kwargs)
 
-            if self.user and hasattr(self.user, 'endereco') and self.user.endereco:
-                endereco = self.user.endereco
+        for field_name, label in self.DRIVE_UPLOAD_FIELDS.items():
+            verbose_name = Application._meta.get_field(field_name).verbose_name
 
-                self.fields['rua'].initial = endereco.rua
-                self.fields['cidade'].initial = endereco.cidade
-                self.fields['estado'].initial = endereco.estado
-                self.fields['cep'].initial = endereco.cep
-                self.fields['numero'].initial = endereco.numero
+            self.fields[f"{field_name}__upload"] = forms.FileField(
+                required=False,
+                label=f"Enviar {verbose_name}",
+                help_text="O arquivo será salvo apenas no Drive"
+            )
+            self.fields[f"{field_name}__upload"].friendly_label = label 
+            self.fields[f"{field_name}__upload"].drive_link = None 
 
-                projetos = projetos.filter(
-                    Q(estados_aceitos=endereco.estado) |
-                    Q(cidades_aceitas=endereco.cidade) |
-                    Q(eh_remoto=True)
-                ).distinct()
+            self.fields[f"{field_name}__clear"] = forms.BooleanField(
+                required=False,
+                widget=forms.HiddenInput(),
+                label=f"Remover {verbose_name} atual do Drive"
+            )
+
+            file_id = getattr(self.instance, field_name, None)
+
+            if not file_id and self.user and hasattr(self.user, field_name):
+                file_id = getattr(self.user, field_name, None)
+                if file_id:
+                    setattr(self.instance, field_name, file_id)
+                    
+            link = ""
+            if file_id:
+                link = f"https://drive.google.com/file/d/{file_id}/view"
+                self.fields[f"{field_name}__upload"].drive_link = link
+                self.fields[f"{field_name}__upload"].help_text = (
+                    f"Arquivo já enviado: <a href='{link}' target='_blank'>ver no Drive</a>. "
+                    "Envie outro para substituir ou clique na lixeira para remover."
+                )
             else:
-                projetos = projetos.filter(eh_remoto=True)
+                self.fields[f"{field_name}__upload"].help_text = "Nenhum arquivo enviado ainda."
 
-            self.fields['projeto'].queryset = projetos
+            self.fields[f"{field_name}__upload"].widget.attrs['data_drive_link'] = link
+
+        # torna todos os campos opcionais de início
+        for field in self.fields.values():
+            field.required = False
+        
+        # lista de campos que NÃO devem ser obrigatórios
+        campos_opcionais = ["necessita_material_especial", "tipo_material_necessario", "drive_declaracao_inclusao"]
+
+        # marca como obrigatórios apenas os do passo atual
+        for field_name in self.step_fields.get(self.current_step, []):
+            if field_name.endswith("__upload"):
+                print(field_name)
+
+                model_field = field_name.replace("__upload", "")
+                print(model_field)
+                file_saved = getattr(self.instance, model_field, None) or getattr(self.user, model_field, None)
+                if not file_saved and model_field not in campos_opcionais:
+                    self.fields[field_name].required = True
+                # if not getattr(self.instance, model_field, None):
+                #     self.fields[field_name].required = True
+            else:
+                if field_name in self.fields:
+                    if field_name not in campos_opcionais:
+                        self.fields[field_name].required = True
+
+        # popula os campos com valores iniciais do instance
+        for field_name in self.fields:
+            if hasattr(self.instance, field_name):
+                value = getattr(self.instance, field_name)
+                if value is not None:
+                    self.fields[field_name].initial = value
+
+        # endereço do usuário
+        endereco = getattr(getattr(self.instance, "usuario", None), "endereco", None)
+        if not endereco and self.user:
+            endereco = getattr(self.user, 'endereco', None)
+
+        if endereco:
+            self.fields["rua"].initial = endereco.rua
+            self.fields["numero"].initial = endereco.numero
+            self.fields["cep"].initial = endereco.cep
+            self.fields["estado"].initial = endereco.estado
+            self.fields["cidade"].initial = endereco.cidade
+        else: # adição
+            self.fields["rua"].initial = ""
+            self.fields["numero"].initial = ""
+            self.fields["cep"].initial = ""
+            self.fields["estado"].initial = None
+            self.fields["cidade"].initial = None
+
+        # projeto inicial + queryset filtrado
+        if self.instance.projeto:
+            self.fields["projeto"].initial = self.instance.projeto
+
+        projetos = Project.objects.all()
+        if endereco:
+            projetos = projetos.filter(
+                Q(estados_aceitos=endereco.estado) |
+                Q(cidades_aceitas=endereco.cidade) |
+                Q(eh_remoto=True)
+            ).distinct()
+        else:
+            projetos = projetos.filter(eh_remoto=True)
+
+        self.fields["projeto"].queryset = projetos
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # if self.instance.pk:
+        #     self.instance.refresh_from_db()
+
+        if self.current_step == 4:
+            upload_model_fields_in_step = [
+                f.replace("__upload", "")
+                for f in self.step_fields.get(4, [])
+                if f.endswith("__upload")
+            ]
+
+            campos_opcionais = ["drive_declaracao_inclusao"]
+
+            for field_name in upload_model_fields_in_step:
+                if field_name not in campos_opcionais:
+                    upload_field = f"{field_name}__upload"
+                    file_sent = self.files.get(upload_field)
+                    file_saved = getattr(self.instance, field_name, None) or getattr(self.user, field_name, None)
+
+                    if not file_sent and not file_saved:
+                        self.add_error(upload_field, "Este arquivo é obrigatório.")
+
+
+        return cleaned_data
 
 
 class ComentarioForm(forms.ModelForm):

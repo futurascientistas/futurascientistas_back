@@ -418,62 +418,24 @@ function validateAndAdvance(event) {
         if (!validateCep('endereco_escola-cep')) isStepValid = false;
         if (!validatePhoneFields()) isStepValid = false;
     } else if (currentStep === 5) {
-              console.log('    shakira ');
-        const notasTableBody = document.getElementById('notas-table-body');
-        const notaRows = notasTableBody ? notasTableBody.querySelectorAll('.form-row:not(.hidden)') : [];
-        let disciplinaMap = {};
-
-        clearTableErrors();
-        document.querySelectorAll('#step-5 .error-message').forEach(el => el.textContent = '');
-        document.querySelectorAll('#step-5 .border-red-500').forEach(el => el.classList.remove('border-red-500'));
+        const notaRows = document.querySelectorAll('#step-5 .form-row');
+        let isValidStep = true;
 
         notaRows.forEach(row => {
-            const disciplinaSel = row.querySelector('select[name$="-disciplina"]');
-            const bimestreSel   = row.querySelector('select[name$="-bimestre"]');
-            const valorInput    = row.querySelector('input[name$="-nota_original"]');
-            console.log('    shakira ');
-
-            const missing = [];
-            if (!disciplinaSel?.value) { missing.push('disciplina'); disciplinaSel?.classList.add('border-red-500'); }
-            if (!bimestreSel?.value)   { missing.push('bimestre'); bimestreSel?.classList.add('border-red-500'); }
-            if (!valorInput?.value)    { missing.push('nota_original'); valorInput?.classList.add('border-red-500'); }
-
-            if (missing.length) {
-                console.log('    shakira ');
-                appendRowErrorAfter(row, `Preencha ${missing.join(', ')}.`);
-                isStepValid = false;
-            }
-
-            const discValue = disciplinaSel?.value;
-            const bimValue  = bimestreSel?.value;
-            if (discValue) {
-                if (!disciplinaMap[discValue]) disciplinaMap[discValue] = new Set();
-                if (bimValue) disciplinaMap[discValue].add(String(bimValue));
+            const valorInput = row.querySelector('input[name$="-nota_original"]');
+            if (valorInput && !valorInput.value.trim()) {
+                valorInput.classList.add('border-red-500');
+                isValidStep = false;
             }
         });
 
-        if (!disciplinaOptions || disciplinaOptions.length === 0) {
-            appendTableErrorAtEnd("Não há disciplinas configuradas no sistema.");
-            isStepValid = false;
-        } else {
-            disciplinaOptions.forEach(disciplina => {
-                const bimestres = disciplinaMap[disciplina.id] || new Set();
-                const tem1 = bimestres.has("1");
-                const tem2 = bimestres.has("2");
-
-                if (!(tem1 && tem2)) {
-                    const anchor = Array.from(notaRows).reverse().find(r =>
-                        r.querySelector('select[name$="-disciplina"]')?.value === String(disciplina.id)
-                    );
-                    const msg = `A disciplina ${disciplina.nome} precisa ter notas para o 1º e 2º bimestre.`;
-                    if (anchor) appendRowErrorAfter(anchor, msg);
-                    else appendTableErrorAtEnd(msg);
-
-                    isStepValid = false;
-                }
-            });
+        if (!isValidStep) {
+            event.preventDefault();
+            hideLoading();
+            return;
         }
     }
+
 
     if (!isStepValid) {
         event.preventDefault();
@@ -585,4 +547,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('perfil-form').addEventListener('submit', validateAndAdvance);
+
+    document.getElementById("perfil-form").addEventListener("submit", () => {
+        console.log("➡️ current_step:", document.getElementById("current-step-input").value);
+        console.log("➡️ auto-upload-flag:", document.getElementById("auto-upload-flag").value);
+    });
+
 });

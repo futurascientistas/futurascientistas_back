@@ -4,9 +4,10 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from ckeditor.fields import RichTextField
 from django.utils import timezone
+from core.models import Cidade, Estado
 from users.models import Deficiencia, TipoDeVaga
 import uuid
-
+from utils.utils import cep_validator
 from projects.models import Project
 
 phone_validator = RegexValidator(regex=r'^\+?1?\d{9,15}$', message='Telefone inválido.')
@@ -46,7 +47,7 @@ class Application(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Usuária")
-    projeto = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name="Projeto")
+    projeto = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name="Projeto", null=True, blank=True)
     criado_em = models.DateTimeField(auto_now_add=True, verbose_name="Criado em")
     atualizado_em = models.DateTimeField(auto_now=True, verbose_name="Atualizado em")
     status = models.CharField(max_length=10, choices=STATUS_ESCOLHAS, default='rascunho', verbose_name="Status")
@@ -130,7 +131,7 @@ class Application(models.Model):
     drive_documentacao_comprobatoria_lattes = models.CharField(
         max_length=255, null=True, blank=True,
         verbose_name="Documentação Lattes"
-)
+    )
 
     # Trajetória Acadêmica e Científica
     grau_formacao = models.CharField(max_length=20,choices=GrauFormacao.choices,verbose_name="Grau de formação mais alto",null=True,blank=True,help_text="Informe o grau de formação mais alto concluído")
@@ -138,18 +139,20 @@ class Application(models.Model):
     docencia_superior = models.PositiveIntegerField(blank=True, null=True, verbose_name="Docência no ensino superior")
     docencia_medio = models.PositiveIntegerField(blank=True, null=True, verbose_name="Docência no ensino médio")
     orientacao_ic = models.PositiveIntegerField(blank=True, null=True, verbose_name="Orientação de IC")
-    feira_ciencias = models.BooleanField(default=False, verbose_name="Participou de feira de ciências?")
-    livro_publicado = models.BooleanField(default=False, verbose_name="Livro publicado?")
-    capitulo_publicado = models.BooleanField(default=False, verbose_name="Capítulo publicado?")
-    periodico_indexado = models.BooleanField(default=False, verbose_name="Periódico indexado?")
-    anais_congresso = models.BooleanField(default=False, verbose_name="Anais de congresso?")
-    curso_extensao = models.BooleanField(default=False, verbose_name="Curso de extensão?")
-    curso_capacitacao = models.BooleanField(default=False, verbose_name="Curso de capacitação?")
-    orientacoes_estudantes = models.BooleanField(default=False, verbose_name="Orientações de estudantes?")
-    participacoes_bancas = models.BooleanField(default=False, verbose_name="Participações em bancas?")
-    apresentacao_oral = models.BooleanField(default=False, verbose_name="Apresentações orais?")
-    premiacoes = models.BooleanField(default=False, verbose_name="Premiações?")
-    missao_cientifica = models.BooleanField(default=False, verbose_name="Missão científica?")
+    
+    feira_ciencias = models.PositiveIntegerField(default=0, verbose_name="Participou de feira de ciências?")
+    livro_publicado = models.PositiveIntegerField(default=0, verbose_name="Livro publicado?")
+    capitulo_publicado = models.PositiveIntegerField(default=0, verbose_name="Capítulo publicado?")
+    periodico_indexado = models.PositiveIntegerField(default=0, verbose_name="Periódico indexado?")
+    anais_congresso = models.PositiveIntegerField(default=0, verbose_name="Anais de congresso?")
+    curso_extensao = models.PositiveIntegerField(default=0, verbose_name="Curso de extensão?")
+    curso_capacitacao = models.PositiveIntegerField(default=0, verbose_name="Curso de capacitação?")
+    orientacoes_estudantes = models.PositiveIntegerField(default=0, verbose_name="Orientações de estudantes?")
+    participacoes_bancas = models.PositiveIntegerField(default=0, verbose_name="Participações em bancas?")
+    apresentacao_oral = models.PositiveIntegerField(default=0, verbose_name="Apresentações orais?")
+    premiacoes = models.PositiveIntegerField(default=0, verbose_name="Premiações?")
+    missao_cientifica = models.PositiveIntegerField(default=0, verbose_name="Missão científica?")
+
     titulo_projeto_submetido = models.CharField(max_length=255, blank=True, null=True,verbose_name="Título do projeto submetido")
     link_projeto = models.URLField(blank=True, null=True, verbose_name="Link para o projeto")
     numero_edicoes_participadas = models.PositiveIntegerField(default=0, verbose_name="Número de participações anteriores no programa")
@@ -174,6 +177,16 @@ class Application(models.Model):
     atividade_pesquisa_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Atividade de Pesquisa")
     outras_atividades_pontuacao = models.FloatField(default=0.0, verbose_name="Pontuação - Outras Atividades")
 
+    cep = models.CharField(
+        max_length=10, 
+        validators=[cep_validator], 
+        verbose_name="CEP",
+        default="00000-000")
+    
+    rua = models.CharField(max_length=150, verbose_name="Rua")
+    numero = models.CharField(max_length=10, verbose_name="Número")
+    cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, verbose_name="Cidade")
+    estado = models.ForeignKey(Estado, on_delete=models.SET_NULL, null=True, verbose_name="Estado")
 
     def clean(self):
         now = timezone.now().date()  

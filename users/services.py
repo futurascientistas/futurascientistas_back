@@ -197,7 +197,7 @@ def menu_sidebar(request):
             "id": "inscricao_aluna",
             "title": "Minha Inscrição",
             "roles": ["estudante"],
-            "url": "/inscricoes/aluna",
+            "url": "/inscricoes/minhas-inscricoes/",
             "icon_svg": """
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="7" r="4"/>
@@ -206,10 +206,10 @@ def menu_sidebar(request):
             """
         },
         {
-            "id": "inscricao_professora_default",
+            "id": "minhas_inscricoes",
             "title": "Minha Inscrição",
             "roles": ["professora"],
-            "url": "/inscricoes/professora",
+            "url": "/inscricoes/minhas-inscricoes/",
             "icon_svg": """
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="7" r="4"/>

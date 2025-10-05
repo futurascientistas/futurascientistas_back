@@ -39,19 +39,25 @@
                 </span>
               </td>
               <td class="px-6 py-4 text-sm text-gray-600">{{ inscricao.atualizado_em|date:"d/m/Y H:i" }}</td>
-              <td class="px-6 py-4 text-sm">
+              <td class="px-6 py-4 text-sm flex items-center space-x-2">
                 {% if inscricao.status|lower == "pendente" or inscricao.status|lower == "rascunho" %}
-                  <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-600 hover:text-pink-800 inline-flex items-center gap-1">
-                    Editar
+                  <a href="{% url 'application:editar_inscricao' inscricao.id %}" title="Editar Inscrição" class="text-pink-600 hover:text-pink-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M21 12v7c0 1.103-.897 2-2 2H5c-1.103 0-2-.897-2-2V5c0-1.103.897-2 2-2h7v2H5v14h14v-7h2zM19.791 2.308l-2.096 2.096L19.5 6.59l2.096-2.096L19.791 2.308zm-2.828 3.536l-8.485 8.485V17.001h2.828l8.485-8.485-2.828-2.828z"/>
+                    </svg>
                   </a>
-                  <!--
-                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 ml-2">
-                    Visualizar
-                  </a>     -->
+                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
                 {% else %}
-                   <!-- 
-                    <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800 inline-flex items-center gap-1">
-                    Visualizar
+                  <a href="{% url 'application:visualizar_inscricao' inscricao.id %}" title="Visualizar Inscrição" class="text-blue-600 hover:text-blue-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
                   </a>
                   -->
                 {% endif %}
@@ -61,9 +67,39 @@
         </tbody>
       </table>
     </div>
-  {% else %}
-    <p class="text-gray-600 mt-4">Você ainda não possui inscrições.</p>
   {% endif %}
+
+<div class="mt-8">
+    {% if not tem_inscricao_ano_atual and periodo_inscricao_aberto %}
+        <div class="flex flex-col items-center justify-center p-8 text-center text-gray-500 bg-gray-50 rounded-lg">
+            <p class="text-xl mb-4 font-light">Você ainda não possui inscrições para este ano.</p>
+
+            {% if user.funcao == "professora" %}
+                <a href="{% url 'application:inscricao_professora_default' %}" 
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Nova Inscrição
+                </a>
+            {% else %}
+                <a href="{% url 'application:inscricao_aluna_default' %}" 
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Nova Inscrição
+                </a>
+            {% endif %}
+        </div>
+
+    {% elif not inscricoes and not periodo_inscricao_aberto %}
+        <div class="flex flex-col items-center justify-center p-8 text-center text-gray-500 bg-gray-50 rounded-lg">
+            <p class="text-xl mb-4 font-light">Não há seleção de professoras no momento.</p>
+            <p class="text-md">Por favor, verifique o período de inscrição em nosso site.</p>
+        </div>
+    {% endif %}
+</div>
 
 </div>
 {% endblock %}
