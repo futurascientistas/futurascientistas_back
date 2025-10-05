@@ -12,4 +12,115 @@
   </ul>
 
   <a href="{% url 'lista_projetos' %}" class="mt-4 inline-block text-blue-600 hover:underline">← Voltar para a lista</a>
+
+
+
+  <h2 class="text-xl font-semibold mb-3">Alunas vinculadas</h2>
+  <div id="alunasGrid" class="ag-theme-alpine" style="height: 400px; width: 100%;"></div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const columnDefs = [
+    {
+      headerName: "Nome",
+      field: "nome",
+      flex: 1,
+      editable: false,
+      cellRenderer: function (params) {
+        if (!params.data || !params.data.id) return params.value;
+        const url = `/projetos/${params.data.id}/perfil/`;
+        return `<a href="${url}" class="text-blue-600 hover:underline">${params.value}</a>`;
+      },
+    },
+    {
+      headerName: "Status",
+      field: "status_label",
+      flex: 1,
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: [
+          {% for key, label in status_choices %}
+            "{{ label }}",
+          {% endfor %}
+        ],
+      },
+    },
+  ];
+
+
+  const rowData = [
+    {% for a in alunas %}
+      {
+        id: "{{ a.id }}",
+        nome: "{{ a.usuario.nome|default:a.usuario.username }}",
+        status_label: "{{ a.get_status_display }}",
+        status_value: "{{ a.status }}",
+      },
+    {% empty %}
+      { nome: "Nenhuma aluna vinculada", status_label: "-", status_value: "" },
+    {% endfor %}
+  ];
+
+  const gridOptions = {
+    columnDefs,
+    rowData,
+    pagination: true,
+    paginationPageSize: 10,
+    domLayout: 'autoHeight',
+    onCellValueChanged: function (event) {
+      if (event.colDef.field === 'status_label') {
+        atualizarStatus(event.data.id, event.newValue);
+      }
+    },
+  };
+
+  const gridDiv = document.querySelector('#alunasGrid');
+  agGrid.createGrid(gridDiv, gridOptions);
+
+  function atualizarStatus(id, novoStatusLabel) {
+    // Converte label → valor (usa um map gerado do Django no template)
+    const statusMap = {
+      {% for key, label in status_choices %}
+        "{{ label }}": "{{ key }}",
+      {% endfor %}
+    };
+    const novoStatusValue = statusMap[novoStatusLabel];
+
+    fetch(`/projetos/${id}/atualizar_status/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ status: novoStatusValue }),
+    })
+
+    .then(res => res.json())
+    .then(data => console.log('Status atualizado:', data))
+    .catch(err => console.error('Erro ao salvar status:', err));
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
+</script>
+
+
+
 {% endblock %}

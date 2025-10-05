@@ -1,0 +1,44 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Perfil da Aluna: {{ usuario.nome }}</h2>
+  <hr>
+
+  <h4>Informações Pessoais</h4>
+  <ul>
+    <li><strong>Email:</strong> {{ usuario.email }}</li>
+    <li><strong>CPF:</strong> {{ usuario.cpf }}</li>
+    <li><strong>Telefone:</strong> {{ usuario.telefone }}</li>
+    <li><strong>Data de Nascimento:</strong> {{ usuario.data_nascimento|date:"d/m/Y" }}</li>
+    <li><strong>Pronomes:</strong> {{ usuario.pronomes }}</li>
+    <li><strong>Função:</strong> {{ usuario.get_funcao_display }}</li>
+  </ul>
+
+  <h4 class="mt-4">Endereço</h4>
+  {% if usuario.endereco %}
+    <ul>
+      <li><strong>Rua:</strong> {{ usuario.endereco.rua }}</li>
+      <li><strong>Cidade:</strong> {{ usuario.endereco.cidade }}</li>
+      <li><strong>Estado:</strong> {{ usuario.endereco.estado }}</li>
+    </ul>
+  {% else %}
+    <p>Sem endereço cadastrado.</p>
+  {% endif %}
+
+  <h4 class="mt-4">Informações da Aplicação</h4>
+  <ul>
+    <li><strong>Status:</strong> {{ aplicacao.get_status_display }}</li>
+    <li><strong>Área de atuação:</strong> {{ aplicacao.area_atuacao }}</li>
+    <li><strong>Currículo Lattes:</strong> 
+      {% if aplicacao.curriculo_lattes_url %}
+        <a href="{{ aplicacao.curriculo_lattes_url }}" target="_blank">Abrir</a>
+      {% else %}
+        Não informado
+      {% endif %}
+    </li>
+    <li><strong>Necessita material especial:</strong> {{ aplicacao.necessita_material_especial|yesno:"Sim,Não" }}</li>
+    <li><strong>Tamanho do jaleco:</strong> {{ aplicacao.tamanho_jaleco }}</li>
+    <li><strong>Data da inscrição:</strong> {{ aplicacao.criado_em|date:"d/m/Y H:i" }}</li>
+  </ul>
+</div>
+{% endblock %}

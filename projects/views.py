@@ -125,9 +125,52 @@ class VerificarInscricaoView(APIView):
         pode_inscrever = projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes
         return Response({"pode_inscrever": pode_inscrever})
 
+from applications.models import Application
+
 def detalhes_projeto(request, projeto_id):
     projeto = get_object_or_404(Project, id=projeto_id)
-    return render(request, 'components/projects/detalhes_projeto.html', {'projeto': projeto})
+    alunas = Application.objects.filter(projeto=projeto).select_related('usuario')
+
+    status_choices = Application.STATUS_ESCOLHAS
+
+    context = {
+        'projeto': projeto,
+        'alunas': alunas,
+        'status_choices': status_choices,
+    }
+    return render(request, 'components/projects/detalhes_projeto.html', context)
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+@csrf_exempt
+def atualizar_status(request, pk):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        novo_status = data.get('status')
+
+        if novo_status not in dict(Application.STATUS_ESCOLHAS):
+            return JsonResponse({'error': 'Status inválido'}, status=400)
+
+        try:
+            app = Application.objects.get(pk=pk)
+            app.status = novo_status
+            app.save()
+            return JsonResponse({'success': True, 'status': novo_status})
+        except Application.DoesNotExist:
+            return JsonResponse({'error': 'Registro não encontrado'}, status=404)
+    return JsonResponse({'error': 'Método não permitido'}, status=405)
+
+def perfil_aluna(request, pk):
+    aplicacao = get_object_or_404(Application, pk=pk)
+    usuario = aplicacao.usuario 
+
+    contexto = {
+        'aplicacao': aplicacao,
+        'usuario': usuario,
+    }
+    return render(request, 'components/projects/perfil_aluna.html', contexto)
 
 
 from django.shortcuts import render
