@@ -2,96 +2,185 @@
 {% block content %}
 
 <style>
-  /* --- Estilo do card de informações --- */
-  .projeto-info-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    padding: 24px;
-    margin-bottom: 24px;
-    transition: box-shadow 0.2s ease;
+  /* ---- ESTILO GERAL ---- */
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f9fafb;
   }
-  .projeto-info-card:hover {
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  }
-  .projeto-info-card h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+
+  h1, h2 {
     color: #1e293b;
   }
-  .projeto-info-card p.descricao {
-    color: #475569;
-    font-size: 0.95rem;
-    margin-bottom: 1rem;
+
+  /* ---- CARD PRINCIPAL DO PROJETO ---- */
+  .projeto-info-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    padding: 32px;
+    margin-bottom: 40px;
+    transition: all 0.25s ease;
   }
-  .projeto-info-card ul {
-    list-style: none;
-    padding: 0;
+
+  .projeto-info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  }
+
+  .projeto-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .projeto-header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #0f172a;
     margin: 0;
   }
-  .projeto-info-card li {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    border-bottom: 1px dashed #e2e8f0;
-    padding: 6px 0;
-  }
-  .projeto-info-card strong {
-    color: #0f172a;
+
+  .projeto-header .status-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 600;
   }
-  .projeto-info-card a {
-    display: inline-block;
-    margin-top: 1rem;
-    color: #2563eb;
+
+  .projeto-descricao {
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.8rem;
+  }
+
+  /* ---- GRID DE DETALHES ---- */
+  .projeto-detalhes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+  }
+
+  .detalhe-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 14px 18px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .detalhe-card:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+  }
+
+  .detalhe-label {
+    font-size: 0.85rem;
+    color: #64748b;
     font-weight: 500;
   }
 
-  /* --- Estilo minimalista do Ag-Grid --- */
+  .detalhe-valor {
+    font-size: 1rem;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .voltar-link {
+    display: inline-block;
+    margin-top: 1.8rem;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .voltar-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+
+  /* ---- TÍTULO DA TABELA ---- */
+  .table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1e293b;
+    margin-top: 2rem;
+  }
+
+  /* ---- AG-GRID CUSTOM ---- */
   .ag-theme-alpine {
-    --ag-border-color: transparent !important;
-    --ag-header-border-color: transparent !important;
-    --ag-row-border-color: transparent !important;
-    --ag-odd-row-background-color: #fafafa !important;
-    --ag-background-color: #ffffff !important;
-    --ag-header-background-color: #f8fafc !important;
-    --ag-font-size: 14px;
+    --ag-background-color: #ffffff;
+    --ag-header-background-color: #f8fafc;
+    --ag-odd-row-background-color: #f9fafb;
+    --ag-row-hover-color: #eff6ff;
     --ag-font-family: 'Inter', sans-serif;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    --ag-font-size: 14px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
   }
-  .ag-root-wrapper {
-    border: none !important;
+
+  .ag-header-cell-label {
+    color: #334155;
+    font-weight: 600;
   }
-  .ag-header {
-    border-bottom: 1px solid #e5e7eb !important;
+
+  .ag-cell a {
+    color: #2563eb;
+    font-weight: 500;
+    text-decoration: none;
   }
-  .ag-cell {
-    border: none !important;
+
+  .ag-cell a:hover {
+    text-decoration: underline;
   }
-  .ag-row-hover {
-    background-color: #f1f5f9 !important;
-  }
+
 </style>
 
 <div class="projeto-info-card">
-  <h1>{{ projeto.nome }}</h1>
-  <p class="descricao">{{ projeto.descricao }}</p>
+  <div class="projeto-header">
+    <h1>{{ projeto.nome }}</h1>
+    <span class="status-badge">{{ projeto.get_status_display }}</span>
+  </div>
 
-  <ul>
-    <li><strong>Status:</strong> <span>{{ projeto.get_status_display }}</span></li>
-    <li><strong>Formato:</strong> <span>{{ projeto.get_formato_display }}</span></li>
-    <li><strong>Vagas:</strong> <span>{{ projeto.vagas }}</span></li>
-    <li><strong>Inscrições:</strong> <span>{{ projeto.inicio_inscricoes }} a {{ projeto.fim_inscricoes }}</span></li>
-    <li><strong>Duração:</strong> <span>{{ projeto.data_inicio }} a {{ projeto.data_fim }}</span></li>
-  </ul>
+  <p class="projeto-descricao">{{ projeto.descricao }}</p>
 
-  <a href="{% url 'lista_projetos' %}">← Voltar para a lista</a>
+  <div class="projeto-detalhes">
+    <div class="detalhe-card">
+      <span class="detalhe-label">Formato</span>
+      <span class="detalhe-valor">{{ projeto.get_formato_display }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Vagas</span>
+      <span class="detalhe-valor">{{ projeto.vagas }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Inscrições</span>
+      <span class="detalhe-valor">{{ projeto.inicio_inscricoes }}<br>até {{ projeto.fim_inscricoes }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Duração</span>
+      <span class="detalhe-valor">{{ projeto.data_inicio }}<br>até {{ projeto.data_fim }}</span>
+    </div>
+  </div>
+
+  <a href="{% url 'lista_projetos' %}" class="voltar-link">← Voltar para a lista</a>
 </div>
 
-<h2 class="text-xl font-semibold mb-3 text-gray-800">Alunas vinculadas</h2>
-<div id="alunasGrid" class="ag-theme-alpine" style="height: 400px; width: 100%;"></div>
+<h2 class="table-title">Alunas vinculadas</h2>
+<div id="alunasGrid" class="ag-theme-alpine" style="height: 420px; width: 100%;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script>
@@ -101,11 +190,10 @@ document.addEventListener('DOMContentLoaded', function () {
       headerName: "Nome",
       field: "nome",
       flex: 1,
-      editable: false,
       cellRenderer: function (params) {
         if (!params.data || !params.data.id) return params.value;
         const url = `/projetos/${params.data.id}/perfil/`;
-        return `<a href="${url}" class="text-blue-600 hover:underline">${params.value}</a>`;
+        return `<a href="${url}">${params.value}</a>`;
       },
     },
     {
@@ -143,10 +231,10 @@ document.addEventListener('DOMContentLoaded', function () {
     pagination: true,
     paginationPageSize: 10,
     domLayout: 'autoHeight',
-    suppressRowClickSelection: true,
     rowSelection: 'single',
-    headerHeight: 35,
-    rowHeight: 40,
+    headerHeight: 38,
+    rowHeight: 42,
+    animateRows: true,
     onCellValueChanged: function (event) {
       if (event.colDef.field === 'status_label') {
         atualizarStatus(event.data.id, event.newValue);
