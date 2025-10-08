@@ -1,24 +1,97 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% block content %}
-  <h1 class="text-2xl font-bold mb-2">{{ projeto.nome }}</h1>
-  <p class="mb-4">{{ projeto.descricao }}</p>
 
-  <ul class="text-sm text-gray-700 space-y-1">
-    <li><strong>Status:</strong> {{ projeto.get_status_display }}</li>
-    <li><strong>Formato:</strong> {{ projeto.get_formato_display }}</li>
-    <li><strong>Vagas:</strong> {{ projeto.vagas }}</li>
-    <li><strong>Inscrições:</strong> {{ projeto.inicio_inscricoes }} a {{ projeto.fim_inscricoes }}</li>
-    <li><strong>Duração:</strong> {{ projeto.data_inicio }} a {{ projeto.data_fim }}</li>
+<style>
+  /* --- Estilo do card de informações --- */
+  .projeto-info-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 24px;
+    margin-bottom: 24px;
+    transition: box-shadow 0.2s ease;
+  }
+  .projeto-info-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+  .projeto-info-card h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+  }
+  .projeto-info-card p.descricao {
+    color: #475569;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+  .projeto-info-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .projeto-info-card li {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    border-bottom: 1px dashed #e2e8f0;
+    padding: 6px 0;
+  }
+  .projeto-info-card strong {
+    color: #0f172a;
+    font-weight: 600;
+  }
+  .projeto-info-card a {
+    display: inline-block;
+    margin-top: 1rem;
+    color: #2563eb;
+    font-weight: 500;
+  }
+
+  /* --- Estilo minimalista do Ag-Grid --- */
+  .ag-theme-alpine {
+    --ag-border-color: transparent !important;
+    --ag-header-border-color: transparent !important;
+    --ag-row-border-color: transparent !important;
+    --ag-odd-row-background-color: #fafafa !important;
+    --ag-background-color: #ffffff !important;
+    --ag-header-background-color: #f8fafc !important;
+    --ag-font-size: 14px;
+    --ag-font-family: 'Inter', sans-serif;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .ag-root-wrapper {
+    border: none !important;
+  }
+  .ag-header {
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  .ag-cell {
+    border: none !important;
+  }
+  .ag-row-hover {
+    background-color: #f1f5f9 !important;
+  }
+</style>
+
+<div class="projeto-info-card">
+  <h1>{{ projeto.nome }}</h1>
+  <p class="descricao">{{ projeto.descricao }}</p>
+
+  <ul>
+    <li><strong>Status:</strong> <span>{{ projeto.get_status_display }}</span></li>
+    <li><strong>Formato:</strong> <span>{{ projeto.get_formato_display }}</span></li>
+    <li><strong>Vagas:</strong> <span>{{ projeto.vagas }}</span></li>
+    <li><strong>Inscrições:</strong> <span>{{ projeto.inicio_inscricoes }} a {{ projeto.fim_inscricoes }}</span></li>
+    <li><strong>Duração:</strong> <span>{{ projeto.data_inicio }} a {{ projeto.data_fim }}</span></li>
   </ul>
 
-  <a href="{% url 'lista_projetos' %}" class="mt-4 inline-block text-blue-600 hover:underline">← Voltar para a lista</a>
+  <a href="{% url 'lista_projetos' %}">← Voltar para a lista</a>
+</div>
 
-
-
-  <h2 class="text-xl font-semibold mb-3">Alunas vinculadas</h2>
-  <div id="alunasGrid" class="ag-theme-alpine" style="height: 400px; width: 100%;"></div>
-
-
+<h2 class="text-xl font-semibold mb-3 text-gray-800">Alunas vinculadas</h2>
+<div id="alunasGrid" class="ag-theme-alpine" style="height: 400px; width: 100%;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script>
@@ -51,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function () {
     },
   ];
 
-
   const rowData = [
     {% for a in alunas %}
       {
@@ -71,6 +143,10 @@ document.addEventListener('DOMContentLoaded', function () {
     pagination: true,
     paginationPageSize: 10,
     domLayout: 'autoHeight',
+    suppressRowClickSelection: true,
+    rowSelection: 'single',
+    headerHeight: 35,
+    rowHeight: 40,
     onCellValueChanged: function (event) {
       if (event.colDef.field === 'status_label') {
         atualizarStatus(event.data.id, event.newValue);
@@ -82,7 +158,6 @@ document.addEventListener('DOMContentLoaded', function () {
   agGrid.createGrid(gridDiv, gridOptions);
 
   function atualizarStatus(id, novoStatusLabel) {
-    // Converte label → valor (usa um map gerado do Django no template)
     const statusMap = {
       {% for key, label in status_choices %}
         "{{ label }}": "{{ key }}",
@@ -98,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function () {
       },
       body: JSON.stringify({ status: novoStatusValue }),
     })
-
     .then(res => res.json())
     .then(data => console.log('Status atualizado:', data))
     .catch(err => console.error('Erro ao salvar status:', err));
@@ -120,7 +194,5 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 </script>
-
-
 
 {% endblock %}
