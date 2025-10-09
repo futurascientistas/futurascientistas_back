@@ -186,44 +186,66 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const columnDefs = [
-    {
-      headerName: "Nome",
-      field: "nome",
-      flex: 1,
-      cellRenderer: function (params) {
-        if (!params.data || !params.data.id) return params.value;
-        const url = `/projetos/${params.data.id}/perfil/`;
-        return `<a href="${url}">${params.value}</a>`;
-      },
+  {
+    headerName: "Nome",
+    field: "nome",
+    flex: 1,
+    cellRenderer: function (params) {
+      if (!params.data || !params.data.id) return params.value;
+      const url = `/projetos/${params.data.id}/perfil/`;
+      return `<a href="${url}">${params.value}</a>`;
     },
-    {
-      headerName: "Status",
-      field: "status_label",
-      flex: 1,
-      editable: true,
-      cellEditor: 'agSelectCellEditor',
-      cellEditorParams: {
-        values: [
-          {% for key, label in status_choices %}
-            "{{ label }}",
-          {% endfor %}
-        ],
-      },
+  },
+  {
+    headerName: "Tipo de Vaga",
+    field: "tipo_de_vaga",
+    flex: 1,
+  },
+  {
+    headerName: "Tipo de Ensino",
+    field: "tipo_ensino",
+    flex: 1,
+  },
+  {
+    headerName: "Nota Final",
+    field: "nota_final",
+    flex: 1,
+  },
+  {
+    headerName: "Status",
+    field: "status_label",
+    flex: 1,
+    editable: true,
+    cellEditor: 'agSelectCellEditor',
+    cellEditorParams: {
+      values: [
+        {% for key, label in status_choices %}
+          "{{ label }}",
+        {% endfor %}
+      ],
     },
-  ];
+  },
+];
+
+
 
   const rowData = [
-    {% for a in alunas %}
-      {
-        id: "{{ a.id }}",
-        nome: "{{ a.usuario.nome|default:a.usuario.username }}",
-        status_label: "{{ a.get_status_display }}",
-        status_value: "{{ a.status }}",
-      },
-    {% empty %}
-      { nome: "Nenhuma aluna vinculada", status_label: "-", status_value: "" },
-    {% endfor %}
-  ];
+  {% for a in alunas %}
+    {
+      id: "{{ a.id }}",
+      nome: "{{ a.usuario.nome|default:a.usuario.username }}",
+      tipo_de_vaga: "{{ a.tipo_de_vaga.nome|default:'-' }}",
+      tipo_ensino: "{{ a.usuario.escola.tipo_ensino.nome|default:'-' }}",
+      status_label: "{{ a.get_status_display }}",
+      status_value: "{{ a.status }}",
+      nota_final: "{{ a.nota_final_percentual|default:'-' }}",  
+    },
+  {% empty %}
+    { nome: "Nenhuma aluna vinculada", tipo_de_vaga: "-", tipo_ensino: "-", status_label: "-", status_value: "" },
+  {% endfor %}
+];
+
+
 
   const gridOptions = {
     columnDefs,

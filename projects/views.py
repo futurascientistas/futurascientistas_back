@@ -129,7 +129,16 @@ from applications.models import Application
 
 def detalhes_projeto(request, projeto_id):
     projeto = get_object_or_404(Project, id=projeto_id)
-    alunas = Application.objects.filter(projeto=projeto).select_related('usuario')
+
+    # otimiza query juntando tudo
+    alunas = (
+        Application.objects
+        .filter(projeto=projeto)
+        .select_related(
+            'usuario__escola__tipo_ensino',  # pega tipo de ensino
+            'tipo_de_vaga'                   # pega tipo de vaga direto da Application
+        )
+    )
 
     status_choices = Application.STATUS_ESCOLHAS
 
@@ -139,6 +148,8 @@ def detalhes_projeto(request, projeto_id):
         'status_choices': status_choices,
     }
     return render(request, 'components/projects/detalhes_projeto.html', context)
+
+
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
