@@ -1,0 +1,54 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Grupos{% endblock %}
+
+{% block content %}
+
+<main class="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md"> <h2 class="text-2xl font-semibold mb-6 text-gray-800">Gerenciar Grupos e Usuários</h2> <p class="text-gray-600 mb-6">Visualize os grupos existentes e edite seus membros quando necessário.</p>
+    {% if messages %}
+    <div class="space-y-3 mb-4">
+        {% for message in messages %}
+            <div class="p-3 rounded-lg shadow text-sm
+                {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200
+                {% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+                {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if groups %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead class="bg-pink-100 text-gray-800 text-sm uppercase tracking-wide">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold border-b">Nome do Grupo</th>
+                    <th class="px-4 py-3 text-left font-semibold border-b">Quantidade de Membros</th>
+                    <th class="px-4 py-3 text-center font-semibold border-b">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3 border-b font-medium">{{ group.name|capfirst }}</td>
+                    <td class="px-4 py-3 border-b text-sm text-gray-600">
+                        {{ group.user_set.count }} usuário{% if group.user_set.count != 1 %}s{% endif %}
+                    </td>
+
+                    <td class="px-4 py-3 border-b text-center">
+                        <a href="{% url 'group_edit_users' group.pk %}"
+                           class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                            Editar usuários
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="text-gray-500 text-center mt-6">Nenhum grupo encontrado.</p>
+{% endif %}
+</main> {% endblock %}

@@ -64,4 +64,10 @@ urlpatterns = [
     path('dashboardprofessoras/', DashboardProfessoras.as_view(), name='dashboardprofessoras'),
     path('dashalunas/', DashboardAlunas.as_view(), name='dashalunas'),
 
+    #Gerenciamento de usuários e grupos
+    path('dashboard/grupos', group_list, name='group_list'),
+    path('dashboard/grupos/<int:pk>', group_edit_users, name='group_edit_users'),
+    path('api/search-users/', search_users, name='search_users'),
+
+
 ]

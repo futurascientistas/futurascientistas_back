@@ -1,0 +1,154 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block title %}Editar Usuários - {{ group.name|capfirst }}{% endblock %}
+
+{% block content %}
+<main class="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Editar Usuários - {{ group.name|capfirst }}</h2>
+    <p class="text-gray-600 mb-6">Adicione ou remova membros do grupo conforme necessário.</p>
+
+    {% if messages %}
+    <div class="space-y-3 mb-4">
+        {% for message in messages %}
+            <div class="p-3 rounded-lg shadow text-sm
+                {% if message.tags == 'success' %}bg-green-50 text-green-700 border border-green-200
+                {% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200
+                {% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Adicionar novos usuários -->
+        <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+            <p class="font-semibold mb-3 text-gray-800">Adicionar usuários ao grupo:</p>
+            <input type="text" id="user-search" placeholder="Pesquisar por nome, email ou CPF"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-pink-500 focus:border-pink-500 mb-3">
+
+            <div class="grid grid-cols-[1fr_2fr_1fr_auto] gap-2 font-semibold border-b border-gray-300 p-2 text-gray-700">
+                <div>Nome</div>
+                <div>Email</div>
+                <div>CPF</div>
+                <div>Ações</div>
+            </div>
+
+            <ul id="search-results" class="max-h-64 overflow-y-auto space-y-1"></ul>
+        </div>
+
+        <!-- Lista de usuários existentes -->
+        <div class="bg-white border border-gray-200 rounded-lg p-4">
+            <p class="font-semibold mb-3 text-gray-800">Membros atuais do grupo:</p>
+
+            <div class="grid grid-cols-[1fr_2fr_1fr_auto] gap-2 font-semibold border-b border-gray-300 p-2 text-gray-700">
+                <div>Nome</div>
+                <div>Email</div>
+                <div>CPF</div>
+            </div>
+
+            <div class="space-y-1 max-h-80 overflow-y-auto users-list">
+                {% for user in group.user_set.all %}
+                <div class="grid grid-cols-[1fr_2fr_1fr_auto] gap-2 items-center p-2 border rounded hover:bg-gray-50 transition user-item" data-user-id="{{ user.id }}">
+                    <div class="truncate" title="{{ user.nome }}">{{ user.nome|default:'-' }}</div>
+                    <div class="truncate" title="{{ user.email }}">{{ user.email|default:'-' }}</div>
+                    <div class="truncate" title="{{ user.cpf }}">{{ user.cpf|default:'-' }}</div>
+                </div>
+                {% empty %}
+                <p class="text-gray-400 italic">Nenhum usuário no grupo ainda.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+            <a href="{% url 'group_list' %}" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition">
+                Voltar
+            </a>
+            <button type="submit" class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600 transition">
+                Salvar Alterações
+            </button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    function bindRemoveButtons() {
+        document.querySelectorAll('.remove-user').forEach(btn => {
+            btn.onclick = () => {
+                const item = btn.closest('.user-item');
+                const hiddenInput = item.querySelector('input[name="users"]');
+                if (hiddenInput) hiddenInput.remove();
+                item.remove();
+            };
+        });
+    }
+
+    bindRemoveButtons();
+
+    const searchInput = document.getElementById('user-search');
+    const resultsList = document.getElementById('search-results');
+
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+        if (query.length < 2) {
+            resultsList.innerHTML = '';
+            return;
+        }
+
+        fetch("{% url 'search_users' %}?q=" + encodeURIComponent(query) + "&group_id={{ group.id }}", { credentials: 'same-origin' })
+            .then(res => res.json())
+            .then(data => {
+                resultsList.innerHTML = '';
+                data.forEach(user => {
+                    if (!document.querySelector(`input[name="users"][value="${user.id}"]`)) {
+                        const li = document.createElement('li');
+                        li.className = 'grid grid-cols-[1fr_2fr_1fr_auto] gap-2 items-center p-2 border rounded hover:bg-gray-50 cursor-pointer user-item';
+                        li.innerHTML = `<div class="truncate" title="${user.nome}">${user.nome || '-'}</div>
+                                        <div class="truncate" title="${user.email}">${user.email || '-'}</div>
+                                        <div class="truncate" title="${user.cpf}">${user.cpf || '-'}</div>
+                                        <div class="text-pink-500 font-medium">Adicionar</div>`;
+
+                        li.addEventListener('click', () => {
+                            const form = resultsList.closest('form');
+
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'users';
+                            hiddenInput.value = user.id;
+                            form.appendChild(hiddenInput);
+
+                            const div = document.createElement('div');
+                            div.className = 'grid grid-cols-[1fr_2fr_1fr_auto] gap-2 items-center p-2 border rounded hover:bg-gray-50 transition user-item';
+                            div.dataset.userId = user.id;
+                            div.innerHTML = `<div class="truncate" title="${user.nome}">${user.nome || '-'}</div>
+                                             <div class="truncate" title="${user.email}">${user.email || '-'}</div>
+                                             <div class="truncate" title="${user.cpf}">${user.cpf || '-'}</div>
+                                             <div class="flex justify-end gap-2">
+                                                <button type="button" class="remove-user bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                                <input type="hidden" name="users" value="${user.id}">
+                                             </div>`;
+
+                            form.querySelector('.users-list').appendChild(div);
+                            bindRemoveButtons();
+                            li.remove();
+                        });
+
+                        resultsList.appendChild(li);
+                    }
+                });
+            })
+            .catch(err => console.error(err));
+    });
+
+});
+</script>
+{% endblock %}
