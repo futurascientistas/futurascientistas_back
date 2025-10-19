@@ -130,25 +130,47 @@ from applications.models import Application
 def detalhes_projeto(request, projeto_id):
     projeto = get_object_or_404(Project, id=projeto_id)
 
-    # otimiza query juntando tudo
+    # Puxa todas as aplicações com os relacionamentos necessários
     alunas = (
         Application.objects
         .filter(projeto=projeto)
         .select_related(
-            'usuario__escola__tipo_ensino',  # pega tipo de ensino
-            'tipo_de_vaga'                   # pega tipo de vaga direto da Application
+            'usuario__escola__tipo_ensino',
+            'tipo_de_vaga'
         )
     )
 
-    status_choices = Application.STATUS_ESCOLHAS
+    # Cria uma lista para enviar ao template
+    alunas_data = []
+    for a in alunas:
+        historico = HistoricoEscolar.objects.filter(usuario=a.usuario).first()
+
+        # Calcula a nota final percentual (média das notas normalizadas)
+        nota_final_percentual = "-"
+        if historico:
+            notas = historico.notas.all()
+            if notas.exists():
+                total = sum([n.nota_final_percentual or 0 for n in notas])
+                media = total / len(notas)
+                nota_final_percentual = round(media, 2)
+
+        alunas_data.append({
+            "id": a.id,
+            "nome": a.usuario.nome or a.usuario.username,
+            "tipo_de_vaga": getattr(a.tipo_de_vaga, "nome", "-"),
+            "tipo_ensino": getattr(a.usuario.escola.tipo_ensino, "nome", "-"),
+            "status_label": a.get_status_display(),
+            "status_value": a.status,
+            "nota_final_percentual": nota_final_percentual,
+        })
 
     context = {
         'projeto': projeto,
-        'alunas': alunas,
-        'status_choices': status_choices,
+        'alunas': alunas_data,
+        'status_choices': Application.STATUS_ESCOLHAS,
     }
-    return render(request, 'components/projects/detalhes_projeto.html', context)
 
+    return render(request, 'components/projects/detalhes_projeto.html', context)
 
 
 from django.views.decorators.csrf import csrf_exempt
@@ -173,15 +195,35 @@ def atualizar_status(request, pk):
             return JsonResponse({'error': 'Registro não encontrado'}, status=404)
     return JsonResponse({'error': 'Método não permitido'}, status=405)
 
+from users.models.school_transcript_model import HistoricoEscolar
+
+
 def perfil_aluna(request, pk):
     aplicacao = get_object_or_404(Application, pk=pk)
-    usuario = aplicacao.usuario 
+    usuario = aplicacao.usuario
+
+    # tenta pegar o histórico da aluna, se existir
+    historico = (
+        HistoricoEscolar.objects.filter(usuario=usuario).first()
+    )
+
+    # pega as notas ordenadas por disciplina e bimestre
+    notas = []
+    if historico:
+        notas = (
+            historico.notas
+            .select_related('disciplina')
+            .order_by('disciplina__nome', 'bimestre')
+        )
 
     contexto = {
         'aplicacao': aplicacao,
         'usuario': usuario,
+        'historico': historico,
+        'notas': notas,
     }
     return render(request, 'components/projects/perfil_aluna.html', contexto)
+
 
 
 from django.shortcuts import render

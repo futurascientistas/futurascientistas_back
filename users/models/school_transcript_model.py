@@ -35,6 +35,16 @@ class Nota(models.Model):
 
     class Meta:
         unique_together = ('historico', 'disciplina', 'bimestre')
+        
+    @property
+    def nota_final_percentual(self):
+        """
+        Retorna a nota final desta disciplina em percentual (0 a 100).
+        Baseia-se no campo 'valor', que é sempre normalizado para 0-10.
+        """
+        if self.valor is not None:
+            return round(float(self.valor) * 10, 2)  # 10 equivale a 100%
+        return None
 
     def save(self, *args, **kwargs):
         if not self.nota_original:

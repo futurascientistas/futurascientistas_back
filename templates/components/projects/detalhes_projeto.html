@@ -229,21 +229,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-  const rowData = [
+const rowData = [
   {% for a in alunas %}
     {
       id: "{{ a.id }}",
-      nome: "{{ a.usuario.nome|default:a.usuario.username }}",
-      tipo_de_vaga: "{{ a.tipo_de_vaga.nome|default:'-' }}",
-      tipo_ensino: "{{ a.usuario.escola.tipo_ensino.nome|default:'-' }}",
-      status_label: "{{ a.get_status_display }}",
-      status_value: "{{ a.status }}",
-      nota_final: "{{ a.nota_final_percentual|default:'-' }}",  
+      nome: "{{ a.nome }}",
+      tipo_de_vaga: "{{ a.tipo_de_vaga }}",
+      tipo_ensino: "{{ a.tipo_ensino }}",
+      status_label: "{{ a.status_label }}",
+      status_value: "{{ a.status_value }}",
+      nota_final: "{{ a.nota_final_percentual }}",  
     },
   {% empty %}
     { nome: "Nenhuma aluna vinculada", tipo_de_vaga: "-", tipo_ensino: "-", status_label: "-", status_value: "" },
   {% endfor %}
 ];
+
 
 
 
