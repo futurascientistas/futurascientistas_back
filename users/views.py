@@ -31,7 +31,7 @@ from django.urls import reverse_lazy
 from django.http import JsonResponse
 from django.conf import settings
 from applications.drive.drive_services import DriveService
-
+from users.forms.group_forms import GroupUserForm
 
 from .services import *
 
@@ -1850,5 +1850,87 @@ class DashboardProfessoras(TemplateView):
     
 class DashboardAlunas(TemplateView):
     template_name = "dashboard/dashalunas.html"
-    
 
+@login_required
+def group_list(request):
+    user_roles = getattr(request.user, 'roles', [])
+    groups = Group.objects.all().order_by('name')
+
+    context = {
+        "active_item": "grupos", 
+        "user": request.user,
+        "user_roles": user_roles,
+        "groups": groups,
+    }
+
+    return render(request, 'components/users/groups_list.html', context)
+
+@login_required
+def group_edit_users(request, pk):
+    group = get_object_or_404(Group, pk=pk)
+    all_users = User.objects.all().order_by('first_name', 'last_name')
+
+    if request.method == 'POST':
+        selected_user_ids = request.POST.getlist('users') 
+        selected_users = User.objects.filter(pk__in=selected_user_ids)
+
+        for user in selected_users:
+            if not user.groups.filter(pk=group.pk).exists():
+                user.groups.add(group)
+            user.funcao = group.name
+            user.save(update_fields=['funcao'])
+
+        current_user_ids = [u.pk for u in selected_users]
+        for user in group.user_set.exclude(pk__in=current_user_ids):
+            user.groups.remove(group)
+            remaining_groups = user.groups.all()
+            if remaining_groups.exists():
+                user.funcao = remaining_groups.first().name
+            else:
+                user.funcao = ''  
+            user.save(update_fields=['funcao'])
+
+        for user in selected_users:
+            other_groups = user.groups.exclude(pk=group.pk)
+            if other_groups.exists():
+                user.groups.remove(*other_groups)
+
+        messages.success(request, f"Usuários do grupo '{group.name}' atualizados com sucesso!")
+        return redirect('group_list')
+
+    context = {
+        'group': group,
+        'all_users': all_users,
+        'active_item': 'grupos',
+        'user': request.user,
+        'user_roles': getattr(request.user, 'roles', []),
+    }
+    return render(request, 'components/users/group_edit_users.html', context)
+
+@login_required
+def search_users(request):
+    query = request.GET.get('q', '').strip()
+    group_id = request.GET.get('group_id')
+
+    if query:
+        users = User.objects.filter(
+            Q(nome__icontains=query) |
+            Q(email__icontains=query) |
+            Q(cpf__icontains=query)
+        )
+        if group_id:
+            users = users.exclude(groups__id=group_id)
+
+        users = users[:10] 
+        data = [
+            {
+                "id": u.id,
+                "nome": u.nome,
+                "email": u.email,
+                "cpf": u.cpf
+            } for u in users
+        ]
+    else:
+        data = []
+
+    return JsonResponse(data, safe=False)
