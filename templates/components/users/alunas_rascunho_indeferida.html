@@ -2,29 +2,207 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-6">
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-0">Alunas com Status: Rascunho ou Indeferida</h5>
-                            <p class="text-sm mb-0">Total: {{ alunas|length }} alunas</p>
+            <div class="card shadow-lg rounded-2xl border-0 overflow-hidden">
+                <div class="card-header bg-gradient-to-r to-indigo-600 pb-4 pt-5 px-6" style="background: #71569e">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="text-white">
+                            <h2 class="text-2xl font-bold mb-1">Alunas com Status: Rascunho ou Indeferida</h2>
+                            <p class="text-blue-100 opacity-90">Total: {{ alunas|length }} alunas</p>
                         </div>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-warning">Rascunho: {{ count_rascunho }}</span>
-                            <span class="badge bg-danger">Indeferida: {{ count_indeferida }}</span>
+                        <div class="flex flex-wrap gap-3 items-center">
+                            <span class="bg-amber-400 text-amber-900 px-3 py-2 rounded-lg font-semibold flex items-center gap-1">
+                                <i class="fas fa-edit text-sm"></i>
+                                Rascunho: {{ count_rascunho }}
+                            </span>
+                            <span class="bg-red-500 text-white px-3 py-2 rounded-lg font-semibold flex items-center gap-1">
+                                <i class="fas fa-times text-sm"></i>
+                                Indeferida: {{ count_indeferida }}
+                            </span>
+                            
+                            <!-- Botão de envio de email -->
+                            <button type="button" 
+                                    class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                                    id="btnEnviarEmails"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#confirmModal">
+                                <i class="fas fa-paper-plane"></i>
+                                Enviar Lembrete
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div class="card-body px-0 pt-0 pb-2">
-                    <div id="alunasGrid" style="height: 600px; width: 100%;" class="ag-theme-alpine"></div>
+                <div class="card-body p-0">
+                    <div id="alunasGrid" class="w-full h-[600px] ag-theme-alpine"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal de Confirmação -->
+<!-- Modal de Confirmação - ATUALIZADO -->
+<div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
+     id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg relative w-auto pointer-events-none">
+        <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-2xl">
+            <div class="modal-header flex flex-shrink-0 items-center justify-between p-6 rounded-t-2xl bg-gray-50 border-b">
+                <h5 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-paper-plane text-green-500"></i>
+                    Confirmar Envio de Emails
+                </h5>
+                <button type="button" class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline" 
+                        data-bs-dismiss="modal" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body relative p-6">
+                <div class="text-center mb-4">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-envelope text-2xl text-green-500"></i>
+                    </div>
+                    <h6 class="text-lg font-semibold text-gray-800 mb-2">Enviar lembrete para todas as alunas?</h6>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-info-circle text-blue-500 mt-1"></i>
+                        <div class="w-full">
+                            <strong class="text-blue-800">Serão notificadas:</strong>
+                            <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border">
+                                    <span class="bg-amber-400 text-amber-900 px-2 py-1 rounded text-sm font-medium">Rascunho</span>
+                                    <span class="text-gray-700 font-medium">{{ count_rascunho }} alunas</span>
+                                </div>
+                                <div class="flex items-center gap-2 bg-white p-3 rounded-lg border">
+                                    <span class="bg-red-500 text-white px-2 py-1 rounded text-sm font-medium">Indeferida</span>
+                                    <span class="text-gray-700 font-medium">{{ count_indeferida }} alunas</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Preview dos primeiros destinatários -->
+                            <div class="mt-4">
+                                <strong class="text-blue-800 text-sm">Primeiras destinatárias:</strong>
+                                <div class="mt-2 max-h-32 overflow-y-auto bg-white p-3 rounded-lg border text-sm">
+                                    {% for aluna in alunas|slice:":5" %}
+                                        <div class="flex justify-between items-center py-1 border-b border-gray-100 last:border-b-0">
+                                            <span class="text-gray-700">{{ aluna.usuario.nome|default:aluna.usuario.email|truncatechars:30 }}</span>
+                                            <span class="text-gray-500 text-xs">{{ aluna.usuario.email|truncatechars:25 }}</span>
+                                        </div>
+                                    {% endfor %}
+                                    {% if alunas.count > 5 %}
+                                        <div class="text-center text-gray-500 text-xs py-1">
+                                            ... e mais {{ alunas.count|add:"-5" }} destinatárias
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-2xl border-t border-gray-200">
+                <button type="button" class="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition-colors duration-200 mr-3 flex items-center gap-2" 
+                        data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center gap-2 shadow-md" 
+                        id="btnConfirmarEnvio">
+                    <i class="fas fa-paper-plane"></i>
+                    Confirmar Envio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Resultado -->
+<div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
+     id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered relative w-auto pointer-events-none">
+        <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-2xl">
+            <div class="modal-header flex flex-shrink-0 items-center justify-between p-6 rounded-t-2xl bg-gray-50 border-b">
+                <h5 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                    Resultado do Envio
+                </h5>
+                <button type="button" class="btn-close box-content w-4 h-4 p-1 text-black border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-black hover:opacity-75 hover:no-underline" 
+                        data-bs-dismiss="modal" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body relative p-6" id="resultModalBody">
+                <!-- Conteúdo será preenchido via JavaScript -->
+            </div>
+            <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-2xl border-t border-gray-200">
+                <button type="button" class="px-5 py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2" 
+                        data-bs-dismiss="modal">
+                    <i class="fas fa-check"></i>
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal de Progresso em Tempo Real -->
+<div class="modal fade fixed top-0 left-0 hidden w-full h-full outline-none overflow-x-hidden overflow-y-auto"
+     id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg relative w-auto pointer-events-none">
+        <div class="modal-content border-none shadow-lg relative flex flex-col w-full pointer-events-auto bg-white bg-clip-padding rounded-2xl">
+            <div class="modal-header flex flex-shrink-0 items-center justify-between p-6 rounded-t-2xl bg-blue-50 border-b border-blue-200">
+                <h5 class="text-xl font-bold text-blue-800 flex items-center gap-2">
+                    <i class="fas fa-paper-plane text-blue-600"></i>
+                    Enviando Emails...
+                </h5>
+                <div class="flex items-center gap-2">
+                    <span id="progressCounter" class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        0/0
+                    </span>
+                </div>
+            </div>
+            <div class="modal-body relative p-0">
+                <!-- Barra de Progresso -->
+                <div class="px-6 pt-4">
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="progressBar" class="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600 mt-2">
+                        <span id="progressText">Iniciando envio...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Lista de Emails em Tempo Real -->
+                <div class="mt-4 border-t border-gray-200">
+                    <div class="p-4">
+                        <h6 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                            <i class="fas fa-list text-blue-500"></i>
+                            Log de Envio em Tempo Real
+                        </h6>
+                        <div id="emailLog" class="h-80 overflow-y-auto bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-2">
+                            <!-- Os logs aparecerão aqui em tempo real -->
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-envelope-open-text text-2xl mb-2"></i>
+                                <p>Aguardando início do envio...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex flex-shrink-0 flex-wrap items-center justify-end p-4 rounded-b-2xl border-t border-gray-200 bg-gray-50">
+                <button type="button" id="btnCancelarEnvio" class="px-5 py-2.5 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors duration-200 flex items-center gap-2">
+                    <i class="fas fa-stop"></i>
+                    Cancelar Envio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <!-- Carrega CSS do Ag-Grid -->
 <link rel="stylesheet" href="https://unpkg.com/ag-grid-community@30.0.5/styles/ag-grid.css">
@@ -32,6 +210,9 @@
 
 <!-- Carrega Ag-Grid -->
 <script src="https://unpkg.com/ag-grid-community@30.0.5/dist/ag-grid-community.min.js"></script>
+
+<!-- Font Awesome para ícones -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
     console.log('Script Ag-Grid carregando...');
@@ -91,15 +272,19 @@
                 cellStyle: function(params) {
                     if (params.value === 'Rascunho') {
                         return { 
-                            'backgroundColor': '#fff3cd',
-                            'color': '#856404',
-                            'fontWeight': 'bold'
+                            'backgroundColor': '#fef3c7',
+                            'color': '#92400e',
+                            'fontWeight': 'bold',
+                            'borderRadius': '4px',
+                            'padding': '2px 6px'
                         };
                     } else if (params.value === 'Indeferida') {
                         return { 
-                            'backgroundColor': '#f8d7da',
-                            'color': '#721c24',
-                            'fontWeight': 'bold'
+                            'backgroundColor': '#fee2e2',
+                            'color': '#991b1b',
+                            'fontWeight': 'bold',
+                            'borderRadius': '4px',
+                            'padding': '2px 6px'
                         };
                     }
                     return null;
@@ -112,13 +297,13 @@
                 sortable: true,
                 flex: 1
             },
-            {
+            {% comment %} {
                 headerName: 'Data de Criação',
                 field: 'criado_em',
                 filter: true,
                 sortable: true,
                 flex: 1
-            }
+            } {% endcomment %}
         ];
 
         // Dados do Django
@@ -189,15 +374,306 @@
         }
     }
 
-    // Estratégia única de inicialização - apenas DOMContentLoaded
+    // ========== FUNCIONALIDADE DE ENVIO DE EMAILS ==========
+    
+    function enviarEmailsEmMassa() {
+        const btn = document.getElementById('btnConfirmarEnvio');
+        const originalText = btn.innerHTML;
+        
+        // Mostra loading
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Iniciando...';
+        btn.disabled = true;
+
+        // Fecha modal de confirmação
+        const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+        confirmModal.hide();
+
+        // Prepara o modal de progresso
+        const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+        const emailLog = document.getElementById('emailLog');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressCounter = document.getElementById('progressCounter');
+        
+        // Limpa logs anteriores
+        emailLog.innerHTML = '<div class="text-center text-gray-500 py-8"><i class="fas fa-envelope-open-text text-2xl mb-2"></i><p>Aguardando início do envio...</p></div>';
+        progressBar.style.width = '0%';
+        progressPercent.textContent = '0%';
+        progressCounter.textContent = '0/0';
+        
+        // Abre modal de progresso
+        progressModal.show();
+        
+        let eventSource = null;
+        let isComplete = false;
+
+        // Função para iniciar o SSE
+        function startSSE() {
+            // URL correta para o endpoint SSE
+            const sseUrl = window.location.origin + '/inscricoes/alunas/rascunho-indeferida/sse/';
+            
+            console.log('🔗 Conectando ao SSE:', sseUrl);
+            
+            eventSource = new EventSource(sseUrl);
+            
+            eventSource.onopen = function() {
+                console.log('✅ Conexão SSE estabelecida');
+            };
+
+            eventSource.onmessage = function(event) {
+                console.log('📨 Evento recebido:', event.data);
+                
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    switch(data.type) {
+                        case 'start':
+                            progressCounter.textContent = `0/${data.total}`;
+                            progressText.textContent = `Iniciando envio para ${data.total} destinatários...`;
+                            emailLog.innerHTML = ''; // Limpa mensagem inicial
+                            break;
+                            
+                        case 'progress':
+                            // Atualiza progresso
+                            const percent = Math.round((data.current / data.total) * 100);
+                            progressBar.style.width = percent + '%';
+                            progressPercent.textContent = percent + '%';
+                            progressCounter.textContent = `${data.current}/${data.total}`;
+                            progressText.textContent = `Enviando... (${data.current} de ${data.total})`;
+                            
+                            // Adiciona log em tempo real
+                            const logEntry = document.createElement('div');
+                            logEntry.className = 'flex items-start gap-3 p-3 bg-white rounded-lg border border-green-100 shadow-sm fade-in';
+                            logEntry.innerHTML = `
+                                <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                                    <i class="fas fa-check text-green-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-green-600 font-medium">${data.message}</div>
+                                    <div class="text-gray-500 text-sm mt-1">${data.nome}</div>
+                                </div>
+                                <div class="text-xs text-gray-400">${new Date().toLocaleTimeString()}</div>
+                            `;
+                            emailLog.prepend(logEntry);
+                            
+                            // Auto-scroll para o topo
+                            emailLog.scrollTop = 0;
+                            break;
+                            
+                        case 'error':
+                            // Adiciona log de erro
+                            const errorEntry = document.createElement('div');
+                            errorEntry.className = 'flex items-start gap-3 p-3 bg-white rounded-lg border border-red-100 shadow-sm fade-in';
+                            errorEntry.innerHTML = `
+                                <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                                    <i class="fas fa-times text-red-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-red-600 font-medium">${data.message}</div>
+                                </div>
+                                <div class="text-xs text-gray-400">${new Date().toLocaleTimeString()}</div>
+                            `;
+                            emailLog.prepend(errorEntry);
+                            break;
+                            
+                        case 'complete':
+                            isComplete = true;
+                            console.log('✅ Envio completo:', data);
+                            
+                            if (eventSource) {
+                                eventSource.close();
+                            }
+                            
+                            // Fecha modal de progresso após 2 segundos
+                            setTimeout(() => {
+                                progressModal.hide();
+                                
+                                // Mostra resultado final
+                                showResultModal(data);
+                            }, 2000);
+                            break;
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao processar evento:', error);
+                }
+            };
+
+            eventSource.onerror = function(event) {
+                console.error('❌ Erro na conexão SSE:', event);
+                
+                if (!isComplete) {
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                    
+                    // Verifica se é um erro de CORS ou outro problema
+                    if (event.target.readyState === EventSource.CLOSED) {
+                        showErrorModal('Conexão com o servidor foi fechada.');
+                    } else {
+                        showErrorModal('Erro na conexão com o servidor.');
+                    }
+                }
+            };
+        }
+
+        // Função para mostrar modal de resultado
+        function showResultModal(data) {
+            const resultModalBody = document.getElementById('resultModalBody');
+            if (data.success) {
+                resultModalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-check-circle text-2xl text-green-500"></i>
+                        </div>
+                        <h6 class="text-green-600 font-semibold text-lg mb-2">Envio Concluído!</h6>
+                        <p class="text-gray-600">${data.message}</p>
+                        <div class="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
+                            <div class="flex items-center justify-center gap-4">
+                                <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                                    <i class="fas fa-check mr-1"></i> ${data.emails_enviados} enviados
+                                </span>
+                                <span class="bg-gray-500 text-white px-3 py-1 rounded-full text-sm">
+                                    <i class="fas fa-list mr-1"></i> ${data.total} no total
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let errorsHtml = '';
+                if (data.errors && data.errors.length > 0) {
+                    errorsHtml = `
+                        <div class="mt-4 bg-red-50 border border-red-200 rounded-xl p-4">
+                            <h6 class="font-semibold text-red-800 mb-2">Erros encontrados (${data.errors.length}):</h6>
+                            <div class="max-h-32 overflow-y-auto text-sm">
+                                <ul class="space-y-1">
+                    `;
+                    data.errors.slice(0, 5).forEach(error => {
+                        errorsHtml += `<li class="text-red-600">• ${error}</li>`;
+                    });
+                    if (data.errors.length > 5) {
+                        errorsHtml += `<li class="text-gray-500 text-xs">... e mais ${data.errors.length - 5} erros</li>`;
+                    }
+                    errorsHtml += `</ul></div></div>`;
+                }
+                
+                resultModalBody.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-exclamation-triangle text-2xl text-yellow-500"></i>
+                        </div>
+                        <h6 class="text-yellow-600 font-semibold text-lg mb-2">Envio Parcial</h6>
+                        <p class="text-gray-600">${data.message}</p>
+                        <div class="mt-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                            <div class="flex items-center justify-center gap-4">
+                                <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                                    <i class="fas fa-check mr-1"></i> ${data.emails_enviados} enviados
+                                </span>
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm">
+                                    <i class="fas fa-times mr-1"></i> ${data.errors.length} erros
+                                </span>
+                            </div>
+                        </div>
+                        ${errorsHtml}
+                    </div>
+                `;
+            }
+            
+            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+            resultModal.show();
+            
+            // Restaura botão
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // Função para mostrar modal de erro
+        function showErrorModal(message) {
+            progressModal.hide();
+            
+            document.getElementById('resultModalBody').innerHTML = `
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-times-circle text-2xl text-red-500"></i>
+                    </div>
+                    <h6 class="text-red-600 font-semibold text-lg mb-2">Erro na Conexão</h6>
+                    <p class="text-gray-600">${message}</p>
+                    <p class="text-gray-500 text-sm mt-2">Os emails podem ter sido enviados, mas o acompanhamento em tempo real falhou.</p>
+                </div>
+            `;
+            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+            resultModal.show();
+            
+            // Restaura botão
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // Botão de cancelar
+        document.getElementById('btnCancelarEnvio').onclick = function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            progressModal.hide();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        };
+
+        // Primeiro inicia o SSE
+        startSSE();
+
+        // Depois envia a requisição POST para iniciar o processo
+        // (opcional - apenas para registrar a ação)
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                action: 'enviar_emails'
+            })
+        }).then(response => {
+            console.log('✅ Requisição POST enviada com sucesso');
+        }).catch(error => {
+            console.error('❌ Erro na requisição POST:', error);
+            // Não faz nada, pois o SSE já está rodando
+        });
+    }
+
+    // Função auxiliar para pegar o token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Inicialização quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📄 DOM Content Loaded - Iniciando grid');
         
         // Pequeno delay para garantir que tudo está carregado
         setTimeout(initGrid, 100);
+        
+        // Configuração do botão de envio
+        const btnConfirmarEnvio = document.getElementById('btnConfirmarEnvio');
+        if (btnConfirmarEnvio) {
+            btnConfirmarEnvio.addEventListener('click', function() {
+                enviarEmailsEmMassa();
+            });
+        }
     });
-
-    // Remove os outros event listeners que estavam causando múltiplas inicializações
 
 </script>
 
@@ -211,9 +687,9 @@
 .ag-theme-alpine {
     --ag-header-height: 50px;
     --ag-header-foreground-color: white;
-    --ag-header-background-color: #344767;
-    --ag-header-cell-hover-background-color: #2c3e5c;
-    --ag-header-cell-moving-background-color: #2c3e5c;
+    --ag-header-background-color: #71569e;
+    --ag-header-cell-hover-background-color: #71569e;
+    --ag-header-cell-moving-background-color: #71569e;
     height: 100% !important;
     width: 100% !important;
 }
@@ -229,6 +705,31 @@
 
 .ag-theme-alpine .ag-row:hover {
     background-color: #f8f9fa;
+}
+
+/* Melhorias visuais para o modal */
+.modal {
+    z-index: 1055;
+}
+
+.modal-backdrop {
+    z-index: 1050;
+}
+
+/* Estilos para o spinner */
+.spinner-border {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    vertical-align: text-bottom;
+    border: 0.2em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border .75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
 }
 </style>
 
