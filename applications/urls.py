@@ -14,6 +14,7 @@ urlpatterns = [
    
     path('aluna/', inscricao_aluna, name='inscricao_aluna_default'),
     path('aluna/step=<int:step>/', inscricao_aluna, name='inscricao_aluna'),
+    path('alunas/rascunho-indeferida/', AlunasRascunhoIndeferidaListView.as_view(), name='alunas_rascunho_indeferida'),
 
 
     path("inscricao/editar/<uuid:inscricao_id>/", editar_inscricao, name="editar_inscricao"),

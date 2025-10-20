@@ -658,3 +658,52 @@ class AnexoDownloadView(APIView):
         return HttpResponse(arquivo, content_type=mime_type, headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
         })
+
+
+from django.views.generic import ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Application
+from django.utils.safestring import mark_safe
+import json
+
+        
+class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
+    model = Application
+    template_name = 'components/users/alunas_rascunho_indeferida.html'
+    context_object_name = 'alunas'
+    
+    def get_queryset(self):
+        return Application.objects.filter(
+            status__in=['rascunho', 'indeferida']
+        ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        queryset = self.get_queryset()
+        count_rascunho = queryset.filter(status='rascunho').count()
+        count_indeferida = queryset.filter(status='indeferida').count()
+        
+        # Prepara os dados para o JSON - CORRIGINDO NOMES VAZIOS
+        alunas_data = []
+        for aplicacao in context['alunas']:
+            nome_completo = f"{aplicacao.usuario.nome}".strip()
+            if not nome_completo or nome_completo == ' ':
+                nome_completo = aplicacao.usuario.email  # Usa email se nome estiver vazio
+            
+            alunas_data.append({
+                'id': str(aplicacao.id),
+                'nome_completo': nome_completo.upper(),
+                'email': aplicacao.usuario.email,
+                'status': aplicacao.get_status_display(),
+                'status_value': aplicacao.status,
+                'criado_em': aplicacao.criado_em.strftime('%d/%m/%Y %H:%M'),
+                'projeto': aplicacao.projeto.nome if aplicacao.projeto else 'Não definido',
+            })
+        
+        # Converte para JSON seguro
+        context['alunas_data_json'] = mark_safe(json.dumps(alunas_data))
+        context['count_rascunho'] = count_rascunho
+        context['count_indeferida'] = count_indeferida
+        
+        return context

@@ -1,0 +1,235 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Alunas com Status: Rascunho ou Indeferida</h5>
+                            <p class="text-sm mb-0">Total: {{ alunas|length }} alunas</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-warning">Rascunho: {{ count_rascunho }}</span>
+                            <span class="badge bg-danger">Indeferida: {{ count_indeferida }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div id="alunasGrid" style="height: 600px; width: 100%;" class="ag-theme-alpine"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Carrega CSS do Ag-Grid -->
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community@30.0.5/styles/ag-grid.css">
+<link rel="stylesheet" href="https://unpkg.com/ag-grid-community@30.0.5/styles/ag-theme-alpine.css">
+
+<!-- Carrega Ag-Grid -->
+<script src="https://unpkg.com/ag-grid-community@30.0.5/dist/ag-grid-community.min.js"></script>
+
+<script>
+    console.log('Script Ag-Grid carregando...');
+
+    // Variável global para controlar se o grid já foi inicializado
+    let gridInitialized = false;
+    let gridInstance = null;
+
+    function initGrid() {
+        // Verifica se já foi inicializado
+        if (gridInitialized) {
+            console.log('⚠️ Grid já foi inicializado, ignorando...');
+            return;
+        }
+
+        console.log('=== INICIANDO Ag-Grid ===');
+        
+        const gridDiv = document.getElementById('alunasGrid');
+        console.log('Elemento gridDiv:', gridDiv);
+        
+        if (!gridDiv) {
+            console.error('❌ Elemento #alunasGrid não encontrado');
+            return;
+        }
+
+        // Verifica se Ag-Grid está disponível
+        if (typeof agGrid === 'undefined') {
+            console.error('❌ Ag-Grid não está disponível');
+            console.log('Tentando carregar novamente em 1 segundo...');
+            setTimeout(initGrid, 1000);
+            return;
+        }
+
+        console.log('✅ Ag-Grid carregado com sucesso');
+
+        const columnDefs = [
+            {
+                headerName: 'Nome Completo',
+                field: 'nome_completo',
+                filter: true,
+                sortable: true,
+                flex: 2
+            },
+            {
+                headerName: 'Email',
+                field: 'email',
+                filter: true,
+                sortable: true,
+                flex: 2
+            },
+            {
+                headerName: 'Status',
+                field: 'status',
+                filter: true,
+                sortable: true,
+                flex: 1,
+                cellStyle: function(params) {
+                    if (params.value === 'Rascunho') {
+                        return { 
+                            'backgroundColor': '#fff3cd',
+                            'color': '#856404',
+                            'fontWeight': 'bold'
+                        };
+                    } else if (params.value === 'Indeferida') {
+                        return { 
+                            'backgroundColor': '#f8d7da',
+                            'color': '#721c24',
+                            'fontWeight': 'bold'
+                        };
+                    }
+                    return null;
+                }
+            },
+            {
+                headerName: 'Projeto',
+                field: 'projeto',
+                filter: true,
+                sortable: true,
+                flex: 1
+            },
+            {
+                headerName: 'Data de Criação',
+                field: 'criado_em',
+                filter: true,
+                sortable: true,
+                flex: 1
+            }
+        ];
+
+        // Dados do Django
+        let rowData = [];
+        try {
+            rowData = {{ alunas_data_json|safe }};
+            console.log('✅ Dados do Django carregados:', rowData.length, 'registros');
+            console.log('Primeiros 3 registros:', rowData.slice(0, 3));
+        } catch (error) {
+            console.error('❌ Erro ao carregar dados do Django:', error);
+            // Dados de fallback
+            rowData = [
+                {
+                    nome_completo: 'Joana Silva (Teste)',
+                    email: 'joana@teste.com',
+                    status: 'Rascunho',
+                    projeto: 'Projeto A',
+                    criado_em: '01/01/2024 10:00'
+                },
+                {
+                    nome_completo: 'Maria Oliveira (Teste)',
+                    email: 'maria@teste.com',
+                    status: 'Indeferida',
+                    projeto: 'Projeto B',
+                    criado_em: '02/01/2024 11:00'
+                }
+            ];
+            console.log('Usando dados de teste:', rowData);
+        }
+
+        const gridOptions = {
+            columnDefs: columnDefs,
+            rowData: rowData,
+            pagination: true,
+            paginationPageSize: 20,
+            defaultColDef: {
+                resizable: true,
+                filter: true,
+                sortable: true,
+            },
+            onGridReady: function(params) {
+                console.log('✅ Grid pronto!');
+                params.api.sizeColumnsToFit();
+                
+                // Marca como inicializado
+                gridInitialized = true;
+                gridInstance = params.api;
+                
+                // Armazena a instância no elemento para referência futura
+                gridDiv.__agGridInstance = params.api;
+            },
+            onFirstDataRendered: function(params) {
+                console.log('✅ Dados renderizados no grid!');
+            }
+        };
+
+        try {
+            console.log('Criando instância do grid...');
+            new agGrid.Grid(gridDiv, gridOptions);
+            console.log('✅ Grid criado com sucesso!');
+            
+            // Adiciona classes CSS necessárias
+            gridDiv.classList.add('ag-theme-alpine');
+            
+        } catch (error) {
+            console.error('❌ Erro ao criar grid:', error);
+            console.error('Stack trace:', error.stack);
+        }
+    }
+
+    // Estratégia única de inicialização - apenas DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM Content Loaded - Iniciando grid');
+        
+        // Pequeno delay para garantir que tudo está carregado
+        setTimeout(initGrid, 100);
+    });
+
+    // Remove os outros event listeners que estavam causando múltiplas inicializações
+
+</script>
+
+<style>
+/* Estilos ESSENCIAIS do Ag-Grid */
+#alunasGrid {
+    height: 600px !important;
+    width: 100% !important;
+}
+
+.ag-theme-alpine {
+    --ag-header-height: 50px;
+    --ag-header-foreground-color: white;
+    --ag-header-background-color: #344767;
+    --ag-header-cell-hover-background-color: #2c3e5c;
+    --ag-header-cell-moving-background-color: #2c3e5c;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.ag-theme-alpine .ag-header {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.ag-theme-alpine .ag-row {
+    font-size: 0.875rem;
+}
+
+.ag-theme-alpine .ag-row:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+{% endblock %}
