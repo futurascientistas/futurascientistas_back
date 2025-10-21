@@ -127,6 +127,117 @@ class VerificarInscricaoView(APIView):
 
 from applications.models import Application
 
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+from django.http import HttpResponse
+from django.utils.text import slugify
+
+def exportar_alunas_excel(request, projeto_id):
+    try:
+        if isinstance(projeto_id, str):
+            projeto_id = uuid.UUID(projeto_id)
+    except (ValueError, AttributeError):
+        pass
+    
+    projeto = get_object_or_404(Project, id=projeto_id)
+    
+    # Puxa todas as aplicações com os relacionamentos necessários
+    alunas = (
+        Application.objects
+        .filter(projeto=projeto)
+        .select_related(
+            'usuario__escola__tipo_ensino',
+            'tipo_de_vaga'
+        )
+    )
+
+    # Cria uma workbook e worksheet
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    
+    # Título seguro para a planilha
+    ws.title = "Alunas Vinculadas"
+
+    # Cabeçalhos
+    headers = [
+        'Nome', 
+        'Tipo de Vaga', 
+        'Tipo de Ensino', 
+        'Status', 
+        'Nota Final (%)'
+    ]
+    
+    # Estilo do cabeçalho
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+
+    # Adiciona cabeçalhos
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+
+    # Adiciona dados
+    row_num = 2
+    for a in alunas:
+        historico = HistoricoEscolar.objects.filter(usuario=a.usuario).first()
+
+        # Calcula a nota final percentual
+        nota_final_percentual = "-"
+        if historico:
+            notas = historico.notas.all()
+            if notas.exists():
+                total = sum([n.nota_final_percentual or 0 for n in notas])
+                media = total / len(notas)
+                nota_final_percentual = round(media, 2)
+
+        # Dados da linha
+        row_data = [
+            a.usuario.nome or a.usuario.username,
+            getattr(a.tipo_de_vaga, "nome", "-"),
+            getattr(a.usuario.escola.tipo_ensino, "nome", "-"),
+            a.get_status_display(),
+            nota_final_percentual,
+        ]
+
+        # Adiciona linha
+        for col_num, value in enumerate(row_data, 1):
+            ws.cell(row=row_num, column=col_num, value=value)
+
+        row_num += 1
+
+    # Ajusta largura das colunas
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    # Adiciona informações do projeto como primeira linha
+    ws.insert_rows(1)
+    ws.merge_cells('A1:E1')
+    project_info_cell = ws.cell(row=1, column=1, value=f"Projeto: {projeto.nome} - Exportado em {timezone.now().strftime('%d/%m/%Y %H:%M')}")
+    project_info_cell.font = Font(bold=True, size=12)
+    project_info_cell.alignment = Alignment(horizontal="center")
+
+    # Cria resposta HTTP
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f"alunas_{slugify(projeto.nome)}_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    wb.save(response)
+    return response
+
 def detalhes_projeto(request, projeto_id):
     projeto = get_object_or_404(Project, id=projeto_id)
 

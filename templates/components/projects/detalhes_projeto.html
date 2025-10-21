@@ -180,73 +180,76 @@
 </div>
 
 <h2 class="table-title">Alunas vinculadas</h2>
+<div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+  <h2 class="table-title">Alunas vinculadas</h2>
+  <a href="{% url 'exportar_alunas_excel' projeto.id %}" 
+     class="btn-excel" 
+     style="background: #217346; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+    📊 Exportar para Excel
+  </a>
+</div>
 <div id="alunasGrid" class="ag-theme-alpine" style="height: 420px; width: 100%;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const columnDefs = [
-  {
-    headerName: "Nome",
-    field: "nome",
-    flex: 1,
-    cellRenderer: function (params) {
-      if (!params.data || !params.data.id) return params.value;
-      const url = `/projetos/${params.data.id}/perfil/`;
-      return `<a href="${url}">${params.value}</a>`;
-    },
-  },
-  {
-    headerName: "Tipo de Vaga",
-    field: "tipo_de_vaga",
-    flex: 1,
-  },
-  {
-    headerName: "Tipo de Ensino",
-    field: "tipo_ensino",
-    flex: 1,
-  },
-  {
-    headerName: "Nota Final",
-    field: "nota_final",
-    flex: 1,
-  },
-  {
-    headerName: "Status",
-    field: "status_label",
-    flex: 1,
-    editable: true,
-    cellEditor: 'agSelectCellEditor',
-    cellEditorParams: {
-      values: [
-        {% for key, label in status_choices %}
-          "{{ label }}",
-        {% endfor %}
-      ],
-    },
-  },
-];
-
-
-
-const rowData = [
-  {% for a in alunas %}
     {
-      id: "{{ a.id }}",
-      nome: "{{ a.nome }}",
-      tipo_de_vaga: "{{ a.tipo_de_vaga }}",
-      tipo_ensino: "{{ a.tipo_ensino }}",
-      status_label: "{{ a.status_label }}",
-      status_value: "{{ a.status_value }}",
-      nota_final: "{{ a.nota_final_percentual }}",  
+      headerName: "Nome",
+      field: "nome",
+      flex: 1,
+      cellRenderer: function (params) {
+        if (!params.data || !params.data.id) return params.value;
+        const url = `/projetos/${params.data.id}/perfil/`;
+        return `<a href="${url}">${params.value}</a>`;
+      },
     },
-  {% empty %}
-    { nome: "Nenhuma aluna vinculada", tipo_de_vaga: "-", tipo_ensino: "-", status_label: "-", status_value: "" },
-  {% endfor %}
-];
+    {
+      headerName: "Tipo de Vaga",
+      field: "tipo_de_vaga",
+      flex: 1,
+    },
+    {
+      headerName: "Tipo de Ensino",
+      field: "tipo_ensino",
+      flex: 1,
+    },
+    {
+      headerName: "Nota Final",
+      field: "nota_final",
+      flex: 1,
+    },
+    {
+      headerName: "Status",
+      field: "status_label",
+      flex: 1,
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: [
+          {% for key, label in status_choices %}
+            "{{ label }}",
+          {% endfor %}
+        ],
+      },
+    },
+  ];
 
-
-
+  const rowData = [
+    {% for a in alunas %}
+      {
+        id: "{{ a.id }}",
+        nome: "{{ a.nome }}",
+        tipo_de_vaga: "{{ a.tipo_de_vaga }}",
+        tipo_ensino: "{{ a.tipo_ensino }}",
+        status_label: "{{ a.status_label }}",
+        status_value: "{{ a.status_value }}",
+        nota_final: "{{ a.nota_final_percentual }}",  
+      },
+    {% empty %}
+      { nome: "Nenhuma aluna vinculada", tipo_de_vaga: "-", tipo_ensino: "-", status_label: "-", status_value: "" },
+    {% endfor %}
+  ];
 
   const gridOptions = {
     columnDefs,

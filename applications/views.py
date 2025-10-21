@@ -686,38 +686,69 @@ from django.http import StreamingHttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-def enviar_email_atualizacao_cadastro(user):
-    subject = 'Atualização de Cadastro Necessária - TESTE'
-    from_email = 'no-reply@futurascientistas.com'
-    
-    # PARA TESTES: Envia sempre para este email, independente do usuário
-    to = ['devpythonj@gmail.com']
-    
-    # Mantém o nome do usuário real no conteúdo do email para contexto
-    html_content = render_to_string('emails/atualizacao_cadastro.html', {
-        'nome': user.nome,
-        'link_atualizacao': f'https://seusite.com/atualizar-cadastro/'
-    })
-    
-    text_content = f"""
-    Olá {user.nome},
-    
-    Identificamos que seu cadastro precisa ser atualizado.
-    
-    ---
-    [EMAIL DE TESTE - Destinatário real: {user.email}]
-    ---
-    
-    Atenciosamente,
-    Equipe Futuras Cientistas
+def enviar_email_atualizacao_cadastro(user, tipo_email):
     """
+    Função unificada para envio de emails
+    tipo_email: 'atualizacao' ou 'homologacao'
+    """
+    
+    if tipo_email == 'atualizacao':
+        subject = 'Atualização de Cadastro Necessária - TESTE'
+        from_email = 'no-reply@futurascientistas.com'
+        
+        # PARA TESTES: Envia sempre para este email, independente do usuário
+        to = ['devpythonj@gmail.com']
+        
+        html_content = render_to_string('emails/atualizacao_cadastro.html', {
+            'nome': user.nome,
+            'link_atualizacao': f'https://seusite.com/atualizar-cadastro/'
+        })
+        
+        text_content = f"""
+        Olá {user.nome},
+        
+        Identificamos que seu cadastro precisa ser atualizado.
+        
+        ---
+        [EMAIL DE TESTE - Destinatário real: {user.email}]
+        ---
+        
+        Atenciosamente,
+        Equipe Futuras Cientistas
+        """
+    else:  # homologacao
+        subject = 'Inscrição Homologada - Parabéns! - TESTE'
+        from_email = 'no-reply@futurascientistas.com'
+        
+        to = ['devpythonj@gmail.com']
+        
+        html_content = render_to_string('emails/homologacao_inscricao.html', {
+            'nome': user.nome,
+            'link_proximo_passo': f'https://seusite.com/proximo-passo/'
+        })
+        
+        text_content = f"""
+        Olá {user.nome},
+        
+        Parabéns! Sua inscrição foi homologada e deferida.
+        
+        ---
+        [EMAIL DE TESTE - Destinatário real: {user.email}]
+        ---
+        
+        Estamos muito felizes por ter você conosco!
+        
+        Atenciosamente,
+        Equipe Futuras Cientistas
+        """
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, "text/html")
     
     msg.extra_headers = {
         'X-Test-Email': 'true',
-        'X-Original-Recipient': user.email
+        'X-Original-Recipient': user.email,
+        'X-Email-Type': tipo_email
     }
     
     msg.send()
@@ -729,20 +760,47 @@ class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
     context_object_name = 'alunas'
     
     def get_queryset(self):
-        return Application.objects.filter(
-            status__in=['rascunho', 'indeferida']
-        ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+        # Verifica qual aba está ativa
+        self.aba_ativa = self.request.GET.get('aba', 'rascunho_indeferida')
+        
+        if self.aba_ativa == 'deferidas':
+            return Application.objects.filter(
+                status='deferida'
+            ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+        else:
+            return Application.objects.filter(
+                status__in=['rascunho', 'indeferida']
+            ).select_related('usuario', 'projeto').order_by('usuario__first_name')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        queryset = self.get_queryset()
-        count_rascunho = queryset.filter(status='rascunho').count()
-        count_indeferida = queryset.filter(status='indeferida').count()
+        # Determina a aba ativa
+        self.aba_ativa = self.request.GET.get('aba', 'rascunho_indeferida')
+        context['aba_ativa'] = self.aba_ativa
         
-        # Prepara os dados para o JSON
+        # Querysets para ambas as abas
+        queryset_rascunho_indeferida = Application.objects.filter(
+            status__in=['rascunho', 'indeferida']
+        ).select_related('usuario', 'projeto')
+        
+        queryset_deferidas = Application.objects.filter(
+            status='deferida'
+        ).select_related('usuario', 'projeto')
+        
+        # Contagens
+        count_rascunho = queryset_rascunho_indeferida.filter(status='rascunho').count()
+        count_indeferida = queryset_rascunho_indeferida.filter(status='indeferida').count()
+        count_deferida = queryset_deferidas.count()
+        
+        # Prepara os dados para o JSON baseado na aba ativa
         alunas_data = []
-        for aplicacao in context['alunas']:
+        if self.aba_ativa == 'deferidas':
+            queryset = queryset_deferidas
+        else:
+            queryset = queryset_rascunho_indeferida
+            
+        for aplicacao in queryset:
             nome_completo = f"{aplicacao.usuario.nome}".strip()
             if not nome_completo or nome_completo == ' ':
                 nome_completo = aplicacao.usuario.email
@@ -760,6 +818,7 @@ class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
         context['alunas_data_json'] = mark_safe(json.dumps(alunas_data))
         context['count_rascunho'] = count_rascunho
         context['count_indeferida'] = count_indeferida
+        context['count_deferida'] = count_deferida
         context['total_alunas'] = queryset.count()
         
         return context
@@ -774,12 +833,14 @@ class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
             try:
                 data = json.loads(request.body)
                 action = data.get('action')
+                tipo_email = data.get('tipo_email', 'atualizacao')  # 'atualizacao' ou 'homologacao'
                 
                 if action == 'enviar_emails':
                     # Simplesmente retorna sucesso - o SSE será iniciado separadamente
                     return JsonResponse({
                         'success': True,
-                        'message': 'Processo de envio iniciado'
+                        'message': 'Processo de envio iniciado',
+                        'tipo_email': tipo_email
                     })
                 
             except Exception as e:
@@ -790,27 +851,38 @@ class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
         
         return JsonResponse({'success': False, 'message': 'Requisição inválida'})
 
-# Adicione esta view separada para o SSE
-# View para SSE
+# View SSE Unificada
 class EmailSSEView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         """Endpoint SSE para progresso em tempo real"""
         
+        # Obtém o tipo de email da query string
+        tipo_email = request.GET.get('tipo_email', 'atualizacao')
+        
         def event_stream():
             try:
-                # Obtém o queryset das alunas
-                queryset = Application.objects.filter(
-                    status__in=['rascunho', 'indeferida']
-                ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+                # Obtém o queryset baseado no tipo de email
+                if tipo_email == 'homologacao':
+                    queryset = Application.objects.filter(
+                        status='deferida'
+                    ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+                    email_type = 'homologacao'
+                    email_description = 'homologação'
+                else:
+                    queryset = Application.objects.filter(
+                        status__in=['rascunho', 'indeferida']
+                    ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+                    email_type = 'atualizacao'
+                    email_description = 'atualização de cadastro'
                 
                 emails_enviados = 0
                 total = queryset.count()
                 errors = []
                 
-                print(f"🎯 Iniciando envio para {total} alunas...")
+                print(f"🎯 Iniciando envio de {email_description} para {total} alunas...")
                 
                 # Envia evento de início
-                yield f"data: {json.dumps({'type': 'start', 'total': total})}\n\n"
+                yield f"data: {json.dumps({'type': 'start', 'total': total, 'tipo_email': email_type})}\n\n"
                 
                 for aplicacao in queryset:
                     try:
@@ -818,19 +890,20 @@ class EmailSSEView(LoginRequiredMixin, View):
                         time.sleep(1)
                         
                         # Envia o email
-                        email_original = enviar_email_atualizacao_cadastro(aplicacao.usuario)
+                        email_original = enviar_email_atualizacao_cadastro(aplicacao.usuario, email_type)
                         emails_enviados += 1
                         
-                        print(f"📧 Email {emails_enviados}/{total}: {email_original}")
+                        print(f"📧 Email {emails_enviados}/{total} ({email_description}): {email_original}")
                         
                         # Envia progresso em tempo real
                         progress_data = {
                             'type': 'progress',
                             'current': emails_enviados,
                             'total': total,
-                            'message': f'📧 Email de teste enviado para devpythonj@gmail.com (original: {email_original})',
+                            'message': f'📧 Email de {email_description} enviado para devpythonj@gmail.com (original: {email_original})',
                             'email_original': email_original,
-                            'nome': aplicacao.usuario.nome or aplicacao.usuario.email
+                            'nome': aplicacao.usuario.nome or aplicacao.usuario.email,
+                            'tipo_email': email_type
                         }
                         yield f"data: {json.dumps(progress_data)}\n\n"
                         
@@ -843,7 +916,8 @@ class EmailSSEView(LoginRequiredMixin, View):
                             'type': 'error',
                             'message': error_msg,
                             'current': emails_enviados,
-                            'total': total
+                            'total': total,
+                            'tipo_email': email_type
                         }
                         yield f"data: {json.dumps(error_data)}\n\n"
                 
@@ -854,14 +928,16 @@ class EmailSSEView(LoginRequiredMixin, View):
                     'emails_enviados': emails_enviados,
                     'total': total,
                     'errors': errors,
-                    'message': f'✅ {emails_enviados} emails enviados com sucesso!' if not errors else f'Enviados {emails_enviados} emails, mas ocorreram {len(errors)} erros'
+                    'tipo_email': email_type,
+                    'message': f'✅ {emails_enviados} emails de {email_description} enviados com sucesso!' if not errors else f'Enviados {emails_enviados} emails de {email_description}, mas ocorreram {len(errors)} erros'
                 }
                 yield f"data: {json.dumps(result_data)}\n\n"
                 
             except Exception as e:
                 error_data = {
                     'type': 'error',
-                    'message': f'Erro geral no processo: {str(e)}'
+                    'message': f'Erro geral no processo: {str(e)}',
+                    'tipo_email': tipo_email
                 }
                 yield f"data: {json.dumps(error_data)}\n\n"
         
