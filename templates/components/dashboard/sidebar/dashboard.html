@@ -191,6 +191,20 @@
                 </svg>
                 <span class="menu-text">Gráficos de Alunas</span>
             </li>
+
+
+            <!-- CORRETO -->
+            <li class="menu-item {% if active_item == 'alunas_rascunho_indeferida' %}active{% endif %}" data-path="{% url 'application:alunas_rascunho_indeferida' %}" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="20" x2="4" y2="10"/>
+                    <line x1="10" y1="20" x2="10" y2="4"/>
+                    <line x1="16" y1="20" x2="16" y2="14"/>
+                </svg>
+                <span class="menu-text">Inscrições Rascunho/Indeferida</span>
+            </li>
+
             {% endif %}
 
             {% for item in menu_items %}

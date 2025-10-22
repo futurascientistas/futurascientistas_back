@@ -178,7 +178,7 @@
 
   <a href="{% url 'lista_projetos' %}" class="voltar-link">← Voltar para a lista</a>
 </div>
-
+{% if request.user.funcao == 'admin' %}
 <h2 class="table-title">Alunas vinculadas</h2>
 <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
   <h2 class="table-title">Alunas vinculadas</h2>
@@ -189,7 +189,7 @@
   </a>
 </div>
 <div id="alunasGrid" class="ag-theme-alpine" style="height: 420px; width: 100%;"></div>
-
+{% endif %}
 <script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
