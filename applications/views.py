@@ -693,15 +693,15 @@ def enviar_email_atualizacao_cadastro(user, tipo_email):
     """
     
     if tipo_email == 'atualizacao':
-        subject = 'Atualização de Cadastro Necessária - TESTE'
+        subject = 'Atualização de Cadastro Necessária'
         from_email = 'no-reply@futurascientistas.com'
         
-        # PARA TESTES: Envia sempre para este email, independente do usuário
-        to = ['devpythonj@gmail.com']
+        # ENVIO REAL: Agora envia para o email real do usuário
+        to = [user.email]
         
         html_content = render_to_string('emails/atualizacao_cadastro.html', {
             'nome': user.nome,
-            'link_atualizacao': f'https://seusite.com/atualizar-cadastro/'
+            'link_atualizacao': f'https://www.futurascientistas.com.br/'
         })
         
         text_content = f"""
@@ -709,22 +709,21 @@ def enviar_email_atualizacao_cadastro(user, tipo_email):
         
         Identificamos que seu cadastro precisa ser atualizado.
         
-        ---
-        [EMAIL DE TESTE - Destinatário real: {user.email}]
-        ---
+        Por favor, acesse nosso sistema para realizar as atualizações necessárias.
         
         Atenciosamente,
         Equipe Futuras Cientistas
         """
     else:  # homologacao
-        subject = 'Inscrição Homologada - Parabéns! - TESTE'
+        subject = 'Inscrição Homologada - Parabéns!'
         from_email = 'no-reply@futurascientistas.com'
         
-        to = ['devpythonj@gmail.com']
+        # ENVIO REAL: Agora envia para o email real do usuário
+        to = [user.email]
         
         html_content = render_to_string('emails/homologacao_inscricao.html', {
             'nome': user.nome,
-            'link_proximo_passo': f'https://seusite.com/proximo-passo/'
+            'link_proximo_passo': f'https://www.futurascientistas.com.br/'
         })
         
         text_content = f"""
@@ -732,11 +731,9 @@ def enviar_email_atualizacao_cadastro(user, tipo_email):
         
         Parabéns! Sua inscrição foi homologada e deferida.
         
-        ---
-        [EMAIL DE TESTE - Destinatário real: {user.email}]
-        ---
-        
         Estamos muito felizes por ter você conosco!
+        
+        Em breve entraremos em contato com mais informações sobre os próximos passos.
         
         Atenciosamente,
         Equipe Futuras Cientistas
@@ -745,14 +742,20 @@ def enviar_email_atualizacao_cadastro(user, tipo_email):
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)
     msg.attach_alternative(html_content, "text/html")
     
+    # Remove headers de teste ou mantém apenas para tracking
     msg.extra_headers = {
-        'X-Test-Email': 'true',
-        'X-Original-Recipient': user.email,
-        'X-Email-Type': tipo_email
+        'X-Email-Type': tipo_email,
+        'List-Unsubscribe': f'https://www.futurascientistas.com.br'
     }
     
-    msg.send()
-    return user.email
+    try:
+        msg.send()
+        return user.email
+    except Exception as e:
+        # Log do erro para debugging
+        print(f"Erro ao enviar email para {user.email}: {str(e)}")
+        raise
+
 
 class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
     model = Application

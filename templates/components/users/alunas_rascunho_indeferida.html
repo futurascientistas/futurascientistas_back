@@ -725,6 +725,13 @@
         return cookieValue;
     }
 
+    // Função para recarregar a página
+    function recarregarPagina() {
+        console.log('🔄 Recarregando página...');
+        window.location.reload();
+    }
+
+
     // Inicialização quando o DOM estiver pronto
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📄 DOM Content Loaded - Iniciando grid');
@@ -754,6 +761,16 @@
                 enviarEmailsEmMassa();
             });
         }
+
+        // Também conectar o botão de cancelar do modal de progresso
+        const btnCancelarEnvio = document.getElementById('btnCancelarEnvio');
+        if (btnCancelarEnvio) {
+            btnCancelarEnvio.addEventListener('click', function() {
+                console.log('⏹️ Cancelar envio clicado - recarregando página');
+                setTimeout(recarregarPagina, 500); // Pequeno delay para fechar o modal
+            });
+        }
+
     });
 
 </script>
