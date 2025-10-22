@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrição Homologada - Parabéns!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .celebrate {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .success-box {
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .success-box h3 {
+            color: #065f46;
+            margin: 0 0 8px 0;
+            font-size: 20px;
+        }
+        .success-box p {
+            color: #065f46;
+            margin: 0;
+            font-size: 16px;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #b3e0ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 {
+            color: #0066cc;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin: 20px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .next-steps {
+            background: #f0f9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .step-icon {
+            background: #10b981;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content h4 {
+            margin: 0 0 4px 0;
+            color: #10b981;
+            font-size: 16px;
+        }
+        .step-content p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .test-notice {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .test-notice strong {
+            color: #c62828;
+        }
+        .contact-info {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .contact-info a {
+            color: #059669;
+            text-decoration: none;
+        }
+        .congratulations {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .congratulations h2 {
+            color: #059669;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="celebrate">🎉</div>
+            <h1>Inscrição Homologada!</h1>
+            <p>Parabéns, sua inscrição foi deferida</p>
+        </div>
+        
+        <div class="content">
+            <div class="congratulations">
+                <h2>Parabéns, {{ nome }}! 🎊</h2>
+                <p>É com grande satisfação que informamos que sua inscrição no programa Futuras Cientistas foi <strong>HOMOLOGADA E DEFERIDA</strong>!</p>
+            </div>
+
+            <div class="success-box">
+                <h3>✅ Inscrição Aprovada</h3>
+                <p>Sua documentação foi analisada e aprovada pela nossa equipe. Você está oficialmente participando do processo seletivo!</p>
+            </div>
+
+            <p>Estamos muito felizes em tê-la conosco nesta jornada rumo à ciência e tecnologia. Sua dedicação e interesse já são motivo de comemoração!</p>
+
+            <div class="info-box">
+                <h3>📢 Próximos Passos</h3>
+                <p>Fique atenta aos próximos comunicados. Em breve entraremos em contato com informações sobre as etapas seguintes do processo.</p>
+            </div>
+
+            <div class="next-steps">
+                <h3 style="color: #059669; text-align: center; margin-bottom: 20px;">🔮 O que vem por aí?</h3>
+                
+                <div class="step">
+                    <div class="step-icon">1</div>
+                    <div class="step-content">
+                        <h4>Acompanhamento do Processo</h4>
+                        <p>Você receberá atualizações regulares sobre as próximas etapas</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">2</div>
+                    <div class="step-content">
+                        <h4>Comunicações Importantes</h4>
+                        <p>Fique de olho no seu e-mail para não perder nenhuma novidade</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-icon">3</div>
+                    <div class="step-content">
+                        <h4>Preparação</h4>
+                        <p>Comece a se preparar para as emocionantes etapas que virão</p>
+                    </div>
+                </div>
+            </div>
+
+            {% comment %} <div style="text-align: center;">
+                <a href="{{ link_proximo_passo }}" class="button">
+                    🌟 Acessar Próximos Passos
+                </a>
+            </div> {% endcomment %}
+
+            <div class="contact-info">
+                <p><strong>Dúvidas ou precisa de ajuda?</strong><br>
+                Nossa equipe está aqui para você: <a href="mailto:futurascientistas@cetene.gov.br">futurascientistas@cetene.gov.br</a></p>
+            </div>
+
+            <p style="text-align: center; font-style: italic; margin-top: 24px;">
+                "O futuro pertence àqueles que acreditam na beleza de seus sonhos."<br>
+                - Eleanor Roosevelt
+            </p>
+
+            <p style="text-align: center; margin-top: 24px;">
+                Com entusiasmo,<br>
+                <strong>Equipe Futuras Cientistas</strong> 💜
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>Este é um e-mail automático. Por favor, não responda esta mensagem.</p>
+            <p>Futuras Cientistas © 2024. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

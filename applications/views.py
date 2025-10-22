@@ -658,3 +658,296 @@ class AnexoDownloadView(APIView):
         return HttpResponse(arquivo, content_type=mime_type, headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
         })
+
+
+from django.views.generic import ListView, View
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Application
+from django.utils.safestring import mark_safe
+import json
+from django.core.mail import EmailMultiAlternatives
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+import time
+from django.http import StreamingHttpResponse
+import json
+
+import json
+import time
+from django.http import StreamingHttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+import json
+import time
+from django.http import StreamingHttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+def enviar_email_atualizacao_cadastro(user, tipo_email):
+    """
+    Função unificada para envio de emails
+    tipo_email: 'atualizacao' ou 'homologacao'
+    """
+    
+    if tipo_email == 'atualizacao':
+        subject = 'Atualização de Cadastro Necessária'
+        from_email = 'no-reply@futurascientistas.com'
+        
+        # ENVIO REAL: Agora envia para o email real do usuário
+        to = [user.email]
+        
+        html_content = render_to_string('emails/atualizacao_cadastro.html', {
+            'nome': user.nome,
+            'link_atualizacao': f'https://www.futurascientistas.com.br/'
+        })
+        
+        text_content = f"""
+        Olá {user.nome},
+        
+        Identificamos que seu cadastro precisa ser atualizado.
+        
+        Por favor, acesse nosso sistema para realizar as atualizações necessárias.
+        
+        Atenciosamente,
+        Equipe Futuras Cientistas
+        """
+    else:  # homologacao
+        subject = 'Inscrição Homologada - Parabéns!'
+        from_email = 'no-reply@futurascientistas.com'
+        
+        # ENVIO REAL: Agora envia para o email real do usuário
+        to = [user.email]
+        
+        html_content = render_to_string('emails/homologacao_inscricao.html', {
+            'nome': user.nome,
+            'link_proximo_passo': f'https://www.futurascientistas.com.br/'
+        })
+        
+        text_content = f"""
+        Olá {user.nome},
+        
+        Parabéns! Sua inscrição foi homologada e deferida.
+        
+        Estamos muito felizes por ter você conosco!
+        
+        Em breve entraremos em contato com mais informações sobre os próximos passos.
+        
+        Atenciosamente,
+        Equipe Futuras Cientistas
+        """
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    
+    # Remove headers de teste ou mantém apenas para tracking
+    msg.extra_headers = {
+        'X-Email-Type': tipo_email,
+        'List-Unsubscribe': f'https://www.futurascientistas.com.br'
+    }
+    
+    try:
+        msg.send()
+        return user.email
+    except Exception as e:
+        # Log do erro para debugging
+        print(f"Erro ao enviar email para {user.email}: {str(e)}")
+        raise
+
+
+class AlunasRascunhoIndeferidaListView(LoginRequiredMixin, ListView):
+    model = Application
+    template_name = 'components/users/alunas_rascunho_indeferida.html'
+    context_object_name = 'alunas'
+    
+    def get_queryset(self):
+        # Verifica qual aba está ativa
+        self.aba_ativa = self.request.GET.get('aba', 'rascunho_indeferida')
+        
+        if self.aba_ativa == 'deferidas':
+            return Application.objects.filter(
+                status='deferida'
+            ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+        else:
+            return Application.objects.filter(
+                status__in=['rascunho', 'indeferida']
+            ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Determina a aba ativa
+        self.aba_ativa = self.request.GET.get('aba', 'rascunho_indeferida')
+        context['aba_ativa'] = self.aba_ativa
+        
+        # Querysets para ambas as abas
+        queryset_rascunho_indeferida = Application.objects.filter(
+            status__in=['rascunho', 'indeferida']
+        ).select_related('usuario', 'projeto')
+        
+        queryset_deferidas = Application.objects.filter(
+            status='deferida'
+        ).select_related('usuario', 'projeto')
+        
+        # Contagens
+        count_rascunho = queryset_rascunho_indeferida.filter(status='rascunho').count()
+        count_indeferida = queryset_rascunho_indeferida.filter(status='indeferida').count()
+        count_deferida = queryset_deferidas.count()
+        
+        # Prepara os dados para o JSON baseado na aba ativa
+        alunas_data = []
+        if self.aba_ativa == 'deferidas':
+            queryset = queryset_deferidas
+        else:
+            queryset = queryset_rascunho_indeferida
+            
+        for aplicacao in queryset:
+            nome_completo = f"{aplicacao.usuario.nome}".strip()
+            if not nome_completo or nome_completo == ' ':
+                nome_completo = aplicacao.usuario.email
+            
+            alunas_data.append({
+                'id': str(aplicacao.id),
+                'nome_completo': nome_completo.upper(),
+                'email': aplicacao.usuario.email,
+                'status': aplicacao.get_status_display(),
+                'status_value': aplicacao.status,
+                'criado_em': aplicacao.criado_em.strftime('%d/%m/%Y %H:%M'),
+                'projeto': aplicacao.projeto.nome if aplicacao.projeto else 'Não definido',
+            })
+        
+        context['alunas_data_json'] = mark_safe(json.dumps(alunas_data))
+        context['count_rascunho'] = count_rascunho
+        context['count_indeferida'] = count_indeferida
+        context['count_deferida'] = count_deferida
+        context['total_alunas'] = queryset.count()
+        
+        return context
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        """Endpoint para iniciar o envio de emails em massa"""
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                data = json.loads(request.body)
+                action = data.get('action')
+                tipo_email = data.get('tipo_email', 'atualizacao')  # 'atualizacao' ou 'homologacao'
+                
+                if action == 'enviar_emails':
+                    # Simplesmente retorna sucesso - o SSE será iniciado separadamente
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Processo de envio iniciado',
+                        'tipo_email': tipo_email
+                    })
+                
+            except Exception as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Erro no servidor: {str(e)}'
+                })
+        
+        return JsonResponse({'success': False, 'message': 'Requisição inválida'})
+
+# View SSE Unificada
+class EmailSSEView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        """Endpoint SSE para progresso em tempo real"""
+        
+        # Obtém o tipo de email da query string
+        tipo_email = request.GET.get('tipo_email', 'atualizacao')
+        
+        def event_stream():
+            try:
+                # Obtém o queryset baseado no tipo de email
+                if tipo_email == 'homologacao':
+                    queryset = Application.objects.filter(
+                        status='deferida'
+                    ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+                    email_type = 'homologacao'
+                    email_description = 'homologação'
+                else:
+                    queryset = Application.objects.filter(
+                        status__in=['rascunho', 'indeferida']
+                    ).select_related('usuario', 'projeto').order_by('usuario__first_name')
+                    email_type = 'atualizacao'
+                    email_description = 'atualização de cadastro'
+                
+                emails_enviados = 0
+                total = queryset.count()
+                errors = []
+                
+                print(f"🎯 Iniciando envio de {email_description} para {total} alunas...")
+                
+                # Envia evento de início
+                yield f"data: {json.dumps({'type': 'start', 'total': total, 'tipo_email': email_type})}\n\n"
+                
+                for aplicacao in queryset:
+                    try:
+                        # Pequeno delay para ver o progresso
+                        time.sleep(1)
+                        
+                        # Envia o email
+                        email_original = enviar_email_atualizacao_cadastro(aplicacao.usuario, email_type)
+                        emails_enviados += 1
+                        
+                        print(f"📧 Email {emails_enviados}/{total} ({email_description}): {email_original}")
+                        
+                        # Envia progresso em tempo real
+                        progress_data = {
+                            'type': 'progress',
+                            'current': emails_enviados,
+                            'total': total,
+                            'message': f'📧 Email de {email_description} enviado para devpythonj@gmail.com (original: {email_original})',
+                            'email_original': email_original,
+                            'nome': aplicacao.usuario.nome or aplicacao.usuario.email,
+                            'tipo_email': email_type
+                        }
+                        yield f"data: {json.dumps(progress_data)}\n\n"
+                        
+                    except Exception as e:
+                        error_msg = f"Erro ao enviar para {aplicacao.usuario.email}: {str(e)}"
+                        errors.append(error_msg)
+                        print(f"❌ Erro: {error_msg}")
+                        
+                        error_data = {
+                            'type': 'error',
+                            'message': error_msg,
+                            'current': emails_enviados,
+                            'total': total,
+                            'tipo_email': email_type
+                        }
+                        yield f"data: {json.dumps(error_data)}\n\n"
+                
+                # Envia resultado final
+                result_data = {
+                    'type': 'complete',
+                    'success': len(errors) == 0,
+                    'emails_enviados': emails_enviados,
+                    'total': total,
+                    'errors': errors,
+                    'tipo_email': email_type,
+                    'message': f'✅ {emails_enviados} emails de {email_description} enviados com sucesso!' if not errors else f'Enviados {emails_enviados} emails de {email_description}, mas ocorreram {len(errors)} erros'
+                }
+                yield f"data: {json.dumps(result_data)}\n\n"
+                
+            except Exception as e:
+                error_data = {
+                    'type': 'error',
+                    'message': f'Erro geral no processo: {str(e)}',
+                    'tipo_email': tipo_email
+                }
+                yield f"data: {json.dumps(error_data)}\n\n"
+        
+        response = StreamingHttpResponse(
+            event_stream(),
+            content_type='text/event-stream'
+        )
+        response['Cache-Control'] = 'no-cache'
+        response['X-Accel-Buffering'] = 'no'
+        return response

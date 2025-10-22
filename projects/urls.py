@@ -14,5 +14,9 @@ urlpatterns = [
     path('projeto/<uuid:id>/', ProjectRetrieveAPIView.as_view(), name='project-detail'),
     path('', lista_projetos, name='lista_projetos'),
     path('projetos/<uuid:projeto_id>/', detalhes_projeto, name='detalhes_projeto'),
+    path('projetos/<uuid:projeto_id>/exportar-excel/', exportar_alunas_excel, name='exportar_alunas_excel'),
+    path('<uuid:pk>/atualizar_status/', atualizar_status),
+    path('<uuid:pk>/perfil/', perfil_aluna, name='perfil_aluna'),
+
 
 ]

@@ -1,15 +1,312 @@
 {% extends 'components/dashboard/sidebar/dashboard.html' %}
 {% block content %}
-  <h1 class="text-2xl font-bold mb-2">{{ projeto.nome }}</h1>
-  <p class="mb-4">{{ projeto.descricao }}</p>
 
-  <ul class="text-sm text-gray-700 space-y-1">
-    <li><strong>Status:</strong> {{ projeto.get_status_display }}</li>
-    <li><strong>Formato:</strong> {{ projeto.get_formato_display }}</li>
-    <li><strong>Vagas:</strong> {{ projeto.vagas }}</li>
-    <li><strong>Inscrições:</strong> {{ projeto.inicio_inscricoes }} a {{ projeto.fim_inscricoes }}</li>
-    <li><strong>Duração:</strong> {{ projeto.data_inicio }} a {{ projeto.data_fim }}</li>
-  </ul>
+<style>
+  /* ---- ESTILO GERAL ---- */
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f9fafb;
+  }
 
-  <a href="{% url 'lista_projetos' %}" class="mt-4 inline-block text-blue-600 hover:underline">← Voltar para a lista</a>
+  h1, h2 {
+    color: #1e293b;
+  }
+
+  /* ---- CARD PRINCIPAL DO PROJETO ---- */
+  .projeto-info-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    padding: 32px;
+    margin-bottom: 40px;
+    transition: all 0.25s ease;
+  }
+
+  .projeto-info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  }
+
+  .projeto-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .projeto-header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+
+  .projeto-header .status-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .projeto-descricao {
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1.8rem;
+  }
+
+  /* ---- GRID DE DETALHES ---- */
+  .projeto-detalhes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+  }
+
+  .detalhe-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 14px 18px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .detalhe-card:hover {
+    background: #f1f5f9;
+    transform: translateY(-2px);
+  }
+
+  .detalhe-label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .detalhe-valor {
+    font-size: 1rem;
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  .voltar-link {
+    display: inline-block;
+    margin-top: 1.8rem;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+
+  .voltar-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+  }
+
+  /* ---- TÍTULO DA TABELA ---- */
+  .table-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1e293b;
+    margin-top: 2rem;
+  }
+
+  /* ---- AG-GRID CUSTOM ---- */
+  .ag-theme-alpine {
+    --ag-background-color: #ffffff;
+    --ag-header-background-color: #f8fafc;
+    --ag-odd-row-background-color: #f9fafb;
+    --ag-row-hover-color: #eff6ff;
+    --ag-font-family: 'Inter', sans-serif;
+    --ag-font-size: 14px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+  }
+
+  .ag-header-cell-label {
+    color: #334155;
+    font-weight: 600;
+  }
+
+  .ag-cell a {
+    color: #2563eb;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .ag-cell a:hover {
+    text-decoration: underline;
+  }
+
+</style>
+
+<div class="projeto-info-card">
+  <div class="projeto-header">
+    <h1>{{ projeto.nome }}</h1>
+    <span class="status-badge">{{ projeto.get_status_display }}</span>
+  </div>
+
+  <p class="projeto-descricao">{{ projeto.descricao }}</p>
+
+  <div class="projeto-detalhes">
+    <div class="detalhe-card">
+      <span class="detalhe-label">Formato</span>
+      <span class="detalhe-valor">{{ projeto.get_formato_display }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Vagas</span>
+      <span class="detalhe-valor">{{ projeto.vagas }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Inscrições</span>
+      <span class="detalhe-valor">{{ projeto.inicio_inscricoes }}<br>até {{ projeto.fim_inscricoes }}</span>
+    </div>
+
+    <div class="detalhe-card">
+      <span class="detalhe-label">Duração</span>
+      <span class="detalhe-valor">{{ projeto.data_inicio }}<br>até {{ projeto.data_fim }}</span>
+    </div>
+  </div>
+
+  <a href="{% url 'lista_projetos' %}" class="voltar-link">← Voltar para a lista</a>
+</div>
+{% if request.user.funcao == 'admin' %}
+<h2 class="table-title">Alunas vinculadas</h2>
+<div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+  <h2 class="table-title">Alunas vinculadas</h2>
+  <a href="{% url 'exportar_alunas_excel' projeto.id %}" 
+     class="btn-excel" 
+     style="background: #217346; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px; text-decoration: none;">
+    📊 Exportar para Excel
+  </a>
+</div>
+<div id="alunasGrid" class="ag-theme-alpine" style="height: 420px; width: 100%;"></div>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/ag-grid-community/dist/ag-grid-community.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const columnDefs = [
+    {
+      headerName: "Nome",
+      field: "nome",
+      flex: 1,
+      cellRenderer: function (params) {
+        if (!params.data || !params.data.id) return params.value;
+        const url = `/projetos/${params.data.id}/perfil/`;
+        return `<a href="${url}">${params.value}</a>`;
+      },
+    },
+    {
+      headerName: "Tipo de Vaga",
+      field: "tipo_de_vaga",
+      flex: 1,
+    },
+    {
+      headerName: "Tipo de Ensino",
+      field: "tipo_ensino",
+      flex: 1,
+    },
+    {
+      headerName: "Nota Final",
+      field: "nota_final",
+      flex: 1,
+    },
+    {
+      headerName: "Status",
+      field: "status_label",
+      flex: 1,
+      editable: true,
+      cellEditor: 'agSelectCellEditor',
+      cellEditorParams: {
+        values: [
+          {% for key, label in status_choices %}
+            "{{ label }}",
+          {% endfor %}
+        ],
+      },
+    },
+  ];
+
+  const rowData = [
+    {% for a in alunas %}
+      {
+        id: "{{ a.id }}",
+        nome: "{{ a.nome }}",
+        tipo_de_vaga: "{{ a.tipo_de_vaga }}",
+        tipo_ensino: "{{ a.tipo_ensino }}",
+        status_label: "{{ a.status_label }}",
+        status_value: "{{ a.status_value }}",
+        nota_final: "{{ a.nota_final_percentual }}",  
+      },
+    {% empty %}
+      { nome: "Nenhuma aluna vinculada", tipo_de_vaga: "-", tipo_ensino: "-", status_label: "-", status_value: "" },
+    {% endfor %}
+  ];
+
+  const gridOptions = {
+    columnDefs,
+    rowData,
+    pagination: true,
+    paginationPageSize: 10,
+    domLayout: 'autoHeight',
+    rowSelection: 'single',
+    headerHeight: 38,
+    rowHeight: 42,
+    animateRows: true,
+    onCellValueChanged: function (event) {
+      if (event.colDef.field === 'status_label') {
+        atualizarStatus(event.data.id, event.newValue);
+      }
+    },
+  };
+
+  const gridDiv = document.querySelector('#alunasGrid');
+  agGrid.createGrid(gridDiv, gridOptions);
+
+  function atualizarStatus(id, novoStatusLabel) {
+    const statusMap = {
+      {% for key, label in status_choices %}
+        "{{ label }}": "{{ key }}",
+      {% endfor %}
+    };
+    const novoStatusValue = statusMap[novoStatusLabel];
+
+    fetch(`/projetos/${id}/atualizar_status/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ status: novoStatusValue }),
+    })
+    .then(res => res.json())
+    .then(data => console.log('Status atualizado:', data))
+    .catch(err => console.error('Erro ao salvar status:', err));
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+});
+</script>
+
 {% endblock %}

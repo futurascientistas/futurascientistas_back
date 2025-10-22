@@ -1,0 +1,309 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% block content %}
+
+<style>
+  /* --- Layout geral --- */
+  .perfil-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+  }
+
+  .perfil-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .perfil-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b6dbbff, #71569e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .perfil-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+  }
+
+  .perfil-header p {
+    color: #64748b;
+    margin: 2px 0 0 0;
+  }
+
+  /* --- Cards --- */
+  .info-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 20px 24px;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .info-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+  }
+
+  .info-card h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 1rem;
+    border-left: 4px solid #71569e;
+    padding-left: 10px;
+  }
+
+  .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .info-list li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #e2e8f0;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    color: #334155;
+  }
+
+  .info-list li:last-child {
+    border-bottom: none;
+  }
+
+  .info-list strong {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  a.link-externo {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  a.link-externo:hover {
+    text-decoration: underline;
+  }
+
+  /* --- Mensagens simples --- */
+  .empty-msg {
+    color: #64748b;
+    font-style: italic;
+    font-size: 0.95rem;
+  }
+
+  .btn-doc {
+    background: #71569e;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .btn-doc:hover {
+    background: #5b4584;
+  }
+
+</style>
+
+<div class="perfil-container">
+
+  <!-- Cabeçalho -->
+  <div class="perfil-header">
+    <div class="perfil-avatar">
+      {{ usuario.nome|default:usuario.username|slice:":1" }}
+    </div>
+    <div>
+      <h2>{{ usuario.nome }}</h2>
+      <p>{{ usuario.email }}</p>
+    </div>
+  </div>
+
+  <!-- Informações Pessoais -->
+  <div class="info-card">
+    <h4>Informações Pessoais</h4>
+    <ul class="info-list">
+      <li><strong>CPF:</strong> <span>{{ usuario.cpf }}</span></li>
+      <li><strong>Telefone:</strong> <span>{{ usuario.telefone }}</span></li>
+      <li><strong>Data de Nascimento:</strong> <span>{{ usuario.data_nascimento|date:"d/m/Y" }}</span></li>
+      <li><strong>Pronomes:</strong> <span>{{ usuario.pronomes }}</span></li>
+      <li><strong>Função:</strong> <span>{{ usuario.get_funcao_display }}</span></li>
+    </ul>
+  </div>
+
+  <!-- Endereço -->
+  <div class="info-card">
+    <h4>Endereço</h4>
+    {% if usuario.endereco %}
+      <ul class="info-list">
+        <li><strong>Rua:</strong> <span>{{ usuario.endereco.rua }}</span></li>
+        <li><strong>Cidade:</strong> <span>{{ usuario.endereco.cidade }}</span></li>
+        <li><strong>Estado:</strong> <span>{{ usuario.endereco.estado }}</span></li>
+      </ul>
+    {% else %}
+      <p class="empty-msg">Sem endereço cadastrado.</p>
+    {% endif %}
+  </div>
+
+  <!-- Informações da Aplicação -->
+  <div class="info-card">
+    <h4>Informações da Aplicação</h4>
+    <ul class="info-list">
+      <li><strong>Status:</strong> <span>{{ aplicacao.get_status_display }}</span></li>
+      <li><strong>Área de atuação:</strong> <span>{{ aplicacao.area_atuacao }}</span></li>
+      <li><strong>Currículo Lattes:</strong>
+        {% if aplicacao.curriculo_lattes_url %}
+          <span><a href="{{ aplicacao.curriculo_lattes_url }}" target="_blank" class="link-externo">Abrir</a></span>
+        {% else %}
+          <span>Não informado</span>
+        {% endif %}
+      </li>
+      <li><strong>Necessita material especial:</strong> 
+        <span>{{ aplicacao.necessita_material_especial|yesno:"Sim,Não" }}</span>
+      </li>
+      <li><strong>Tamanho do jaleco:</strong> <span>{{ aplicacao.tamanho_jaleco }}</span></li>
+      <li><strong>Data da inscrição:</strong> <span>{{ aplicacao.criado_em|date:"d/m/Y H:i" }}</span></li>
+    </ul>
+  </div>
+
+  <!-- Histórico Escolar e Notas -->
+<div class="info-card">
+  <h4>Histórico Escolar e Notas</h4>
+
+  {% if historico %}
+    {% if historico.historico_escolar %}
+      <p>
+        <strong>Arquivo no Drive:</strong>
+        <a href="https://drive.google.com/file/d/{{ historico.historico_escolar }}/view"
+           target="_blank"
+           class="link-externo">Abrir histórico completo</a>
+      </p>
+    {% endif %}
+
+    {% if notas %}
+      <table style="width:100%; border-collapse: collapse; margin-top: 1rem;">
+        <thead>
+          <tr style="background:#f1f5f9; text-align:left;">
+            <th style="padding:8px;">Disciplina</th>
+            <th style="padding:8px;">Bimestre</th>
+            <th style="padding:8px;">Nota Original</th>
+            <th style="padding:8px;">Nota Normalizada</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for nota in notas %}
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:8px;">{{ nota.disciplina.nome }}</td>
+            <td style="padding:8px;">{{ nota.bimestre }}º</td>
+            <td style="padding:8px;">{{ nota.nota_original|default:"-" }}</td>
+            <td style="padding:8px;">{{ nota.valor|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="empty-msg">Nenhuma nota cadastrada para esta aluna.</p>
+    {% endif %}
+  {% else %}
+    <p class="empty-msg">Nenhum histórico escolar vinculado a esta aluna.</p>
+  {% endif %}
+</div>
+
+
+  <!-- Documentos da Candidata -->
+<div class="info-card">
+  <h4>Documentos</h4>
+
+  {% if aplicacao.drive_rg_frente or aplicacao.drive_cpf_anexo or aplicacao.drive_boletim_escolar %}
+  <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    
+    {% if aplicacao.drive_rg_frente %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_rg_frente }}/view"
+         target="_blank"
+         class="btn-doc">
+        RG (Frente)
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_rg_verso %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_rg_verso }}/view"
+         target="_blank"
+         class="btn-doc">
+        RG (Verso)
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_cpf_anexo %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_cpf_anexo }}/view"
+         target="_blank"
+         class="btn-doc">
+        CPF
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_boletim_escolar %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_boletim_escolar }}/view"
+         target="_blank"
+         class="btn-doc">
+        Boletim Escolar
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_termo_autorizacao %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_termo_autorizacao }}/view"
+         target="_blank"
+         class="btn-doc">
+        Termo de Autorização
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_declaracao_vinculo %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_declaracao_vinculo }}/view"
+         target="_blank"
+         class="btn-doc">
+        Declaração de Vínculo
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_declaracao_inclusao %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_declaracao_inclusao }}/view"
+         target="_blank"
+         class="btn-doc">
+        Autodeclaração
+      </a>
+    {% endif %}
+
+    {% if aplicacao.drive_documentacao_comprobatoria_lattes %}
+      <a href="https://drive.google.com/file/d/{{ aplicacao.drive_documentacao_comprobatoria_lattes }}/view"
+         target="_blank"
+         class="btn-doc">
+        Documentação Lattes
+      </a>
+    {% endif %}
+
+  </div>
+  {% else %}
+    <p class="empty-msg">Nenhum documento foi enviado ao Drive.</p>
+  {% endif %}
+</div>
+
+
+</div>
+
+{% endblock %}

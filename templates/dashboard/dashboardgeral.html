@@ -6,10 +6,29 @@
 
 {% block content%}
     <h1 class="text-2xl font-bold text-gray-800 mb-1">Gráficos e Análises</h1>
-    <p class="text-sm text-gray-600 mb-4">Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.</p>
+    <p class="text-sm text-gray-600 mb-4">
+        Visualizações completas dos dados do programa Futuras Cientistas com análises detalhadas de performance, diversidade e evolução temporal.
+    </p>
+
+    <!-- BIG NUMBERS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white shadow rounded-lg p-6 text-center">
+            <h3 class="text-gray-600 text-sm font-medium">Total de Projetos</h3>
+            <p id="total-projetos" class="text-3xl font-bold text-indigo-600 mt-2">0</p>
+        </div>
+        <div class="bg-white shadow rounded-lg p-6 text-center">
+            <h3 class="text-gray-600 text-sm font-medium">Projetos Iniciados</h3>
+            <p id="total-iniciados" class="text-3xl font-bold text-green-600 mt-2">0</p>
+        </div>
+        <div class="bg-white shadow rounded-lg p-6 text-center">
+            <h3 class="text-gray-600 text-sm font-medium">Projetos Concluídos</h3>
+            <p id="total-concluidos" class="text-3xl font-bold text-blue-600 mt-2">0</p>
+        </div>
+    </div>
+    <!-- /BIG NUMBERS -->
 
     <div class="w-full">
-        <div class="flex flex-col -mx-2">
+        <div class="flex flex-col -mx-2" style="display: none;">
             <div class="w-full px-2">
                 <h2 class="text-xl font-bold text-gray-800 mb-1">Evolução Temporal</h2>
             </div>
@@ -17,33 +36,17 @@
             <div class="w-full px-2 flex gap-5 flex-col md:flex-row">
                 <div class="w-full md:w-1/2">
                     <div class="bg-white shadow-md rounded-lg h-96 relative">
-                      <canvas id="graficoEvolucaoInscricoesProjeto"></canvas>
+                        <canvas id="graficoEvolucaoInscricoesProjeto"></canvas>
                     </div>
                 </div>
                   
                 <div class="w-full md:w-1/2">
                     <div class="bg-white shadow-md rounded-lg h-96 relative">
-                      <canvas id="graficoFunilPerformanceAlunas"></canvas>
+                        <canvas id="graficoFunilPerformanceAlunas"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-
-        {% comment %} <div class="flex flex-wrap -mx-2 mt-8">
-            <div class="w-full px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-1">Distribuição por Tipo de Escola e PCD</h2>
-            </div>
-
-            <div class="w-full px-2">
-              <div class="bg-white shadow-md rounded-lg h-96 relative">
-                <canvas id="graficoBarra"></canvas>
-              </div>
-            </div>
-        </div> {% endcomment %}
-
-
-
-
 
         <!-- NOVOS GRÁFICOS: Regional e Formação -->
         <div class="flex flex-col md:flex-row gap-5 -mx-2 mt-8">
@@ -60,15 +63,6 @@
                     <canvas id="graficoDistribuicaoEstados"></canvas>
                 </div>
             </div>
-
-
-
-            {% comment %} <div class="w-full md:w-1/2 px-2">
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Distribuição por Tempo de Formação</h2>
-                <div class="bg-white shadow-md rounded-lg h-96 relative flex items-center justify-center">
-                    <canvas id="graficoDistribuicaoFormacao"></canvas>
-                </div>
-            </div> {% endcomment %}
         </div>
     </div>
 
@@ -77,7 +71,27 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
     <script>
-        // Função para buscar dados da API
+        // Atualiza os Big Numbers com dados da rota /api/projetos-em-andamento/
+        async function atualizarBigNumbers() {
+            try {
+                const resp = await fetch('/usuarios/api/projetos-em-andamento/');
+                if (!resp.ok) throw new Error('Erro ao buscar projetos');
+                const data = await resp.json();
+
+                // use os totais que vêm prontos da API
+                document.getElementById('total-projetos').textContent   = data.total_projetos ?? 0;
+                document.getElementById('total-concluidos').textContent = data.total_concluido ?? 0;
+
+                // se quiser exibir “em andamento”, use o length do array
+                document.getElementById('total-iniciados').textContent  =
+                    (data.projetos_em_andamento || []).length;
+            } catch (error) {
+                console.error('Erro Big Numbers:', error);
+            }
+        }
+
+
+        // --- Funções de gráficos existentes ---
         async function fetchDadosDiversidade() {
             try {
                 const response = await fetch('/usuarios/api/dashboard-diversidade/');
@@ -150,7 +164,10 @@
         }
 
         async function inicializarTodosGraficos() {
-            // Gráfico de Barras
+            // Chamada inicial dos Big Numbers
+            atualizarBigNumbers();
+
+            // Gráfico de Barras Diversidade
             const dadosDiversidade = await fetchDadosDiversidade();
             if (dadosDiversidade && dadosDiversidade.grafico_barra) {
                 new Chart(document.getElementById('graficoBarra'), {
@@ -252,15 +269,35 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
+                            // configura o plugin datalabels para mostrar dentro da barra
+                            datalabels: {
+                                color: '#000000ff',              // cor do texto
+                                anchor: 'center',          // ancora no centro
+                                align: 'center',           // centralizado verticalmente
+                                font: {
+                                    weight: 'bold',
+                                    size: 14
+                                },
+                                formatter: (value) => value // exibe o valor diretamente
+                            }
                         },
                         scales: {
-                            y: { beginAtZero: true, title: { display: true, text: 'Quantidade de Projetos' } },
-                            x: { title: { display: true, text: 'Regiões do Brasil' } }
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Quantidade de Projetos' },
+                                grid: { display: false }
+                            },
+                            x: {
+                                title: { display: true, text: 'Regiões do Brasil' },
+                                grid: { display: false }
+                            }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels] // registra o plugin
                 });
             }
+
 
             // Distribuição por Estado
             const dadosDistribuicaoEstados = await fetchDadosDistribuicaoEstados();
@@ -295,7 +332,6 @@
                                 beginAtZero: true, 
                                 grid: { display: false },
                                 ticks: { display: false }
-
                             },
                             x: { 
                                 title: { display: true, text: 'Estados' },
@@ -306,9 +342,6 @@
                     plugins: [ChartDataLabels]
                 });
             }
-
-
-
 
             // Distribuição Formação
             const dadosFormacao = await fetchDadosDistribuicaoFormacao();

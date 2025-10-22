@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualização de Cadastro Necessária</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #71569e, #8b6cb8);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+        }
+        .alert-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .alert-box h3 {
+            color: #856404;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        .alert-box p {
+            color: #856404;
+            margin: 0;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #b3e0ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 {
+            color: #0066cc;
+            margin: 0 0 8px 0;
+            font-size: 16px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #71569e, #8b6cb8);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin: 20px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(113, 86, 158, 0.3);
+        }
+        .steps {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .step-number {
+            background: #71569e;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .step-content h4 {
+            margin: 0 0 4px 0;
+            color: #71569e;
+            font-size: 16px;
+        }
+        .step-content p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .test-notice {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            text-align: center;
+        }
+        .test-notice strong {
+            color: #c62828;
+        }
+        .contact-info {
+            background: #e8f5e8;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .contact-info a {
+            color: #71569e;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Atualização de Cadastro Necessária</h1>
+        </div>
+        
+        <div class="content">
+            <div class="alert-box">
+                <h3>⚠️ Atenção Requerida</h3>
+                <p>Olá <strong>{{ nome }}</strong>, identificamos que seu cadastro precisa de atualização para continuar no processo seletivo.</p>
+            </div>
+
+            <p>Prezada aluna,</p>
+            
+            <p>Verificamos que seu cadastro no sistema Futuras Cientistas está com status de <strong>Rascunho ou Indeferido</strong> e precisa ser atualizado para que possamos dar continuidade ao seu processo de inscrição.</p>
+
+            <div class="info-box">
+                <h3>📋 O que precisa ser feito?</h3>
+                <p>É necessário completar todas as informações obrigatórias do formulário de inscrição e enviar para análise.</p>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Acesse o Sistema</h4>
+                        <p>Clique no botão abaixo para acessar sua área de cadastro</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Revise suas Informações</h4>
+                        <p>Verifique todos os dados cadastrais e documentos enviados</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Complete o Cadastro</h4>
+                        <p>Preencha todas as informações pendentes e envie para análise</p>
+                    </div>
+                </div>
+            </div>
+
+            {% comment %} <div style="text-align: center;">
+                <a href="{{ link_atualizacao }}" class="button">
+                    📝 Atualizar Meu Cadastro
+                </a>
+            </div> {% endcomment %}
+
+            <div class="contact-info">
+                <p><strong>Precisa de ajuda?</strong><br>
+                Entre em contato conosco: <a href="mailto:futurascientistas@cetene.gov.br">futurascientistas@cetene.gov.br</a></p>
+            </div>
+
+            <p><strong>Prazo importante:</strong> Recomendamos que a atualização seja feita o mais breve possível para garantir sua participação no processo seletivo.</p>
+
+            <p>Atenciosamente,<br>
+            <strong>Equipe Futuras Cientistas</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>Este é um e-mail automático. Por favor, não responda esta mensagem.</p>
+            <p>Futuras Cientistas © 2024. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</body>
+</html>

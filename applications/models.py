@@ -187,6 +187,25 @@ class Application(models.Model):
     numero = models.CharField(max_length=10, verbose_name="Número")
     cidade = models.ForeignKey(Cidade, on_delete=models.SET_NULL, null=True, verbose_name="Cidade")
     estado = models.ForeignKey(Estado, on_delete=models.SET_NULL, null=True, verbose_name="Estado")
+    
+    @property
+    def soma_notas(self):
+        notas = [
+            self.portugues,
+            self.matematica,
+            self.biologia,
+            self.quimica,
+            self.fisica,
+            self.historia,
+            self.geografia,
+        ]
+        return sum(nota for nota in notas if nota is not None)
+
+    @property
+    def nota_final_percentual(self):
+        if self.soma_notas:
+            return (self.soma_notas * 100) / 25
+        return None
 
     def clean(self):
         now = timezone.now().date()  

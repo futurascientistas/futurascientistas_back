@@ -8,6 +8,14 @@
     <!-- Importa Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css"
+    />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css"
+    />
 
 
     <style>
@@ -159,7 +167,7 @@
                 <line x1="10" y1="20" x2="10" y2="4"/>
                 <line x1="16" y1="20" x2="16" y2="14"/>
                 </svg>
-                <span class="menu-text">Gráfico e Análises Gerais</span>
+                <span class="menu-text">Gráficos e Análises Gerais</span>
             </li>
             
             <li class="menu-item {% if active_item == 'perfil' %}active{% endif %}" data-path="{% url 'dashboardprofessoras' %}" style="cursor:pointer;">
@@ -181,8 +189,22 @@
                 <line x1="10" y1="20" x2="10" y2="4"/>
                 <line x1="16" y1="20" x2="16" y2="14"/>
                 </svg>
-                <span class="menu-text">Distribuição de Alunas e Cotas</span>
+                <span class="menu-text">Gráficos de Alunas</span>
             </li>
+
+
+            <!-- CORRETO -->
+            <li class="menu-item {% if active_item == 'alunas_rascunho_indeferida' %}active{% endif %}" data-path="{% url 'application:alunas_rascunho_indeferida' %}" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="20" x2="4" y2="10"/>
+                    <line x1="10" y1="20" x2="10" y2="4"/>
+                    <line x1="16" y1="20" x2="16" y2="14"/>
+                </svg>
+                <span class="menu-text">Inscrições Rascunho/Indeferida</span>
+            </li>
+
             {% endif %}
 
             {% for item in menu_items %}
