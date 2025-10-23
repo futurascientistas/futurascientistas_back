@@ -13,6 +13,8 @@ urlpatterns = [
     path('verificar-inscricao/<uuid:project_id>/', VerificarInscricaoView.as_view(), name='verificar-inscricao'),
     path('projeto/<uuid:id>/', ProjectRetrieveAPIView.as_view(), name='project-detail'),
     path('', lista_projetos, name='lista_projetos'),
+
+    path('avaliacao-homologacao', lista_projetos_para_homologar_inscricao, name='lista_projetos_para_homologar_inscricao'),
     path('projetos/<uuid:projeto_id>/', detalhes_projeto, name='detalhes_projeto'),
     path('projetos/<uuid:projeto_id>/exportar-excel/', exportar_alunas_excel, name='exportar_alunas_excel'),
     path('<uuid:pk>/atualizar_status/', atualizar_status),
