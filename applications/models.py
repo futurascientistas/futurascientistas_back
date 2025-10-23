@@ -30,6 +30,8 @@ class Application(models.Model):
         ('avaliacao', 'Em Avaliação'),
         ('deferida', 'Homologada'),
         ('indeferida', 'Indeferida'),
+        ('aprovada', 'Aprovada'),
+        ('reprovada', 'Reprovada'),
     ]
 
     JALECO_CHOICES = [

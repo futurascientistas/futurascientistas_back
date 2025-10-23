@@ -1,3 +1,5 @@
+import statistics
+from django.urls import reverse
 import magic
 import mimetypes
 from rest_framework import generics, status,permissions
@@ -23,6 +25,8 @@ from django.utils import timezone
 from .models import Application
 from .forms import ApplicationProfessorForm
 from django.template.loader import render_to_string
+from django.core.paginator import Paginator
+from django.db.models import Avg 
 
 
 def _is_periodo_inscricao_aberto():
@@ -515,7 +519,7 @@ def _handle_save_or_submit(request, form, instance, acao, current_step=None, ste
     agora = timezone.now().date()
 
     try:
-        if projeto and not (projeto.inicio_inscricoes <= agora <= projeto.fim_inscricoes):
+        if projeto and not (projeto.inicio_inscricoes <= agora ):
             raise PermissionDenied("Fora do período de inscrição.")
         
         if Application.objects.filter(usuario=request.user, projeto=projeto).exclude(pk=instancia.pk).exists():
@@ -558,11 +562,13 @@ def editar_inscricao(request, inscricao_id):
 
 @login_required
 def visualizar_inscricao(request, inscricao_id):
-    inscricao = get_object_or_404(Application, id=inscricao_id, usuario=request.user)
+    inscricao = get_object_or_404(Application, id=inscricao_id)
 
     # Verifica se o usuário é dono da inscrição ou admin
     if not (inscricao.usuario == request.user or request.user.is_staff or request.user.is_superuser):
         return HttpResponseForbidden("Você não tem permissão para visualizar essa inscrição.")
+
+    is_admin = request.user.is_staff or request.user.is_superuser
 
     # Verifica qual form usar
     if 'professora' in inscricao.usuario.roles:
@@ -578,6 +584,8 @@ def visualizar_inscricao(request, inscricao_id):
 
     comentarios = Comentario.objects.filter(aplicacao=inscricao).order_by('-criado_em')
 
+    source = request.GET.get('source')
+
     if request.method == 'POST':
         comentario_form = ComentarioForm(request.POST)
         if comentario_form.is_valid():
@@ -585,15 +593,21 @@ def visualizar_inscricao(request, inscricao_id):
             comentario.usuario = request.user
             comentario.aplicacao = inscricao
             comentario.save()
-            return redirect('application:visualizar_inscricao', inscricao_id=inscricao.id)
+            redirect_url = reverse('application:visualizar_inscricao', kwargs={'inscricao_id': inscricao.id})
+            if source:
+                redirect_url += f'?source={source}'
+            return redirect(redirect_url)
     else:
         comentario_form = ComentarioForm()
+
+    show_back_button_to_detalhes = is_admin and source == 'detalhes'
 
     return render(request, template_name, {
         'form': form,
         'comentarios': comentarios,
         'comentario_form': comentario_form,
         'readonly': True,
+        'show_back_button_to_detalhes': show_back_button_to_detalhes,
     })
 
 class InscreverProjetoView(generics.CreateAPIView):
@@ -658,6 +672,169 @@ class AnexoDownloadView(APIView):
         return HttpResponse(arquivo, content_type=mime_type, headers={
             "Content-Disposition": f'attachment; filename="{filename}"'
         })
+
+@login_required
+def lista_inscricoes(request, projeto_id):
+
+    projeto = get_object_or_404(Project, id=projeto_id)
+
+    queryset = Application.objects.filter(
+        projeto__id=projeto_id
+    ).select_related(
+        'usuario', 
+        'tipo_de_vaga',
+    )
+    
+    q = request.GET.get('q', '')
+
+    status = request.GET.get('status', '')
+    ordenar = request.GET.get('ordenar', '-criado_em') 
+
+    if q:
+        queryset = queryset.filter(
+            Q(usuario__nome__icontains=q)
+        )
+
+    if status:
+        queryset = queryset.filter(status=status) 
+
+    allowed_order_fields = [
+        'usuario__nome', 
+        '-usuario__nome', 
+        'criado_em', 
+        '-criado_em', 
+        'status'
+    ]
+
+    if ordenar == 'nome':
+        db_ordenar = 'usuario__nome'
+    elif ordenar == '-nome':
+        db_ordenar = '-usuario__nome'
+    elif ordenar in allowed_order_fields:
+        db_ordenar = ordenar
+    else:
+        db_ordenar = '-criado_em' 
+    
+    queryset = queryset.order_by(db_ordenar)
+
+    # Paginação
+    paginator = Paginator(queryset, 10)
+    page_number = request.GET.get('page')
+    inscricoes_page = paginator.get_page(page_number)
+
+    status_choices = []
+    try:
+        status_choices = Application._meta.get_field('status').choices
+    except Exception as e:
+        logger.warning(f"Não foi possível obter choices de status: {e}")
+
+    return render(request, 'components/applications/lista_inscricoes.html', {
+        'inscricoes': inscricoes_page,
+        'status_choices': status_choices,
+        'projeto_id': projeto_id,
+        'projeto': projeto,
+        'filtros': {
+            'q': q,
+            'status': status,
+            'ordenar': ordenar,
+        }
+    })
+
+@login_required
+def visualizar_detalhes_da_inscricao(request, inscricao_id):
+
+    inscricao = get_object_or_404(Application, id=inscricao_id)
+    
+    if request.user != inscricao.usuario and 'admin' not in request.user.roles and 'avalidador' not in request.user.roles:
+        return HttpResponse("Acesso negado", status=403)
+    
+
+    if request.user == inscricao.usuario and request.method == 'POST':
+        messages.error(request, "Você não tem permissão para modificar a revisão da sua própria inscrição.")
+
+        return redirect('application:detalhes_da_inscricao', inscricao_id=inscricao_id)
+
+
+    form = ApplicationReviewForm(instance=inscricao) 
+
+    if request.method == 'POST':
+        
+        if 'nota_id_update' in request.POST and request.POST.get('nota_id_update'):
+            nota_id = request.POST.get('nota_id_update')
+            nova_nota_original = request.POST.get('nota_original_update', '').strip()
+            novo_tipo_conceito = request.POST.get('tipo_conceito_update', '').strip()
+
+            try:
+                with transaction.atomic():
+                    nota = get_object_or_404(Nota, id=nota_id, historico__usuario=inscricao.usuario)
+                    nota.nota_original = nova_nota_original
+                    nota.tipo_conceito = novo_tipo_conceito
+                    nota.save()
+                    
+                    messages.success(request, f"Nota da disciplina {nota.disciplina.nome} ({nota.bimestre}º Bimestre) alterada com sucesso!")
+            
+            except Nota.DoesNotExist:
+                messages.error(request, "Erro: A nota selecionada não foi encontrada ou não pertence a esta inscrição.")
+            except Exception as e:
+                messages.error(request, f"Ocorreu um erro ao salvar a nota: {e}")
+            
+            url_destino = reverse('application:detalhes_da_inscricao', kwargs={'inscricao_id': inscricao_id})
+            return redirect(url_destino)
+
+        else:
+
+            form = ApplicationReviewForm(request.POST, instance=inscricao)
+
+            if form.is_valid():
+                try:
+                    form.save(user=request.user)
+                    messages.success(request,"Revisão da inscrição e novo comentário salvos com sucesso!",extra_tags='revisao_sucesso')
+                    return redirect('application:detalhes_da_inscricao', inscricao_id=inscricao.id)
+
+                except Exception as e:
+                    messages.error(request,f"Erro ao salvar a revisão/comentário: {e}")
+            
+
+    notas = None
+    historico = None
+    nota_media_calculada = None
+    nota_mediana_calculada = None
+
+    if inscricao.usuario.funcao == 'estudante':
+        historico = HistoricoEscolar.objects.filter(usuario=inscricao.usuario).first()
+
+        if historico:
+            notas = (
+                historico.notas
+                .select_related('disciplina')
+                .order_by('disciplina__nome', 'bimestre')
+            )
+
+            media_query = historico.notas.aggregate(media_final=Avg('valor'))
+            
+            if media_query['media_final'] is not None:
+                nota_media_calculada = media_query['media_final']
+            
+            percentuais = list(historico.notas.values_list('valor', flat=True))
+                        
+            if percentuais:
+                nota_mediana_calculada = statistics.median(percentuais)
+
+    comentarios = Comentario.objects.filter(aplicacao=inscricao).select_related('usuario').order_by('-criado_em')
+
+    context = {
+        'inscricao': inscricao,
+        'historico': historico,
+        'endereco': inscricao.usuario.endereco,
+        'escola': inscricao.usuario.escola,
+        'notas': notas,
+        'form': form, 
+        'comentarios': comentarios,
+        'nota_media_calculada': nota_media_calculada,
+        'nota_mediana_calculada': nota_mediana_calculada,
+    }
+
+    return render(request, 'components/applications/detalhe_inscricao.html', context)
 
 
 from django.views.generic import ListView, View

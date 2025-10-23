@@ -176,7 +176,8 @@ def menu_sidebar(request):
             "roles": ["admin", "tutor"],
             "url": "/project",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 5v14m-7-7h14"/>
                 </svg>
             """
@@ -187,7 +188,8 @@ def menu_sidebar(request):
             "roles": ["admin", "tutor"],
             "url": "/project-list",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
                 <path d="M3 10h18"/>
                 </svg>
@@ -199,9 +201,12 @@ def menu_sidebar(request):
             "roles": ["estudante"],
             "url": "/inscricoes/minhas-inscricoes/",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4"/>
-                <path d="M5.5 21h13a2 2 0 0 0-13 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" ry="2"/>
+                <line x1="7" y1="8" x2="17" y2="8"/>
+                <line x1="7" y1="12" x2="17" y2="12"/>
+                <line x1="7" y1="16" x2="13" y2="16"/>
                 </svg>
             """
         },
@@ -211,9 +216,12 @@ def menu_sidebar(request):
             "roles": ["professora"],
             "url": "/inscricoes/minhas-inscricoes/",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="7" r="4"/>
-                <path d="M5.5 21h13a2 2 0 0 0-13 0z"/>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" ry="2"/>
+                <line x1="7" y1="8" x2="17" y2="8"/>
+                <line x1="7" y1="12" x2="17" y2="12"/>
+                <line x1="7" y1="16" x2="13" y2="16"/>
                 </svg>
             """
         },
@@ -223,7 +231,8 @@ def menu_sidebar(request):
             "roles": ["estudante", "professora", "avaliadora"],
             "url": "/projetos",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2"/>
                 <rect x="2" y="2" width="20" height="16" rx="2" ry="2"/>
                 </svg>
@@ -235,7 +244,8 @@ def menu_sidebar(request):
             "roles": [],  # visível para todos
             "url": "/cronograma",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/>
@@ -247,10 +257,10 @@ def menu_sidebar(request):
             "id": "avaliacao",
             "title": "Avaliação de inscrição",
             "roles": ["admin"],
-            # "url": "/dashboard/avaliacao",
-            "url": "/404",
+            "url": "/projetos/avaliacao-homologacao",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8 12 2"/>
                 </svg>
             """
@@ -262,7 +272,8 @@ def menu_sidebar(request):
             # "url": "/dashboard/notificacoes",
             "url": "/404",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
@@ -275,7 +286,8 @@ def menu_sidebar(request):
             # "url": "/dashboard/frequencia",
             "url": "/404",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 3v18h18"/>
                 <path d="M7 17l4-4 3 3 4-7"/>
                 </svg>
@@ -288,7 +300,8 @@ def menu_sidebar(request):
             # "url": "/dashboard/indicadores",
             "url": "/404",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20V10"/>
                 <path d="M18 20V4"/>
                 <path d="M6 20v-6"/>
@@ -302,7 +315,8 @@ def menu_sidebar(request):
             # "url": "/dashboard/analise",
             "url": "/404",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 4h16v16H4z"/>
                 <path d="M4 9h16"/>
                 <path d="M9 20V9"/>
@@ -316,7 +330,8 @@ def menu_sidebar(request):
             # "url": "/dashboard/dados",
             "url": "/404",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <path d="M3 9h18"/>
                 <path d="M9 21V9"/>
@@ -329,7 +344,7 @@ def menu_sidebar(request):
             "roles": ["admin"],
             "url": "/usuarios/dashboard/grupos",
             "icon_svg": """
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
                     <circle cx="9" cy="7" r="4"/>

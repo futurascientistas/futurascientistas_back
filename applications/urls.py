@@ -26,4 +26,8 @@ urlpatterns = [
 
     path('visualizar/<uuid:inscricao_id>/', visualizar_inscricao, name='visualizar_inscricao'),
     path('filtrar-cidade-estado/', filtrar_cidade_estado, name='filtrar_cidade_estado'),
+
+    path('lista-inscricoes/<uuid:projeto_id>', lista_inscricoes, name='lista_inscricoes'),
+
+    path('detalhes-da-inscricao/<uuid:inscricao_id>/', visualizar_detalhes_da_inscricao, name='detalhes_da_inscricao'),
 ]
