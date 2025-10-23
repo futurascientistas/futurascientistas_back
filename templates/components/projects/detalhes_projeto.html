@@ -178,7 +178,7 @@
 
   <a href="{% url 'lista_projetos' %}" class="voltar-link">← Voltar para a lista</a>
 </div>
-{% if request.user.funcao == 'admin' %}
+{% if request.user.funcao == 'admin' or request.user.funcao == 'avaliadora' %}
 <h2 class="table-title">Alunas vinculadas</h2>
 <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
   <h2 class="table-title">Alunas vinculadas</h2>
