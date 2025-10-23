@@ -179,9 +179,8 @@
   <a href="{% url 'lista_projetos' %}" class="voltar-link">← Voltar para a lista</a>
 </div>
 {% if request.user.funcao == 'admin' %}
-<h2 class="table-title">Alunas vinculadas</h2>
 <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-  <h2 class="table-title">Alunas vinculadas</h2>
+  <h2 class="table-title">Inscritas</h2>
   <a href="{% url 'exportar_alunas_excel' projeto.id %}" 
      class="btn-excel" 
      style="background: #217346; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 8px; text-decoration: none;">
@@ -220,6 +219,11 @@ document.addEventListener('DOMContentLoaded', function () {
       flex: 1,
     },
     {
+      headerName: "Função",
+      field: "funcao_value",
+      flex: 1,
+    },
+    {
       headerName: "Status",
       field: "status_label",
       flex: 1,
@@ -244,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tipo_ensino: "{{ a.tipo_ensino }}",
         status_label: "{{ a.status_label }}",
         status_value: "{{ a.status_value }}",
+        funcao_value: "{{ a.funcao }}",
         nota_final: "{{ a.nota_final_percentual }}",  
       },
     {% empty %}
@@ -260,7 +265,24 @@ document.addEventListener('DOMContentLoaded', function () {
     rowSelection: 'single',
     headerHeight: 38,
     rowHeight: 42,
+    onGridReady: function(params) {
+      // 🔹 Adiciona o listener do botão depois que o grid está pronto
+      document.querySelector('.btn-excel').addEventListener('click', function (event) {
+        event.preventDefault();
+
+        const model = params.api.getFilterModel(); // ✅ agora a API existe
+        const filtros = encodeURIComponent(JSON.stringify(model));
+        const exportUrl = this.getAttribute('href');
+        window.location.href = `${exportUrl}?filtros=${filtros}`;
+      });
+    },
     animateRows: true,
+      defaultColDef: {
+      filter: true,              // 🔹 Habilita o filtro na parte superior de cada coluna
+      floatingFilter: true,      // 🔹 Mostra o campo de filtro logo abaixo do header
+      sortable: true,            // (opcional) permite ordenar as colunas
+      resizable: true,           // (opcional) permite redimensionar colunas
+    },
     onCellValueChanged: function (event) {
       if (event.colDef.field === 'status_label') {
         atualizarStatus(event.data.id, event.newValue);
