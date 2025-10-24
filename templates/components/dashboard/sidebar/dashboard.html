@@ -206,35 +206,95 @@
             </li>
 
             {% endif %}
-        </div>
-    </div>
 
-    <div class="lg:col-span-3 p-6 rounded-xl shadow-lg border bg-white">
-        <h4 class="text-xl font-bold text-[#71569E] mb-4 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-pink-500" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M16 8h.01"/><path d="M3 11v2a1 1 0 0 0 1 1h2l4 5v-14l-4 5h-2a1 1 0 0 0-1 1z"/><path d="M16 8a5 5 0 0 1 0 8"/>
-            </svg>
-            Comunicados e Prazos
-        </h4>
-        <ul class="space-y-3 text-gray-700">
-            <li class="flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 mr-3 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <div>
-                    <span class="font-semibold">Início do Programa:</span> A fase de mentoria inicia em <strong>15 de Janeiro de 2026</strong>.
-                </div>
+            {% for item in menu_items %}
+            <li class="menu-item {% if active_item == item.id %}active{% endif %}" data-path="{{ item.url }}">
+                {{ item.icon_svg|safe }}
+                <span class="menu-text">{{ item.title }}</span>
             </li>
-            <li class="flex items-start">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 mr-3 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {% endfor %}
+            <li class="menu-item logout" onclick="window.location.href='{% url 'logout' %}'" style="cursor:pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
                 </svg>
-                <div>
-                    <span class="font-semibold">Dúvidas:</span> Acesse a seção de <a href="#" class="text-indigo-600 hover:underline font-medium">FAQ</a>.
-                </div>
+                <span class="menu-text">Sair</span>
             </li>
         </ul>
     </div>
 
-</div>
-{% endblock %}
+    <div class="content">
+        {% block content %}
+        <h1 style="font-size: 2.5rem; font-weight: 700; color: #71569E; margin-bottom: 0.5rem;">
+            Bem-vinda, {{ user.nome }}!
+        </h1>
+        <p style="font-size: 1.125rem; color: #444; margin-top: 0;">
+            Estamos felizes em ter você aqui.
+        </p>
+        {% endblock %}
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const overlay = document.getElementById('overlay');
+        const menuItems = document.querySelectorAll('.menu-item');
+
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            updateToggleButtonIcon();
+        }
+
+        function updateToggleButtonIcon() {
+            if (sidebar.classList.contains('collapsed')) {
+                toggleBtn.innerHTML = '&raquo;';
+                toggleBtn.setAttribute('aria-label', 'Expandir sidebar');
+            } else {
+                toggleBtn.innerHTML = '&laquo;'; 
+                toggleBtn.setAttribute('aria-label', 'Contrair sidebar');
+            }
+        }
+
+        function updateOverlay() {
+          if(window.innerWidth <= 768 && !sidebar.classList.contains('collapsed')) {
+            overlay.classList.add('visible');
+          } else {
+            overlay.classList.remove('visible');
+          }
+        }
+
+        // Navegar ao clicar no menu
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const url = item.getAttribute('data-path');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        });
+
+        function handleInitialState() {
+            if (isMobile()) {
+                sidebar.classList.add('collapsed');
+            } else {
+                sidebar.classList.remove('collapsed');
+            }
+            updateToggleButtonIcon();
+            updateOverlay();
+        }
+        
+        toggleBtn.addEventListener('click', toggleSidebar);
+        window.addEventListener('resize', handleInitialState);
+
+        handleInitialState();
+    </script>
+
+</body>
+</html>
