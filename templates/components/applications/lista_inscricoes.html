@@ -1,0 +1,199 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/project/projectlist.css' %}">
+
+<div class="p-4 sm:p-6 lg:p-8">
+    <div class="pageHeader">
+        <div>
+            <h1 class="pageTitle text-3xl font-extrabold text-gray-900 mb-6">
+                Inscrições
+                <span class="text-xl font-medium text-gray-500 ml-2">
+                    (Projeto ID: {{ projeto.nome }})
+                </span>
+            </h1>
+
+            <form method="GET" action="{% url 'application:lista_inscricoes' projeto_id=projeto_id %}" 
+                  class="bg-white p-4 rounded-xl shadow-lg mb-6 flex flex-col sm:flex-row gap-4">
+                <div class="flex-grow">
+                    <label for="id_q" class="sr-only">Buscar Candidata</label>
+                    <input 
+                        type="text" 
+                        name="q" 
+                        id="id_q" 
+                        value="{{ filtros.q }}"
+                        placeholder="Nome da candidata"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2.5"
+                    >
+                </div>
+
+                <div class="sm:w-1/4">
+                    <label for="id_status" class="sr-only">Filtrar por Status</label>
+                    <select 
+                        name="status" 
+                        id="id_status" 
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2.5 bg-white"
+                    >
+                        <option value="">Todos os Status</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if value == filtros.status %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="sm:w-auto">
+                    <button 
+                        type="submit" 
+                        class="w-full sm:w-auto px-4 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition duration-150"
+                    >
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl shadow-xl border border-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-indigo-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Candidata
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                        Data Inscrição
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                        Tipo de Vaga
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                        Tipo de Ensino
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ações
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for inscricao in inscricoes %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {{ inscricao.usuario.nome|default:"Nome não informado" }}
+                        </div>
+                        <div class="text-xs text-gray-500">{{ inscricao.usuario.email }}</div>
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                        {{ inscricao.criado_em|date:"d/m/Y H:i" }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% with status_class=inscricao.status %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if status_class == 'deferida' %} bg-green-100 text-green-800
+                                {% elif status_class == 'indeferida' %} bg-red-100 text-red-800
+                                {% elif status_class == 'avaliacao' %} bg-yellow-100 text-yellow-800
+                                {% elif status_class == 'pendente' %} bg-blue-100 text-blue-800
+                                {% else %} bg-gray-100 text-gray-800 {% endif %}">
+                                {{ inscricao.get_status_display }}
+                            </span>
+                        {% endwith %}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                        {{ inscricao.tipo_de_vaga.nome|default:"Ampla Concorrência" }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                        {{ inscricao.usuario.escola.tipo_ensino.nome|default:"Não informado" }}
+                    </td>
+
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        {% if inscricao.status != 'rascunho' %}
+                            <a href="{% url 'application:detalhes_da_inscricao' inscricao_id=inscricao.id %}" 
+                               class="text-indigo-600 hover:text-indigo-900 font-semibold">
+                                Ver Detalhes
+                            </a>
+                        {% else %}
+                            <button 
+                                onclick="mostrarAlertaStatus('{{ inscricao.get_status_display }}')" 
+                                class="text-gray-400 hover:text-gray-600 font-semibold">
+                                Ver Detalhes
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        Nenhuma inscrição encontrada para este projeto com os filtros aplicados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação -->
+    {% if inscricoes.has_other_pages %}
+        <nav class="bg-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-xl shadow-lg gap-3">
+            <div class="flex justify-between w-full sm:w-auto">
+                {% if inscricoes.has_previous %}
+                    <a href="{% url 'application:lista_inscricoes' projeto_id=projeto_id %}?page={{ inscricoes.previous_page_number }}{% if filtros.q %}&q={{ filtros.q }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Anterior
+                    </a>
+                {% endif %}
+                
+                {% if inscricoes.has_next %}
+                    <a href="{% url 'application:lista_inscricoes' projeto_id=projeto_id %}?page={{ inscricoes.next_page_number }}{% if filtros.q %}&q={{ filtros.q }}{% endif %}{% if filtros.status %}&status={{ filtros.status }}{% endif %}" 
+                       class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Próxima
+                    </a>
+                {% endif %}
+            </div>
+
+            <p class="text-sm text-gray-700">
+                Página <span class="font-medium">{{ inscricoes.number }}</span> de 
+                <span class="font-medium">{{ inscricoes.paginator.num_pages }}</span>
+            </p>
+        </nav>
+    {% endif %}
+</div>
+
+<div id="alerta-status" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl p-6 w-96 text-center">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Ação não permitida</h2>
+        <p class="text-gray-600 mb-6">
+            Esta inscrição ainda <strong>não está deferida</strong> na etapa de homologação.<br>
+            <span id="status-atual" class="block mt-2 text-sm text-gray-500"></span>
+        </p>
+        <button onclick="fecharAlertaStatus()" 
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition">
+            Entendido
+        </button>
+    </div>
+</div>
+
+<script>
+function mostrarAlertaStatus(statusAtual) {
+    const alerta = document.getElementById('alerta-status');
+    const statusTexto = document.getElementById('status-atual');
+    statusTexto.textContent = `Status atual: ${statusAtual}`;
+    alerta.classList.remove('hidden');
+}
+
+function fecharAlertaStatus() {
+    document.getElementById('alerta-status').classList.add('hidden');
+}
+</script>
+
+{% endblock content %}

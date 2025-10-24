@@ -1,3 +1,4 @@
+import re
 from django import template
 from django.core.exceptions import FieldDoesNotExist
 
@@ -72,4 +73,38 @@ def get_display(obj, field_name):
         return str(value)
 
     return value if value is not None else ''
+
+@register.filter
+def format_cpf(value):
+    """Formata uma string de 11 dígitos em CPF (XXX.XXX.XXX-XX)."""
+    if not value:
+        return ""
+    
+    cleaned_value = re.sub(r'\D', '', str(value))
+    
+    if len(cleaned_value) == 11:
+        return f"{cleaned_value[:3]}.{cleaned_value[3:6]}.{cleaned_value[6:9]}-{cleaned_value[9:]}"
+    
+    return value 
+
+@register.filter
+def format_phone(value):
+    """
+    Formata números de telefone (8 ou 9 dígitos + DDD), 
+    priorizando o formato brasileiro (XX) XXXXX-XXXX ou (XX) XXXX-XXXX.
+    """
+    if not value:
+        return ""
+        
+    cleaned_value = re.sub(r'\D', '', str(value))
+    
+    length = len(cleaned_value)
+    
+    if length == 11:
+        return f"({cleaned_value[:2]}) {cleaned_value[2:7]}-{cleaned_value[7:]}"
+    elif length == 10:
+        return f"({cleaned_value[:2]}) {cleaned_value[2:6]}-{cleaned_value[6:]}"
+        
+    return value 
+
 

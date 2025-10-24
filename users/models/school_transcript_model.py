@@ -22,6 +22,7 @@ class Nota(models.Model):
         ("LETRAS", "Conceito em letras (MB, B, R, I)"),
         ("0-10", "Nota de 0 a 10"),
         ("0-25", "Nota de 0 a 25"),
+        ("0-30", "Nota de 0 a 30"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -78,6 +79,16 @@ class Nota(models.Model):
                 raise ValueError("Nota fora da escala 0-25")
             # normaliza para 0–10
             self.valor = round(num / 25 * 10, 2)
+        
+        elif self.tipo_conceito == "0-30":
+            try:
+                num = float(n)
+            except ValueError:
+                raise ValueError("Informe um número válido para notas do tipo 0-30")
+            if not 0 <= num <= 30:
+                raise ValueError("Nota fora da escala 0-30")
+            # normaliza para 0–10
+            self.valor = round(num / 30 * 10, 2)
 
         super().save(*args, **kwargs)
 

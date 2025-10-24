@@ -849,6 +849,36 @@ class ApplicationProfessorForm(forms.ModelForm):
 
         return cleaned_data
 
+class ApplicationReviewForm(forms.ModelForm):
+  
+    comentario_novo = forms.CharField(
+        label="Adicionar Nova Observação (Comentário)",
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Insira suas observações para a revisão aqui...'})
+    )
+    
+    class Meta:
+        model = Application 
+        
+        fields = [
+            'status',
+        ]
+        
+    def save(self, commit=True, user=None):
+
+
+        inscricao = super().save(commit=commit)
+        
+        comentario_texto = self.cleaned_data.get('comentario_novo')
+        
+        if comentario_texto and user:
+            Comentario.objects.create(
+                comentario=comentario_texto,
+                usuario=user,
+                aplicacao=inscricao,
+            )
+            
+        return inscricao
 
 class ComentarioForm(forms.ModelForm):
     class Meta:

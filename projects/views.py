@@ -97,7 +97,7 @@ class ImportarProjetosView(APIView):
         arquivo = request.FILES.get('arquivo')
 
         print("Arquivo recebido:", arquivo)
-
+    
         if not arquivo:
             return Response({"erro": "Arquivo não enviado."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -380,6 +380,8 @@ def perfil_aluna(request, pk):
 from django.shortcuts import render
 from django.shortcuts import render
 from .models import Project, Regiao, Estado
+from django.db.models import Count
+from django.core.paginator import Paginator
 
 def lista_projetos(request):
     queryset = Project.objects.all()
@@ -429,3 +431,56 @@ def lista_projetos(request):
             'ordenar': ordenar,
         }
     })
+
+def lista_projetos_para_homologar_inscricao(request):
+
+    queryset = Project.objects.annotate(
+        num_inscritos=Count('application') 
+    )
+    
+    q = request.GET.get('q', '')
+    regiao_id = request.GET.get('regiao', '')
+    estado_id = request.GET.get('estado', '')  
+    formato = request.GET.get('formato', '')
+    ordenar = request.GET.get('ordenar', 'nome')
+
+    if q:
+        queryset = queryset.filter(nome__icontains=q)
+
+    if regiao_id:
+        queryset = queryset.filter(regioes_aceitas__id=regiao_id)
+
+    if estado_id:
+        queryset = queryset.filter(estados_aceitos__id=estado_id) 
+
+    if formato:
+        queryset = queryset.filter(formato=formato)
+
+    allowed_order_fields = ['nome', 'data_inicio', 'data_fim', 'vagas', 'num_inscritos', '-num_inscritos']
+    if ordenar not in allowed_order_fields and ordenar.strip('-') not in allowed_order_fields:
+        ordenar = 'nome'
+
+    queryset = queryset.order_by(ordenar)
+
+    # Paginação
+    paginator = Paginator(queryset, 10)
+    page_number = request.GET.get('page')
+    projetos_page = paginator.get_page(page_number)
+
+    regioes = Regiao.objects.all()
+    estados = Estado.objects.all()  
+
+    return render(request, 'components/projects/lista_projetos_para_avaliacao.html', {
+        'projetos': projetos_page,
+        'regioes': regioes,
+        'estados': estados,  
+        'filtros': {
+            'q': q,
+            'regiao': regiao_id,
+            'estado': estado_id, 
+            'formato': formato,
+            'ordenar': ordenar,
+        }
+    })
+
+

@@ -1,0 +1,504 @@
+{% extends 'components/dashboard/sidebar/dashboard.html' %}
+{% load static widget_tweaks %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="pageHeader mb-8">
+    <h1 class="pageTitle text-3xl font-extrabold text-gray-900">Detalhes da Inscrição</h1>
+    <p class="pageSubtitle text-xl text-indigo-600 font-semibold mt-1">
+        Projeto: {{ inscricao.projeto.nome }}
+    </p>
+</div>
+
+{% if messages %}
+<div class="mb-6">
+    {% for message in messages %}
+        <div class="
+            {% if 'success' in message.tags %}
+                bg-green-100 border border-green-300 text-green-800
+            {% elif 'error' in message.tags %}
+                bg-red-100 border border-red-300 text-red-800
+            {% elif 'warning' in message.tags %}
+                bg-yellow-100 border border-yellow-300 text-yellow-800
+            {% else %}
+                bg-blue-100 border border-blue-300 text-blue-800
+            {% endif %}
+            px-4 py-3 rounded-md shadow-sm mb-3 flex items-center justify-between
+        ">
+            <span class="font-medium">{{ message }}</span>
+            <button onclick="this.parentElement.remove()" 
+                    class="text-gray-500 hover:text-gray-700 ml-4 focus:outline-none">
+                ✕
+            </button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <div class="lg:col-span-2 bg-white shadow-2xl rounded-xl p-8">
+        
+        <div class="flex items-start space-x-6 pb-6 border-b border-gray-100 mb-8">
+            
+            <div class="flex-shrink-0 w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center border-4 border-indigo-100 overflow-hidden">
+                
+                {% if inscricao.usuario.drive_foto %}
+                    <a href="https://drive.google.com/file/d/{{ inscricao.usuario.drive_foto }}/view" 
+                        target="_blank" 
+                        title="Visualizar foto no Google Drive (Requer autenticação)" 
+                        class="w-full h-full flex items-center justify-center bg-indigo-50 hover:bg-indigo-100 transition duration-150">
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span class="sr-only">Visualizar Foto</span>
+                    </a>
+                {% else %}
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                {% endif %}
+            </div>
+            
+            <div>
+                <h2 class="text-3xl font-extrabold text-gray-900">
+                    {{ inscricao.usuario.nome }}
+                </h2>
+                <div class="text-gray-600 mt-2 space-y-1">
+                    <p class="text-sm">
+                        <span class="font-medium text-gray-700">Email:</span> {{ inscricao.usuario.email }}
+                    </p>
+                    <p class="text-sm">
+                        <span class="font-medium text-gray-700">Data de Inscrição:</span> {{ inscricao.criado_em|date:"d/m/Y H:i" }}
+                    </p>
+                    <p class="text-sm">
+                        <span class="font-medium text-gray-700">Função:</span> {{ inscricao.usuario.funcao|default:"N/A" }} | 
+                        <span class="font-medium text-gray-700">Vaga:</span> {{ inscricao.tipo_de_vaga.nome }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-xl font-bold text-gray-800 mb-4 pt-4 border-t border-gray-100">
+            Informações Adicionais
+        </h3>
+        <div class="bg-gray-50 rounded-lg p-6 mb-8 shadow-inner">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Escola</dt>
+                    <dd class="mt-1 text-gray-900 font-semibold">{{ inscricao.usuario.escola.nome_escola|default:"N/A" }}</dd>
+                </div>
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">CPF</dt>
+                    <dd class="mt-1 text-gray-900 font-semibold">{{ inscricao.usuario.cpf|format_cpf|default:"N/A"}}</dd>
+                </div>
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Telefone</dt>
+                    <dd class="mt-1 text-gray-900 font-semibold">{{ inscricao.usuario.telefone|format_phone|default:"N/A"}}</dd>
+                </div>
+                
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Pronomes</dt>
+                    <dd class="mt-1 text-gray-900 font-semibold">{{ inscricao.usuario.pronomes|default:"N/A"}}</dd>
+                </div>
+
+            </dl>
+        </div>
+        
+        <h3 class="text-xl font-bold text-gray-800 mb-4 mt-6 border-t pt-4 border-gray-100">
+            Respostas da Inscrição e Documentos
+        </h3>
+        
+        <div class="flex flex-col sm:flex-row justify-between items-center bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+            <p class="text-lg font-medium text-indigo-800 mb-4 sm:mb-0">
+                Visualize e analise todas as respostas do formulário e documentos submetidos.
+            </p>
+            <a href="{% url 'application:visualizar_inscricao' inscricao.id %}?source=detalhes" 
+               title="Visualizar Inscrição Completa" 
+               class="flex-shrink-0 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                </svg>
+                Visualizar Formulário
+            </a>
+        </div>
+        
+        {% if inscricao.usuario.funcao == "estudante" %}
+        <h3 class="text-xl font-bold text-gray-800 mb-4 mt-6 border-t pt-4 border-gray-100">
+            Boletim Escolar
+        </h3>
+        <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+            {% if historico %}
+                
+                {% if historico.historico_escolar %}
+                    <div class="p-4 bg-indigo-50 border border-indigo-200 flex justify-between items-center">
+                        <p class="text-lg font-medium text-indigo-800 mb-4 sm:mb-0">
+                            Visualize o boletim escolar completo enviado pela aluna.
+                        </p>
+                        <a href="https://drive.google.com/file/d/{{ historico.historico_escolar }}/view"
+                            target="_blank"
+                            title="Abrir arquivo"
+                            class="flex-shrink-0 flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                            </svg>
+                            Visualizar histórico completo
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if notas %}
+                <div class="overflow-x-auto">
+
+                    <div class="p-4 bg-gray-100 border-b border-gray-200 flex justify-between items-center flex-wrap">
+                        <div class="flex items-center space-x-4">
+                            <p class="text-sm font-semibold text-gray-700">
+                                Tipo de Conceito:
+                            </p>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold 
+                                        {% if notas.0.tipo_conceito == 'LETRAS' %}bg-rose-100 text-rose-800
+                                        {% elif notas.0.tipo_conceito == '0-10' %}bg-green-100 text-green-800
+                                        {% else %}bg-indigo-100 text-indigo-800
+                                        {% endif %}">
+                                {{ notas.0.get_tipo_conceito_display }}
+                            </span>
+                        </div>
+    
+                        <button type="button" 
+                                onclick="openEditModal()" 
+                                class="text-xs font-medium px-3 py-1 rounded-md text-white bg-indigo-500 hover:bg-indigo-600 transition duration-150 shadow-md mt-2 sm:mt-0">
+                            <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            Editar Conceito/Notas (Geral)
+                        </button>
+
+                    </div>
+             
+
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                    Disciplina
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                    Bimestre
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                    Nota Original
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                    Nota Normalizada (%)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        {% for nota in notas %}
+                            <tr class="hover:bg-rose-50 transition duration-150">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ nota.disciplina.nome }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        {{ nota.bimestre }}º
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                                    {{ nota.nota_original|default:"-" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 text-right">
+                                    {% with percentual=nota.nota_final_percentual %}
+                                        {% if percentual is not None %}
+                                            {% if percentual >= 70.0 %}
+                                                <span class="text-green-600">{{ percentual|floatformat:2 }}%</span>
+                                            {% elif percentual >= 50.0 %}
+                                                <span class="text-yellow-600">{{ percentual|floatformat:2 }}%</span>
+                                            {% else %}
+                                                <span class="text-red-600">{{ percentual|floatformat:2 }}%</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                    <p class="p-6 text-gray-500 italic">Nenhuma nota cadastrada para esta aluna.</p>
+                {% endif %}
+            {% else %}
+                <p class="p-6 text-gray-500 italic">Nenhum histórico escolar vinculado a esta aluna.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="mt-8 text-center">
+            <a href="{% url 'application:lista_inscricoes' projeto_id=inscricao.projeto.id %}"
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition duration-150 ease-in-out">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Voltar para Lista de Inscrições
+            </a>
+        </div>
+
+        
+    </div>
+    
+    <div id="editNoteModal" 
+        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-gray-800 bg-opacity-50 backdrop-blur-sm"
+        aria-labelledby="modal-title"
+        role="dialog"
+        aria-modal="true">
+
+        <div class="absolute inset-0" onclick="closeEditModal()"></div>
+
+        <div class="relative bg-white rounded-lg shadow-xl transform transition-all w-full max-w-lg mx-4 p-6 overflow-y-auto max-h-[90vh]">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        Editar Nota
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            Selecione a disciplina/bimestre e ajuste a nota original para recalcular o valor normalizado.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="editNoteForm" method="POST" class="mt-4">
+                {% csrf_token %}
+                <input type="hidden" id="nota_id_update" name="nota_id_update">
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="select_nota_to_edit" class="block text-sm font-medium text-gray-700">
+                            Disciplina / Bimestre
+                        </label>
+                        <select id="select_nota_to_edit"
+                                onchange="updateModalFields(this.value)"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 
+                                    focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="" disabled selected>-- Selecione a nota para edição --</option>
+                            {% for nota in notas %}
+                                <option 
+                                    value="{{ nota.id }}"
+                                    data-disciplina="{{ nota.disciplina.nome }}"
+                                    data-original="{{ nota.nota_original|default:'' }}"
+                                    data-tipo="{{ nota.tipo_conceito }}">
+                                    {{ nota.disciplina.nome }} - {{ nota.bimestre }}º Bimestre 
+                                    (Original: {{ nota.nota_original|default:'-' }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="nota_original_update" class="block text-sm font-medium text-gray-700">
+                            Nota Original (Ex: MB, 7.5 ou 28)
+                        </label>
+                        <input type="text" id="nota_original_update" name="nota_original_update" required
+                            class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md p-2 
+                                focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label for="tipo_conceito_update" class="block text-sm font-medium text-gray-700">
+                            Tipo de Escala
+                        </label>
+                        <select id="tipo_conceito_update" name="tipo_conceito_update" required
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 
+                                focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                            <option value="LETRAS">Conceito em letras (MB, B, R, I)</option>
+                            <option value="0-10">Nota de 0 a 10</option>
+                            <option value="0-25">Nota de 0 a 25</option>
+                            <option value="0-30">Nota de 0 a 30</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm 
+                                px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm 
+                                transition duration-150">
+                        Salvar Alteração
+                    </button>
+                    <button type="button" onclick="closeEditModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm 
+                                px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 
+                                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm 
+                                transition duration-150">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="lg:col-span-1">
+        <div class="bg-white shadow-xl rounded-lg p-6 sticky top-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">
+                Revisão da Inscrição
+            </h2>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        Status Atual
+                    </label>
+                    {% render_field form.status class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" %}
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Estatísticas de Notas (0-10)
+                    </label>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-md shadow-sm">
+                            <span class="block text-xs font-semibold text-indigo-700">Média (Total)</span>
+                            <span class="block text-xl font-extrabold text-indigo-900 mt-0.5">
+                                {{ nota_media_calculada|default:"N/A"|floatformat:2 }}
+                            </span>
+                        </div>
+
+                        <div class="p-3 bg-purple-50 border border-purple-200 rounded-md shadow-sm">
+                            <span class="block text-xs font-semibold text-purple-700">Mediana (Típica)</span>
+                            <span class="block text-xl font-extrabold text-purple-900 mt-0.5">
+                                {{ nota_mediana_calculada|default:"N/A"|floatformat:2 }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="mt-2 text-xs text-gray-500 italic">
+                        Ambos os valores são normalizados na escala 0-10.
+                    </p>
+                </div>
+                <div class="mb-6">
+                    <label for="{{ form.comentario_novo.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.comentario_novo.label }}
+                    </label>
+                    {% render_field form.comentario_novo class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2" %}
+                    <p class="mt-1 text-xs text-gray-500 italic">Este campo cria um novo registro de observação para a aplicação.</p>
+                </div>
+                
+                <button type="submit" 
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                    Salvar Revisão
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<div id="successModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm">
+        <h3 class="text-lg font-semibold text-green-700 mb-3">✔ Sucesso!</h3>
+        <p class="text-gray-700">Revisão da inscrição e comentário foram salvos com sucesso.</p>
+        <button onclick="closeSuccessModal()" 
+                class="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+            Fechar
+        </button>
+    </div>
+</div>
+
+<script>
+
+    function updateModalFields(notaId) {
+
+        document.getElementById('nota_id_update').value = notaId;
+        if (notaId) {
+            let selectedOption = document.querySelector(`#select_nota_to_edit option[value="${notaId}"]`);
+            
+            if (selectedOption) {
+                let originalNote = selectedOption.getAttribute('data-original');
+                let tipoConceito = selectedOption.getAttribute('data-tipo');
+
+                document.getElementById('nota_original_update').value = originalNote;
+                document.getElementById('tipo_conceito_update').value = tipoConceito;
+            }
+        } else {
+
+            document.getElementById('nota_original_update').value = '';
+            document.getElementById('tipo_conceito_update').value = '';
+            document.getElementById('nota_id_update').value = '';
+        }
+    }
+
+
+
+    function openEditModal() {
+        const modal = document.getElementById('editNoteModal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        const modal = document.getElementById('editNoteModal');
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function openSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    const djangoMessages = [];
+    {% if messages %}
+        {% for m in messages %}
+            djangoMessages.push({ tags: "{{ m.tags }}", message: "{{ m|escapejs }}" });
+        {% endfor %}
+    {% endif %}
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (Array.isArray(djangoMessages)) {
+            for (const msg of djangoMessages) {
+                if (msg.tags && msg.tags.split(' ').includes('revisao_sucesso')) {
+                    setTimeout(openSuccessModal, 100);
+                    break;
+                }
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('revisao_sucesso') === 'true') {
+            setTimeout(openSuccessModal, 100);
+        }
+    });
+</script>
+{% endblock content %}

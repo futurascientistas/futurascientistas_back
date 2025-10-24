@@ -26,10 +26,12 @@ class GrauFormacao(models.TextChoices):
 class Application(models.Model):
     STATUS_ESCOLHAS = [
         ('rascunho', 'Rascunho'),
-        ('pendente', 'Pendente'),
+        ('pendente', 'Não homologada'),
         ('avaliacao', 'Em Avaliação'),
-        ('deferida', 'Deferida'),
+        ('deferida', 'Homologada'),
         ('indeferida', 'Indeferida'),
+        ('aprovada', 'Aprovada'),
+        ('reprovada', 'Reprovada'),
     ]
 
     JALECO_CHOICES = [
