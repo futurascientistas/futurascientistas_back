@@ -127,64 +127,99 @@ class VerificarInscricaoView(APIView):
 
 from applications.models import Application
 
+import uuid
+import json
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.text import slugify
+from django.db.models import Q
+from openpyxl.styles import Font, PatternFill, Alignment
+
+
 
 def exportar_alunas_excel(request, projeto_id):
+    # 🔹 Converte o ID, caso venha como string
     try:
         if isinstance(projeto_id, str):
             projeto_id = uuid.UUID(projeto_id)
     except (ValueError, AttributeError):
         pass
-    
+
     projeto = get_object_or_404(Project, id=projeto_id)
-    
-    # Puxa todas as aplicações com os relacionamentos necessários
+
+    # 🔹 Captura filtros do AG Grid (enviados pelo front)
+    filtros_json = request.GET.get('filtros')
+    filtros = json.loads(filtros_json) if filtros_json else {}
+
+    # 🔹 Base inicial de alunas
     alunas = (
         Application.objects
         .filter(projeto=projeto)
-        .select_related(
-            'usuario__escola__tipo_ensino',
-            'tipo_de_vaga'
-        )
+        .select_related('usuario__escola__tipo_ensino', 'tipo_de_vaga')
     )
 
-    # Cria uma workbook e worksheet
+    # 🔹 Aplica filtros recebidos
+    q = Q()
+    if 'nome' in filtros:
+        texto = filtros['nome'].get('filter', '').strip()
+        if texto:
+            q &= Q(usuario__nome__icontains=texto) | Q(usuario__username__icontains=texto)
+
+    if 'tipo_de_vaga' in filtros:
+        texto = filtros['tipo_de_vaga'].get('filter', '').strip()
+        if texto:
+            q &= Q(tipo_de_vaga__nome__icontains=texto)
+
+    if 'tipo_ensino' in filtros:
+        texto = filtros['tipo_ensino'].get('filter', '').strip()
+        if texto:
+            q &= Q(usuario__escola__tipo_ensino__nome__icontains=texto)
+
+    if 'status_label' in filtros:
+        texto = filtros['status_label'].get('filter', '').strip()
+        if texto:
+            q &= Q(status__icontains=texto)
+
+    if 'funcao_value' in filtros:  # 🔹 filtro de função
+        texto = filtros['funcao_value'].get('filter', '').strip()
+        if texto:
+            q &= Q(usuario__funcao__icontains=texto)
+
+    # 🔹 Aplica o filtro final
+    alunas = alunas.filter(q)
+
+    # 🔹 Cria workbook e worksheet
     wb = openpyxl.Workbook()
     ws = wb.active
-    
-    # Título seguro para a planilha
-    ws.title = "Alunas Vinculadas"
+    ws.title = "Inscritas"
 
-    # Cabeçalhos
+    # 🔹 Cabeçalhos (adicionando Função)
     headers = [
-        'Nome', 
-        'Tipo de Vaga', 
-        'Tipo de Ensino', 
-        'Status', 
+        'Nome',
+        'Tipo de Vaga',
+        'Tipo de Ensino',
+        'Status',
+        'Função',            # 🔹 nova coluna
         'Nota Final (%)'
     ]
-    
-    # Estilo do cabeçalho
+
     header_font = Font(bold=True, color="FFFFFF")
     header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
     header_alignment = Alignment(horizontal="center", vertical="center")
 
-    # Adiciona cabeçalhos
     for col_num, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col_num, value=header)
+        cell = ws.cell(row=2, column=col_num, value=header)
         cell.font = header_font
         cell.fill = header_fill
         cell.alignment = header_alignment
 
-    # Adiciona dados
-    row_num = 2
+    # 🔹 Adiciona dados
+    row_num = 3
     for a in alunas:
         historico = HistoricoEscolar.objects.filter(usuario=a.usuario).first()
 
-        # Calcula a nota final percentual
         nota_final_percentual = "-"
         if historico:
             notas = historico.notas.all()
@@ -193,22 +228,21 @@ def exportar_alunas_excel(request, projeto_id):
                 media = total / len(notas)
                 nota_final_percentual = round(media, 2)
 
-        # Dados da linha
         row_data = [
             a.usuario.nome or a.usuario.username,
             getattr(a.tipo_de_vaga, "nome", "-"),
             getattr(a.usuario.escola.tipo_ensino, "nome", "-"),
             a.get_status_display(),
+            getattr(a.usuario, "funcao", "-"),  # 🔹 função
             nota_final_percentual,
         ]
 
-        # Adiciona linha
         for col_num, value in enumerate(row_data, 1):
             ws.cell(row=row_num, column=col_num, value=value)
 
         row_num += 1
 
-    # Ajusta largura das colunas
+    # 🔹 Ajusta largura das colunas
     for column in ws.columns:
         max_length = 0
         column_letter = column[0].column_letter
@@ -221,22 +255,27 @@ def exportar_alunas_excel(request, projeto_id):
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[column_letter].width = adjusted_width
 
-    # Adiciona informações do projeto como primeira linha
+    # 🔹 Adiciona informações do projeto
     ws.insert_rows(1)
-    ws.merge_cells('A1:E1')
-    project_info_cell = ws.cell(row=1, column=1, value=f"Projeto: {projeto.nome} - Exportado em {timezone.now().strftime('%d/%m/%Y %H:%M')}")
+    ws.merge_cells('A1:F1')  # 🔹 ajustar para nova coluna
+    project_info_cell = ws.cell(
+        row=1, column=1,
+        value=f"Projeto: {projeto.nome} - Exportado em {timezone.now().strftime('%d/%m/%Y %H:%M')}"
+    )
     project_info_cell.font = Font(bold=True, size=12)
     project_info_cell.alignment = Alignment(horizontal="center")
 
-    # Cria resposta HTTP
+    # 🔹 Cria resposta HTTP
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    filename = f"alunas_{slugify(projeto.nome)}_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
+    filename = f"inscritas_{slugify(projeto.nome)}_{timezone.now().strftime('%Y-%m-%d')}.xlsx"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
+
     wb.save(response)
     return response
+
+
 
 def detalhes_projeto(request, projeto_id):
     projeto = get_object_or_404(Project, id=projeto_id)
@@ -272,6 +311,7 @@ def detalhes_projeto(request, projeto_id):
             "tipo_ensino": getattr(a.usuario.escola.tipo_ensino, "nome", "-"),
             "status_label": a.get_status_display(),
             "status_value": a.status,
+            "funcao": getattr(a.usuario, "funcao", "-"),
             "nota_final_percentual": nota_final_percentual,
         })
 

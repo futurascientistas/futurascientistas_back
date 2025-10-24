@@ -228,7 +228,7 @@ def menu_sidebar(request):
         {
             "id": "projetos_disponiveis",
             "title": "Projetos Disponíveis",
-            "roles": ["estudante", "professora"],
+            "roles": ["estudante", "professora", "avaliadora"],
             "url": "/projetos",
             "icon_svg": """
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
